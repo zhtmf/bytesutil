@@ -1,0 +1,7 @@
+/bin
+/target
+/test
+*.xlsx
+.classpath
+.project
+.settings
