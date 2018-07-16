@@ -8,7 +8,6 @@ import java.nio.charset.Charset;
 
 import org.dzh.bytesutil.DataType;
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.converters.auxiliary.Context;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 
@@ -20,16 +19,20 @@ public class StringConverter implements Converter<String> {
 		value = value == null ? "" : value;
 		switch(target) {
 		case CHAR:{
-			int length = ctx.localAnnotation(CHAR.class).value();
-			if(length<=0) {
-				throw new IllegalArgumentException("declare a valid length");
-			}
+			
 			Charset cs = ctx.charset;
 			if(cs==null) {
 				cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name,self);
 			}
 			byte[] bytes = value.getBytes(cs);
-			if(length!=bytes.length) {
+			
+			int length = Utils.lengthForSerializingCHAR(ctx, self);
+			if(length<0) {
+				//due to the pre-check in Context class, Length must be present at this point
+				length = bytes.length;
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				
+			}else if(length!=bytes.length) {
 				throw new IllegalArgumentException(
 						String.format("encoded byte array length [%d] not equals with declared CHAR length [%d]"
 									,bytes.length,length));
@@ -63,9 +66,9 @@ public class StringConverter implements Converter<String> {
 			throws IOException, UnsupportedOperationException {
 		switch(src) {
 		case CHAR:{
-			int length = ctx.localAnnotation(CHAR.class).value();
-			if(length<=0) {
-				throw new IllegalArgumentException("declare a valid length");
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			if(length<0) {
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 			}
 			Charset cs = ctx.charset;
 			if(cs==null) {
