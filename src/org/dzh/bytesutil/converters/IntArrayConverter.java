@@ -22,16 +22,13 @@ public class IntArrayConverter implements Converter<int[]>{
 		value = value == null ? new int[0] : value;
 		switch(target) {
 		case RAW:
-			int length = ctx.length;
+			int length = Utils.lengthForSerializingRAW(ctx, self);
 			if(length<0) {
-				if(ctx.lengthHandler!=null) {
-					length = (Integer)ctx.lengthHandler.handleSerialize(ctx.name, self);
-				}else {
-					length = value.length;
-					StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
-				}
-			}
-			if(length!=value.length) {
+				//due to the pre-check in Context class, Length must be present at this point
+				length = value.length;
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				
+			}else if(length!=value.length) {
 				throw new RuntimeException(
 						String.format("field [%s] is defined as a int array,"
 								+ " but the defined length [%d] is not the same as length [%d] of the list"
@@ -49,14 +46,9 @@ public class IntArrayConverter implements Converter<int[]>{
 			throws IOException,UnsupportedOperationException {
 		switch(src) {
 		case RAW:
-			int length = ctx.length;
+			int length = Utils.lengthForDeserializingRAW(ctx, self, (BufferedInputStream) is);
 			if(length<0) {
-				if(ctx.lengthHandler!=null) {
-					length = (Integer)ctx.lengthHandler.handleDeserialize(
-							ctx.name, self, (BufferedInputStream) is);
-				}else {
-					length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
-				}
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 			}
 			byte[] raw = StreamUtils.readBytes(is, length);
 			int[] ret = new int[length];

@@ -69,6 +69,10 @@ public class TestCase1 {
 		we.char1 = "abcdef";
 		we.char2 = "hahahahahaha";
 		we.char3 = we.char1;
+		we.bytearray1 = new byte[] {1,2,3,4,5};
+		we.bytearray2 = new byte[] {1};
+		we.bytearray3 = new byte[] {11,22,33,44};
+		we.bytearray4 = we.bytearray1;
 		entity.we = we;
 	}
 	
@@ -113,5 +117,11 @@ public class TestCase1 {
 		final byte[] bts = baos.toByteArray();
 		entity2.deserialize(new ByteArrayInputStream(bts));
 		Assert.assertTrue(Utils.equals(entity,entity2));
+	}
+	
+	public static void main(String[] args) throws ConversionException {
+		TestCase1 tc1 = new TestCase1();
+		tc1.setValues();
+		tc1.testEntity1();
 	}
 }
