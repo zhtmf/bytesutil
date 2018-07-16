@@ -21,4 +21,9 @@ import org.dzh.bytesutil.annotations.modifiers.Length;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface RAW {
+	/**
+	 * TODO:
+	 * @return
+	 */
+	int value() default -1;
 }

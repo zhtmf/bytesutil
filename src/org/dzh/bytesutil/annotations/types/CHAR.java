@@ -29,8 +29,8 @@ public @interface CHAR {
 	 * <p>
 	 * It is ignored if this annotation is applied to a <tt>char</tt> field, which always assumes 
 	 * the data is a single-byte ASCII character.
-	 * 
+	 * TODO:
 	 * @return number of bytes
 	 */
-	int value();
+	int value() default -1;
 }

@@ -11,6 +11,7 @@ import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
+import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.converters.auxiliary.ClassInfo.FieldInfo;
 
@@ -55,6 +56,10 @@ public class Context {
 	 * whether this field is defined as unsigned
 	 */
 	public final boolean unsigned;
+	/**
+	 * Whether there is a {@link Length} annotation present on this field
+	 */
+	public final boolean lengthDefined;
 	/**
 	 * Value of {@link Length} annotation.
 	 * <p>
@@ -130,14 +135,29 @@ public class Context {
 		{
 			Length len = localAnnotation(Length.class);
 			if(len==null) {
-				if(localAnnotation(RAW.class)!=null) {
+				
+				//either specify a positive value property or use a Length annotation to 
+				//declare the length
+				CHAR ch = localAnnotation(CHAR.class);
+				if(ch!=null && ch.value()==-1) {
 					throw new IllegalArgumentException(
-							String.format("field [%s] is defined as RAW, but a Length annotation is not present on it",name));
+							String.format("field [%s] is defined as CHAR, but its value property is negative"
+									+ " and a Length annotation is not present on it",name));
 				}
+				
+				RAW raw = localAnnotation(RAW.class);
+				if(raw!=null && raw.value()==-1) {
+					throw new IllegalArgumentException(
+							String.format("field [%s] is defined as RAW, but its value property is negative"
+									+ "and  a Length annotation is not present on it",name));
+				}
+				
+				lengthDefined = false;
 				length = -1;
 				lengthHandler = null;
 				lengthType = null;
 			}else {
+				lengthDefined = true;
 				this.length = len.value();
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
