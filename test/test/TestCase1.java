@@ -14,6 +14,7 @@ import org.junit.Test;
 import test.entity.MyEntity;
 import test.entity.SubEntity;
 import test.entity.Utils;
+import test.entity.WeirdEntity;
 import test.hierarchy.Sub1;
 import test.hierarchy.Sub2;
 
@@ -63,6 +64,12 @@ public class TestCase1 {
 		s1.field1 = -350;
 		s1.field2 = 30000;
 		entity.anotherEntity = s1;
+		
+		WeirdEntity we = new WeirdEntity();
+		we.char1 = "abcdef";
+		we.char2 = "hahahahahaha";
+		we.char3 = we.char1;
+		entity.we = we;
 	}
 	
 	@Test

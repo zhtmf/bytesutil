@@ -151,4 +151,8 @@ public class MyEntity extends DataPacket{
 	@Order(25)
 	@INT
 	public long veryLong;
+	
+	@Order(26)
+	public WeirdEntity we;
+	
 }
