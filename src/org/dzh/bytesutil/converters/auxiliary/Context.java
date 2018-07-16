@@ -178,7 +178,15 @@ public class Context {
 			if(df==null) {
 				this.datePattern = null;
 			}else {
-				this.datePattern = df.value();
+				String val = df.value();
+				for(int i=0;i<val.length();++i) {
+					if(val.charAt(i)>127) {
+						throw new IllegalArgumentException(
+								String.format(
+								"date pattern %s is illegal, as only ASCII characters are permitted in a date pattern", val));
+					}
+				}
+				this.datePattern = val;
 			}
 		}
 	}
