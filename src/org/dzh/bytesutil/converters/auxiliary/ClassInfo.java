@@ -200,8 +200,11 @@ public class ClassInfo {
 			DataType type = null;
 			for(DataType tp:DataType.values()) {
 				if(f.getAnnotation(tp.annotationClassOfThisType())!=null) {
+					if(type!=null) {
+						throw new IllegalArgumentException(
+								String.format("multiple data type declaration on field [%s] is not allowed", name));
+					}
 					type = tp;
-					break;
 				}
 			}
 			if(type==null){
