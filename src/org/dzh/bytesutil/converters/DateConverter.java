@@ -1,5 +1,6 @@
 package org.dzh.bytesutil.converters;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.DataType;
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.converters.auxiliary.Context;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 
@@ -28,6 +28,8 @@ public class DateConverter implements Converter<Date>{
 			throw new IllegalArgumentException("define a date pattern");
 		}
 		String str = getThreadLocalObject(datePattern).format(value);
+		byte[] bytes = str.getBytes(StandardCharsets.ISO_8859_1);
+		
 		switch(target) {
 		case BCD:
 			if(ctx.annotation(BCD.class).value()!=str.length()/2) {
@@ -46,12 +48,21 @@ public class DateConverter implements Converter<Date>{
 			StreamUtils.writeBCD(dest, values);
 			break;
 		case CHAR:
-			if(ctx.annotation(CHAR.class).value()!=str.length()) {
-				throw new IllegalArgumentException(String.format(
-						"defined CHAR length [%d] is different from length of formatted string [%s]"
-						,ctx.annotation(CHAR.class).value(),str));
+			
+			int length = Utils.lengthForSerializingCHAR(ctx, self);
+			if(length<0) {
+				//due to the pre-check in Context class, Length must be present at this point
+				length = bytes.length;
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				
+			}else if(length!=bytes.length) {
+				throw new IllegalArgumentException(
+						String.format("encoded byte array length [%d] not equals with declared CHAR length [%d]"
+									,bytes.length,length));
 			}
-			StreamUtils.writeBytes(dest, str.getBytes(StandardCharsets.ISO_8859_1));
+			
+			StreamUtils.writeBytes(dest, bytes);
+			
 			break;
 		default:
 			throw new UnsupportedOperationException();
@@ -72,12 +83,19 @@ public class DateConverter implements Converter<Date>{
 							.parse(StreamUtils.readStringBCD(
 									is,ctx.annotation(BCD.class).value()));
 				
-			case CHAR:
-					return getThreadLocalObject(datePattern)
-							.parse(new String(
-									StreamUtils.readBytes(
-											is, ctx.annotation(CHAR.class).value())
-									,StandardCharsets.ISO_8859_1));
+			case CHAR:{
+				
+				int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+				if(length<0) {
+					length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+				}
+				
+				return getThreadLocalObject(datePattern)
+						.parse(new String(
+								StreamUtils.readBytes(
+										is, length)
+								,StandardCharsets.ISO_8859_1));
+			}
 			default:
 				throw new UnsupportedOperationException();
 			}
@@ -86,7 +104,7 @@ public class DateConverter implements Converter<Date>{
 		}
 	}
 	
-	private SimpleDateFormat getThreadLocalObject(String datePattern) {
+	private static final SimpleDateFormat getThreadLocalObject(String datePattern) {
 		ThreadLocal<SimpleDateFormat> tl = formatterMap.get(datePattern);
 		if (tl == null) {
 			tl = new _TLFormatter(datePattern);
@@ -95,7 +113,7 @@ public class DateConverter implements Converter<Date>{
 		return tl.get();
 	}
 	
-	private ConcurrentHashMap<String, ThreadLocal<SimpleDateFormat>> formatterMap = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, ThreadLocal<SimpleDateFormat>> formatterMap = new ConcurrentHashMap<>();
 
 	private static final class _TLFormatter extends ThreadLocal<SimpleDateFormat> {
 		private String p;

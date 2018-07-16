@@ -37,6 +37,7 @@ public class StringConverter implements Converter<String> {
 						String.format("encoded byte array length [%d] not equals with declared CHAR length [%d]"
 									,bytes.length,length));
 			}
+			
 			StreamUtils.writeBytes(dest, bytes);
 			break;
 		}
