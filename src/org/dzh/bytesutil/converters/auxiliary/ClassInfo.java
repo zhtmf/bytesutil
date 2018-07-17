@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,10 +33,6 @@ public class ClassInfo {
 	 */
 	private Map<Class<? extends Annotation>, Annotation> globalAnnotations = new HashMap<>();
 	/**
-	 * Annotations that appears on non-static fields, respectively
-	 */
-	private Map<String,Map<Class<? extends Annotation>, Annotation>> annotationsByField = new HashMap<>();
-	/**
 	 * {@link Context} objects that will be passed to client code
 	 */
 	private Map<String,Context> contextsByField = new HashMap<>();
@@ -43,17 +40,15 @@ public class ClassInfo {
 	 * {@link FieldInfo} objects that are used internally, in the order specified by
 	 * {@link Order} annotation.
 	 */
-	private List<FieldInfo> fields = new ArrayList<>();
+	private Map<String,FieldInfo> fieldInfoByField = new LinkedHashMap<>();
 	
 	Class<?> entityClass;
-	
 	/**
-	 * Internal class that records results of pre-computation of information on a
-	 * specific {@link Field}
+	 * Internal class that stores compile-time information of a {@link Field}
 	 * 
 	 * @author dzh
 	 */
-	public final class FieldInfo{
+	public static final class FieldInfo{
 		private Field field;
 		public final String name;
 		public final Class<?> fieldClass;
@@ -62,6 +57,7 @@ public class ClassInfo {
 		public final boolean isEntity;
 		public final Class<?> listComponentClass;
 		public final boolean isEntityList;
+		public final Map<Class<? extends Annotation>,Annotation> annotations;
 		FieldInfo(Field field, String name, Class<?> fieldClass, DataType type) {
 			this.field = field;
 			this.name = name;
@@ -80,6 +76,13 @@ public class ClassInfo {
 				this.listComponentClass = null;
 				this.isEntityList = false;
 			}
+			
+			Map<Class<? extends Annotation>,Annotation> _annotations = new HashMap<>();
+			for(Annotation an:field.getAnnotations()) {
+				_annotations.put(an.annotationType(), an);
+			}
+			this.annotations = Collections.unmodifiableMap(_annotations);
+			
 			Variant cond = getAnnotation(Variant.class);
 			try {
 				this.variantEntityHandler = cond != null ? cond.value().newInstance() : null;
@@ -117,8 +120,9 @@ public class ClassInfo {
 								,field.getName()),e);
 			}
 		}
+		@SuppressWarnings("unchecked")
 		public <T extends Annotation> T getAnnotation(Class<T> annoCls) {
-			return ClassInfo.this.annotationOfField(name, annoCls);
+			return (T) annotations.get(annoCls);
 		}
 	}
 	
@@ -174,22 +178,6 @@ public class ClassInfo {
 		for(Field f:fieldList) {
 			
 			String name = f.getName();
-			Map<Class<? extends Annotation>, Annotation> map = annotationsByField.get(name);
-			if(map==null) {
-				map = new HashMap<>();
-				annotationsByField.put(name, map);
-			}
-			for(Annotation an:f.getAnnotations()) {
-				if(map.containsKey(an.annotationType())) {
-					throw new RuntimeException(
-						String.format("multiple definition of annotation [%s] on field [%s] is not allowed"
-								, an.annotationType().toString(),name));
-				}
-				map.put(an.annotationType(), an);
-			}
-			if( ! contextsByField.containsKey(name)) {
-				contextsByField.put(name, new Context(this,name));
-			}
 			
 			/*
 			 * check whether a DataType is defined on this field, as is required by
@@ -216,12 +204,15 @@ public class ClassInfo {
 				}
 			}
 			FieldInfo fi = new FieldInfo(f, name, f.getType(), type);
+			fieldInfoByField.put(name, fi);
+			
 			if(fi.listComponentClass!=null
 			&& annotationOfField(name, Length.class)==null) {
 				throw new IllegalArgumentException(String.format(
 						"field [%s] is a list but a Length annotation is not present on it", name));
 			}
-			fields.add(fi);
+			
+			contextsByField.put(name, new Context(this,name));
 		}
 	}
 	
@@ -230,7 +221,7 @@ public class ClassInfo {
 	 * @return
 	 */
 	public List<FieldInfo> fieldInfoList() {
-		return new ArrayList<>(fields);
+		return new ArrayList<>(fieldInfoByField.values());
 	}
 	
 	public Context contextOfField(String name) {
@@ -241,14 +232,8 @@ public class ClassInfo {
 	<T extends Annotation> T globalAnnotation(Class<T> annoCls) {
 		return (T) globalAnnotations.get(annoCls);
 	}
-	@SuppressWarnings("unchecked")
 	<T extends Annotation> T annotationOfField(String name,Class<T> annoCls) {
-		Map<Class<? extends Annotation>, Annotation> fieldMap = annotationsByField.get(name);
-		if(fieldMap==null) {
-			//internal bug
-			throw new IllegalArgumentException(name);
-		}
-		return (T) fieldMap.get(annoCls);
+		return (T) fieldInfoByField.get(name).getAnnotation(annoCls);
 	}
 	
 	//return null for non-generic field definitions

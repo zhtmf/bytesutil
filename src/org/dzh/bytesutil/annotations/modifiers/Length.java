@@ -26,7 +26,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * And it is used in 3 different flavors:
  * <ul>
  * <li>If {@link #value() value} is greater than 0, it is used to declare a
- * static length. In this case, it is the same as using the <tt>value</tt>
+ * static length. In this case, it is the same as the <tt>value</tt>
  * property of <tt>CHAR</tt> or <tt>RAW</tt>.</li>
  * <li>If {@link #value() value} is left unassigned or assigned to a negative
  * value and {@link #handler() handler} is set to a class other than
