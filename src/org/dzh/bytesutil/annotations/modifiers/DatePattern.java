@@ -11,10 +11,7 @@ import java.text.SimpleDateFormat;
  * <p>
  * Specifies date pattern string for {@link java.util.Date} fields.
  * <p>
- * The pattern string has the same rule as those used by
- * {@link SimpleDateFormat}, however as <tt>Date</tt> can only be converted to
- * {@link BCD}, parsing with the the pattern string can only result in
- * numeric string.
+ * The pattern string has the same rule as that used by {@link SimpleDateFormat}
  * 
  * @author dzh
  *

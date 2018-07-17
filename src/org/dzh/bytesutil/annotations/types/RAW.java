@@ -12,17 +12,21 @@ import org.dzh.bytesutil.annotations.modifiers.Length;
  * <p>
  * Consecutive bytes that are read as-is and not specially interpreted.
  * <p>
- * This data type can only be "converted" to byte array. Its length is specified
- * using a separate annotation {@link Length} which handles static/dynamic
- * length.
- * 
+ * Length of this type of data can be specified with either {@link #value()}
+ * property or additional {@link Length} annotation on the same field. If the
+ * <tt>value</tt> property is left unassigned, or assigned to a negative value,
+ * the <tt>Length</tt> annotation is referred to, and if that annotation is not
+ * present an exception is thrown.
+ * <p>
+ * This data type can only be "converted" to a byte array or an int array.
  * @author dzh
  */
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface RAW {
 	/**
-	 * TODO:
+	 * Specifies length of this byte stream.
+	 * 
 	 * @return
 	 */
 	int value() default -1;

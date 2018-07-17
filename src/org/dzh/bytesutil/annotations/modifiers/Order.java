@@ -6,11 +6,35 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * <p>
+ * Specifies the order of a certain field in the enclosing java class during
+ * serializing/deserializing process.
+ * <p>
+ * It is a must due to the definition of {@link Class#getDeclaredFields()} says
+ * the field objects returned are not in any particular order. So fields not
+ * annotated with this annotation are effectively ignored by this library.
+ * <p>
+ * Fields are sorted according to their {@link #value() value} in ascending
+ * order. It is not mandatory to begin the order value from 0, as long as any
+ * two <tt>Order</tt> annotation does not specify same {@link #value() value}
+ * property.
+ * 
+ * @author dzh
+ *
+ */
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface Order {
 
-	int value() default 0;
+	/**
+	 * Specify the order value, fields are 
+	 * @return
+	 */
+	int value();
 	
+	/**
+	 * Convenient value to denote the last field in a class
+	 */
 	public static final int LAST = Integer.MAX_VALUE;
 }

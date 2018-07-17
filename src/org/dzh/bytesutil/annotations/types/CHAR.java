@@ -18,18 +18,22 @@ import org.dzh.bytesutil.annotations.modifiers.CHARSET;
  * Charset of the string CHAR data represents can be specified using
  * {@link CHARSET} annotation.
  * <p>
+ * Length of this type of data can be specified with either {@link #value()}
+ * property or additional {@link Length} annotation on the same field. If the
+ * <tt>value</tt> property is left unassigned, or assigned to a negative value,
+ * the <tt>Length</tt> annotation is referred to, and if that annotation is not
+ * present an exception is thrown.
+ * <p>
  * This data type can be converted to <tt>char</tt> or <tt>String</tt>.
+ * 
  * @author dzh
  */
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface CHAR {
 	/**
-	 * Specifies length (how many bytes) in the data.
-	 * <p>
-	 * It is ignored if this annotation is applied to a <tt>char</tt> field, which always assumes 
-	 * the data is a single-byte ASCII character.
-	 * TODO:
+	 * Specifies length of this byte stream.
+	 * 
 	 * @return number of bytes
 	 */
 	int value() default -1;
