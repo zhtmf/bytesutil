@@ -5,8 +5,6 @@ import org.dzh.bytesutil.converters.auxiliary.Context;
 /**
  * Generic Exception class for <tt>runtime</tt> error produced by this library.<br/>
  * This class contains information about the entity class and the field that failed the parsing.
- * <p>
- * 
  */
 public class ConversionException extends Exception {
 	private static final long serialVersionUID = 1L;

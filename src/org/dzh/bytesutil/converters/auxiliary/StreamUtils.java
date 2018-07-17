@@ -5,8 +5,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import org.dzh.bytesutil.DataType;
-
 public class StreamUtils {
 	
 	public static void writeBYTE(OutputStream os, byte value) throws IOException {

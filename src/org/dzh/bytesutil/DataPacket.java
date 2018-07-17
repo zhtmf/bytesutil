@@ -26,6 +26,7 @@ import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
 import org.dzh.bytesutil.converters.auxiliary.ClassInfo.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.Context;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 /**
  * <p>
@@ -121,22 +122,13 @@ public class DataPacket {
 				Context ctx = ci.contextOfField(fi.name);
 				List<Object> value = (List<Object>) fi.get(this);
 				
-				int length = ctx.length;
+				int length = Utils.lengthForSerializingLength(ctx, this);
 				if(length<0) {
-					//length is dynamic
-					if(ctx.lengthHandler!=null) {
-						//length should be obtained from a custom handler
-						length = (Integer)ctx.lengthHandler.handleSerialize(ctx.name, this);
-					}else {
-						//length is written and read from the stream, exactly before 
-						//serialize/deserialize value of the field itself
-						//here we are doing serialization, so write the length ahead
-						try {
-							length = value.size();
-							StreamUtils.writeIntegerOfType(dest, ctx.lengthType, value.size(), ctx.bigEndian);
-						} catch (IOException e) {
-							throw new ConversionException(this.getClass(),fi.name,e);
-						}
+					try {
+						length = value.size();
+						StreamUtils.writeIntegerOfType(dest, ctx.lengthType, value.size(), ctx.bigEndian);
+					} catch (IOException e) {
+						throw new ConversionException(this.getClass(),fi.name,e);
 					}
 				}
 				
@@ -257,17 +249,11 @@ public class DataPacket {
 			//this field is defined as a list
 			}else if(fi.listComponentClass!=null) {
 				Context ctx = ci.contextOfField(fi.name);
-				int length = ctx.length;
 				
+				int length = Utils.lengthForDeserializingLength(ctx, this, _src);
 				if(length<0) {
-					//dynamic length
 					try {
-						if(ctx.lengthHandler!=null) {
-							length = (Integer)ctx.lengthHandler.handleDeserialize(ctx.name, this, _src);
-						//read-ahead length
-						}else {
-							length = StreamUtils.readIntegerOfType(_src, ctx.lengthType, ctx.bigEndian);
-						}
+						length = StreamUtils.readIntegerOfType(_src, ctx.lengthType, ctx.bigEndian);
 					} catch (IOException e) {
 						throw new ConversionException(this.getClass(),fi.name,e);
 					}

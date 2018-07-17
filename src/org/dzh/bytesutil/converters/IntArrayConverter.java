@@ -5,9 +5,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.dzh.bytesutil.DataType;
 import org.dzh.bytesutil.converters.auxiliary.Context;
+import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 /**
  * Converters that handles serialization and deserialization of <tt>int[].class</tt>

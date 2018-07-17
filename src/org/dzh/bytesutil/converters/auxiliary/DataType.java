@@ -1,4 +1,4 @@
-package org.dzh.bytesutil;
+package org.dzh.bytesutil.converters.auxiliary;
 
 import java.lang.annotation.Annotation;
 

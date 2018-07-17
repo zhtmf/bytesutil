@@ -3,7 +3,6 @@ package org.dzh.bytesutil.converters.auxiliary;
 import java.lang.annotation.Annotation;
 import java.nio.charset.Charset;
 
-import org.dzh.bytesutil.DataType;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;

@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.DataType;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Variant;

@@ -6,7 +6,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.dzh.bytesutil.DataType;
+import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
 import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 
