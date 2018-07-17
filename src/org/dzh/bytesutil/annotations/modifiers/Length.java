@@ -40,7 +40,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * determining how the length value is stored in the stream.</li>
  * </ul>
  * <p>
- * It is necessary that this annotation should be used with care, as if all
+ * It is necessary that this annotation be used with care, because if all
  * property are left unassigned, the library will try to read from/write to the
  * stream the actual length, which may or may not suit with the protocol you are
  * trying to implement.
