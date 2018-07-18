@@ -2,9 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.dzh</groupId>
-	<artifactId>BytesUtil</artifactId>
-	<version>0.1.0</version>
-	<name>BytesUtil</name>
+	<artifactId>bytes-util</artifactId>
+	<version>0.2.0</version>
+	<name>bytes-util</name>
 	<description>Utility library for conversion of Java objects to/from byte streams using scheme defined by custom annotations</description>
 
 	<properties>
@@ -23,6 +23,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>bytes-util-${project.version}</finalName>
 		<sourceDirectory>src</sourceDirectory>
 		<testSourceDirectory>test</testSourceDirectory>
 		<plugins>
