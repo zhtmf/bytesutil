@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.dzh</groupId>
 	<artifactId>bytes-util</artifactId>
-	<version>0.2.0</version>
+	<version>0.2.1</version>
 	<name>bytes-util</name>
 	<description>Utility library for conversion of Java objects to/from byte streams using scheme defined by custom annotations</description>
 
