@@ -16,8 +16,11 @@ import java.util.Map;
 
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
+import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Variant;
+import org.dzh.bytesutil.annotations.types.CHAR;
+import org.dzh.bytesutil.annotations.types.RAW;
 
 /**
  * Internal class that records info about annotations, fields of a specific
@@ -205,10 +208,20 @@ public class ClassInfo {
 			FieldInfo fi = new FieldInfo(f, name, f.getType(), type);
 			fieldInfoByField.put(name, fi);
 			
-			if(fi.listComponentClass!=null
-			&& annotationOfField(name, Length.class)==null) {
-				throw new IllegalArgumentException(String.format(
-						"field [%s] is a list but a Length annotation is not present on it", name));
+			if(fi.listComponentClass!=null) {
+				if(annotationOfField(name, Length.class)==null
+				&& annotationOfField(name, ListLength.class)==null) {
+					throw new IllegalArgumentException(String.format(
+							"field [%s] is a list but Length or ListLength annotation are not present on it", name));
+				}
+				if(((fi.type == DataType.RAW && annotationOfField(name, RAW.class).value()<0)
+				|| (fi.type == DataType.CHAR && annotationOfField(name, CHAR.class).value()<0))
+				&& annotationOfField(name, ListLength.class)==null) {
+					throw new IllegalArgumentException(String.format(
+							"field [%s] is a list of Data Type that supports dynamic length, "
+							+ "but a ListLength annotation is not present on it, to avoid ambiguity, use ListLength but not "
+							+ "Length annotation to specify the length ", name));
+				}
 			}
 			
 			contextsByField.put(name, new Context(this,name));

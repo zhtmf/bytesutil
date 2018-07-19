@@ -7,6 +7,7 @@ import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
 import org.dzh.bytesutil.annotations.modifiers.Length;
+import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
@@ -71,18 +72,21 @@ public class Context {
 	 * field will be -1.
 	 */
 	public final int length;
+	public final int listLength;
 	/**
 	 * Type of the {@link Length} value in the stream. For example some protocol
 	 * defines length as unsigned byte, while others defines it as unsigned short
 	 * etc.
 	 */
 	public final DataType lengthType;
+	public final DataType listLengthType;
 	/**
 	 * {@link ModifierHandler} object which is used to obtain the length value
 	 * dynamically for this field, null if it is not defined in the {@link Length}
 	 * annotation.
 	 */
 	public final ModifierHandler<Integer> lengthHandler;
+	public final ModifierHandler<Integer> listLengthHandler;
 	/**
 	 * Charset of this field, null if not defined
 	 */
@@ -176,6 +180,28 @@ public class Context {
 					this.lengthHandler = null;
 				}
 				lengthType = len.type();
+			}
+		}
+		{
+			ListLength len = localAnnotation(ListLength.class);
+			if(len==null) {
+				listLength = -1;
+				listLengthHandler = null;
+				listLengthType = null;
+			}else {
+				this.listLength = len.value();
+				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
+					try {
+						this.listLengthHandler = len.handler().newInstance();
+					} catch (InstantiationException | IllegalAccessException e) {
+						throw new RuntimeException(
+								String.format("ModifierHandler class [%s] cannot be initialized by no-arg contructor"
+										, len.handler()),e);
+					}
+				}else {
+					this.listLengthHandler = null;
+				}
+				listLengthType = len.type();
 			}
 		}
 		{

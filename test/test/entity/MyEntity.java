@@ -124,7 +124,7 @@ public class MyEntity extends DataPacket{
 	public byte[] bytes;
 	
 	@Order(20)
-	@RAW
+	@RAW(3)
 	@Length
 	public List<byte[]> byteList;
 	

@@ -9,6 +9,7 @@ import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.Length;
+import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.types.BCD;
@@ -63,12 +64,13 @@ public class TestCase3{
 		
 		@Order(5)
 		@CHAR(5)
-		@Length(2)
+		@ListLength(handler = Handler2.class)
 		public List<String> strList;
 		
 		@Order(6)
 		@CHAR
-		@Length(handler = Handler2.class) //TODO: Length同时作为char的长度和list的长度了!
+		@Length(handler = Handler2.class)
+		@ListLength(handler = Handler3.class)
 		public List<String> strList2;
 		
 		@Order(7)
@@ -141,6 +143,20 @@ public class TestCase3{
 		
 	}
 	
+	public static final class Handler3 extends ModifierHandler<Integer>{
+
+		@Override
+		public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
+			return 5;
+		}
+
+		@Override
+		public Integer handleSerialize0(String fieldName, Object entity) {
+			return 5;
+		}
+		
+	}
+	
 	@Before
 	public void setValues() {
 		entity.b1 = 1;
@@ -157,8 +173,8 @@ public class TestCase3{
 		sub.shortList = Arrays.asList(11,22);
 		sub.intList = Arrays.asList(11,22);
 		sub.bcdList = Arrays.asList(320111,114110);
-		sub.strList = Arrays.asList("hahah","heheh");
-		sub.strList2 = Arrays.asList("a");
+		sub.strList = Arrays.asList("hahah");
+		sub.strList2 = Arrays.asList("a","b","x","<",">");
 		SubSubEntity subsub = new SubSubEntity();
 		subsub.b1 = 120;
 		sub.entityList = Arrays.asList(subsub);

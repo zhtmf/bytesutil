@@ -60,4 +60,26 @@ public class Utils {
 		}
 		return length;
 	}
+	
+	public static int lengthForSerializingListLength(Context ctx,Object self) {
+		int length = ctx.listLength;
+		if(length<0 && ctx.listLengthHandler!=null) {
+			length = (Integer)ctx.listLengthHandler.handleSerialize(ctx.name, self);
+			if(length<0) {
+				throw new IllegalArgumentException("should return non-negative value from length handler");
+			}
+		}
+		return length;
+	}
+	
+	public static int lengthForDeserializingListLength(Context ctx,Object self, BufferedInputStream bis) {
+		int length = ctx.listLength;
+		if(length<0 && ctx.listLengthHandler!=null) {
+			length = (Integer)ctx.listLengthHandler.handleDeserialize(ctx.name, self, bis);
+			if(length<0) {
+				throw new IllegalArgumentException("should return non-negative value from length handler");
+			}
+		}
+		return length;
+	}
 }

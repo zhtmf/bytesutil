@@ -122,8 +122,13 @@ public class DataPacket {
 			}else if(fi.listComponentClass!=null) {
 				Context ctx = ci.contextOfField(fi.name);
 				List<Object> value = (List<Object>) fi.get(this);
-				
-				int length = Utils.lengthForSerializingLength(ctx, this);
+				/*
+				 * validity check is done in ClassInfo
+				 */
+				int length = Utils.lengthForSerializingListLength(ctx, this);
+				if(length<0) {
+					length = Utils.lengthForSerializingLength(ctx, this);
+				}
 				if(length<0) {
 					try {
 						length = value.size();
@@ -251,7 +256,10 @@ public class DataPacket {
 			}else if(fi.listComponentClass!=null) {
 				Context ctx = ci.contextOfField(fi.name);
 				
-				int length = Utils.lengthForDeserializingLength(ctx, this, _src);
+				int length = Utils.lengthForDeserializingListLength(ctx, this, _src);
+				if(length<0) {
+					length = Utils.lengthForDeserializingLength(ctx, this, _src);
+				}
 				if(length<0) {
 					try {
 						length = StreamUtils.readIntegerOfType(_src, ctx.lengthType, ctx.bigEndian);
