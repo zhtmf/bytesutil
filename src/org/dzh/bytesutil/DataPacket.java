@@ -101,7 +101,6 @@ public class DataPacket {
 		
 		//lazy initialization
 		ClassInfo ci = getClassInfo();
-		int packetLength = -1;
 		
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			//this field is an entity
@@ -182,16 +181,6 @@ public class DataPacket {
 							String.format("class [%s] is not supported", fi.fieldClass));
 				}else {
 					try {
-						Object value = null;
-						if(fi.needPacketLength) {
-							if(packetLength<0) {
-								packetLength = length();
-							}
-							value = packetLength;
-							fi.set(this, value);
-						}else {
-							value = fi.get(this);
-						}
 						cv.serialize(fi.get(this), fi.type, dest, ci.contextOfField(fi.name),this);
 					} catch (UnsupportedOperationException e) {
 						throw new ConversionException(
