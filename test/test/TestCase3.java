@@ -11,6 +11,7 @@ import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
+import org.dzh.bytesutil.annotations.modifiers.PacketLength;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.BYTE;
@@ -38,7 +39,8 @@ public class TestCase3{
 	@Signed
 	@BigEndian
 	public static final class SubEntity extends DataPacket{
-		@Order(0)
+		
+		@Order(-1)
 		@BYTE
 		public int b1;
 		
@@ -81,9 +83,13 @@ public class TestCase3{
 	@Signed
 	@BigEndian
 	public static final class Entity2 extends DataPacket{
-		@Order(0)
+		@Order(-1)
 		@BYTE
 		public int b1;
+		@Order(0)
+		@BYTE
+		@PacketLength
+		public int totalLength;
 		@Order(1)
 		@SHORT
 		public int b2;
@@ -188,6 +194,7 @@ public class TestCase3{
 		entity.serialize(baos);
 		byte[] arr = baos.toByteArray();
 		Assert.assertEquals(arr.length, entity.length());
+		Assert.assertEquals(arr.length, entity.totalLength);
 	}
 	
 	public static void main(String[] args) throws ConversionException {

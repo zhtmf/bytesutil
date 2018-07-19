@@ -18,6 +18,7 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
+import org.dzh.bytesutil.annotations.modifiers.PacketLength;
 import org.dzh.bytesutil.annotations.modifiers.Variant;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
@@ -60,6 +61,7 @@ public class ClassInfo {
 		public final Class<?> listComponentClass;
 		public final boolean isEntityList;
 		public final Map<Class<? extends Annotation>,Annotation> annotations;
+		public final boolean needPacketLength;
 		FieldInfo(Field field, String name, Class<?> fieldClass, DataType type) {
 			this.field = field;
 			this.name = name;
@@ -84,6 +86,22 @@ public class ClassInfo {
 				_annotations.put(an.annotationType(), an);
 			}
 			this.annotations = Collections.unmodifiableMap(_annotations);
+			
+			if(getAnnotation(PacketLength.class)!=null) {
+				//only integral types can be assigned with packet length
+				switch(type) {
+				case BYTE:
+				case SHORT:
+				case INT:
+					break;
+				default:
+					throw new RuntimeException(
+						String.format("%s is not an integral type, thus cannot be marked with PacketLength", type));
+				}
+				needPacketLength = true;
+			}else {
+				needPacketLength = false;
+			}
 			
 			Variant cond = getAnnotation(Variant.class);
 			try {

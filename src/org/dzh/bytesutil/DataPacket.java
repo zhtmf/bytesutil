@@ -101,6 +101,7 @@ public class DataPacket {
 		
 		//lazy initialization
 		ClassInfo ci = getClassInfo();
+		int packetLength = -1;
 		
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			//this field is an entity
@@ -181,6 +182,16 @@ public class DataPacket {
 							String.format("class [%s] is not supported", fi.fieldClass));
 				}else {
 					try {
+						Object value = null;
+						if(fi.needPacketLength) {
+							if(packetLength<0) {
+								packetLength = length();
+							}
+							value = packetLength;
+							fi.set(this, value);
+						}else {
+							value = fi.get(this);
+						}
 						cv.serialize(fi.get(this), fi.type, dest, ci.contextOfField(fi.name),this);
 					} catch (UnsupportedOperationException e) {
 						throw new ConversionException(
@@ -331,6 +342,15 @@ public class DataPacket {
 		}
 	}
 	
+	/**
+	 * Calculate the length in bytes as if this entity has been serialized to an
+	 * output stream.
+	 * <p>
+	 * This is <b>NOT</b> a constant time operation, as the actual length should and
+	 * can only be calculated at runtime.
+	 * 
+	 * @return	length in bytes
+	 */
 	@SuppressWarnings("rawtypes")
 	public int length(){
 		ClassInfo ci = getClassInfo();
