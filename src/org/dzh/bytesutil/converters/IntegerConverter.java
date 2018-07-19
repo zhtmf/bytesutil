@@ -57,7 +57,7 @@ public class IntegerConverter implements Converter<Integer> {
 			if(val<0) {
 				throw new IllegalArgumentException("BCD cannot be negative");
 			}
-			StreamUtils.writeBCD(dest, val, ctx.localAnnotation(BCD.class).value());
+			StreamUtils.writeBCD(dest, val, ctx.localAnnotation(BCD.class).value()*2);
 			return;
 		default:
 			throw new UnsupportedOperationException();

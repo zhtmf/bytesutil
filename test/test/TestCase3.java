@@ -1,0 +1,182 @@
+package test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+
+import org.dzh.bytesutil.ConversionException;
+import org.dzh.bytesutil.DataPacket;
+import org.dzh.bytesutil.annotations.modifiers.BigEndian;
+import org.dzh.bytesutil.annotations.modifiers.Length;
+import org.dzh.bytesutil.annotations.modifiers.Order;
+import org.dzh.bytesutil.annotations.modifiers.Signed;
+import org.dzh.bytesutil.annotations.types.BCD;
+import org.dzh.bytesutil.annotations.types.BYTE;
+import org.dzh.bytesutil.annotations.types.CHAR;
+import org.dzh.bytesutil.annotations.types.INT;
+import org.dzh.bytesutil.annotations.types.RAW;
+import org.dzh.bytesutil.annotations.types.SHORT;
+import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
+public class TestCase3{
+	
+	private Entity2 entity = new Entity2();
+	
+	@Signed
+	@BigEndian
+	public static final class SubSubEntity extends DataPacket{
+		@Order(0)
+		@INT
+		public int b1;
+	}
+	
+	@Signed
+	@BigEndian
+	public static final class SubEntity extends DataPacket{
+		@Order(0)
+		@BYTE
+		public int b1;
+		
+		@Order(1)
+		@BYTE
+		@Length(2)
+		public List<Integer> byteList;
+		
+		@Order(2)
+		@SHORT
+		@Length(2)
+		public List<Integer> shortList;
+		
+		@Order(3)
+		@INT
+		@Length(2)
+		public List<Integer> intList;
+		
+		@Order(4)
+		@BCD(3)
+		@Length(2)
+		public List<Integer> bcdList;
+		
+		@Order(5)
+		@CHAR(5)
+		@Length(2)
+		public List<String> strList;
+		
+		@Order(6)
+		@CHAR
+		@Length(handler = Handler2.class) //TODO: Length同时作为char的长度和list的长度了!
+		public List<String> strList2;
+		
+		@Order(7)
+		@Length(handler = Handler2.class)
+		public List<SubSubEntity> entityList;
+	}
+	
+	@Signed
+	@BigEndian
+	public static final class Entity2 extends DataPacket{
+		@Order(0)
+		@BYTE
+		public int b1;
+		@Order(1)
+		@SHORT
+		public int b2;
+		@Order(2)
+		@INT
+		public int b3;
+		@Order(3)
+		@BCD(4)
+		public int b4;
+		@Order(4)
+		@CHAR(5)
+		public String chars;
+		@Order(5)
+		@CHAR
+		@Length(handler = Handler.class)
+		public String chars2;
+		@Order(6)
+		@RAW(3)
+		public byte[] raw1;
+		@Order(7)
+		@RAW
+		@Length(handler = Handler.class)
+		public byte[] raw2;
+		@Order(8)
+		public SubEntity entity;
+	}
+	
+	public static final class Handler extends ModifierHandler<Integer>{
+
+		@Override
+		public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
+			Entity2 ent = (Entity2)entity;
+			return ent.b1;
+		}
+
+		@Override
+		public Integer handleSerialize0(String fieldName, Object entity) {
+			Entity2 ent = (Entity2)entity;
+			return ent.b1;
+		}
+		
+	}
+	
+	public static final class Handler2 extends ModifierHandler<Integer>{
+
+		@Override
+		public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
+			SubEntity ent = (SubEntity)entity;
+			return ent.b1;
+		}
+
+		@Override
+		public Integer handleSerialize0(String fieldName, Object entity) {
+			SubEntity ent = (SubEntity)entity;
+			return ent.b1;
+		}
+		
+	}
+	
+	@Before
+	public void setValues() {
+		entity.b1 = 1;
+		entity.b2 = 2;
+		entity.b3 = 3;
+		entity.b4 = 4200;
+		entity.chars = "abcde";
+		entity.chars2 = "F";
+		entity.raw1 = new byte[] {1,2,3};
+		entity.raw2 = new byte[] {0};
+		SubEntity sub = new SubEntity();
+		sub.b1 = 1;
+		sub.byteList = Arrays.asList(1,2);
+		sub.shortList = Arrays.asList(11,22);
+		sub.intList = Arrays.asList(11,22);
+		sub.bcdList = Arrays.asList(320111,114110);
+		sub.strList = Arrays.asList("hahah","heheh");
+		sub.strList2 = Arrays.asList("a");
+		SubSubEntity subsub = new SubSubEntity();
+		subsub.b1 = 120;
+		sub.entityList = Arrays.asList(subsub);
+		entity.entity = sub;
+	}
+	
+	
+	@Test
+	public void testLength() throws ConversionException {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		entity.serialize(baos);
+		byte[] arr = baos.toByteArray();
+		Assert.assertEquals(arr.length, entity.length());
+	}
+	
+	public static void main(String[] args) throws ConversionException {
+		TestCase3 tc3 = new TestCase3();
+		tc3.setValues();
+		tc3.testLength();
+	}
+}

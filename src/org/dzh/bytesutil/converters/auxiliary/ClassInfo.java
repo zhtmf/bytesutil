@@ -222,6 +222,9 @@ public class ClassInfo {
 	public List<FieldInfo> fieldInfoList() {
 		return new ArrayList<>(fieldInfoByField.values());
 	}
+	public FieldInfo fieldInfoByName(String name) {
+		return fieldInfoByField.get(name);
+	}
 	
 	public Context contextOfField(String name) {
 		return contextsByField.get(name);

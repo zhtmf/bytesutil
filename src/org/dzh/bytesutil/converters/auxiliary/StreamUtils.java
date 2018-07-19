@@ -34,7 +34,7 @@ public class StreamUtils {
 	}
 	public static void writeBCD(OutputStream os, int[] value) throws IOException {
 		if(value.length %2 !=0) {
-			throw new IOException("illegal value array length for BCD:"+value.length);
+			throw new IOException("illegal value array length for BCD:"+value.length+", as value array length is "+value.length);
 		}
 		byte tmp = 0;
 		for(int i=0;i<value.length;i+=2) {
@@ -52,7 +52,7 @@ public class StreamUtils {
 			num /= 10;
 		}
 		if(num>0) {
-			throw new IOException("BCD digits "+digits+"not equal to that of decimal number:"+num);
+			throw new IOException("BCD digits "+digits+" not equal to that of decimal number:"+num);
 		}
 		writeBCD(os, values);
 	}

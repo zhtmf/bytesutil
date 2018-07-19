@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.annotations.modifiers.Order;
+import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.ByteArrayConverter;
 import org.dzh.bytesutil.converters.ByteConverter;
 import org.dzh.bytesutil.converters.CharConverter;
@@ -320,6 +321,52 @@ public class DataPacket {
 			
 			fi.set(this, value);
 		}
+	}
+	
+	@SuppressWarnings("rawtypes")
+	public int length(){
+		ClassInfo ci = getClassInfo();
+		int ret = 0;
+		for(FieldInfo fi:ci.fieldInfoList()) {
+			int length = fi.listComponentClass!=null ? ((List)fi.get(this)).size() : 1;
+			if(length==0) {
+				continue;
+			}
+			if(fi.type==null) {
+				if(DataPacket.class.isAssignableFrom(fi.fieldClass)) {
+					assert length==1;
+					ret += ((DataPacket)fi.get(this)).length() * length;
+				}else {
+					assert DataPacket.class.isAssignableFrom(fi.listComponentClass);
+					List lst = ((List)fi.get(this));
+					for(int i=0;i<lst.size();++i) {
+						ret += ((DataPacket)lst.get(i)).length();
+					}
+				}
+			}else {
+				switch(fi.type) {
+				case BCD:
+					ret += ((BCD)fi.annotations.get(BCD.class)).value() * length;
+					break;
+				case BYTE:
+					ret += 1 * length;
+					break;
+				case SHORT:
+					ret += 2 * length;
+					break;
+				case INT:
+					ret += 4 * length;
+					break;
+				case CHAR:
+					ret += Utils.lengthForSerializingCHAR(ci.contextOfField(fi.name), this) * length;
+					break;
+				case RAW:
+					ret += Utils.lengthForSerializingRAW(ci.contextOfField(fi.name), this) * length;
+					break;
+				}
+			}
+		}
+		return ret;
 	}
 	
 	//lazy initialization

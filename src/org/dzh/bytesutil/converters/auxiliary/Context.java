@@ -36,6 +36,11 @@ public class Context {
 	public final Class<?> enclosingEntityClass;
 	
 	/**
+	 * Class of this field
+	 */
+	public final Class<?> fieldClass;
+	
+	/**
 	 * Field name
 	 */
 	public final String name;
@@ -97,6 +102,7 @@ public class Context {
 		this.base = base;
 		this.name = name;
 		this.enclosingEntityClass = base.entityClass;
+		this.fieldClass = base.fieldInfoByName(name).fieldClass;
 		{
 			Annotation ret = mutualExclusive(BigEndian.class,LittleEndian.class);
 			this.littleEndian = ret!=null && ret instanceof LittleEndian;
@@ -164,7 +170,7 @@ public class Context {
 					} catch (InstantiationException | IllegalAccessException e) {
 						throw new RuntimeException(
 								String.format("ModifierHandler class [%s] cannot be initialized by no-arg contructor"
-										, len.handler()));
+										, len.handler()),e);
 					}
 				}else {
 					this.lengthHandler = null;
