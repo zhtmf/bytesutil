@@ -122,6 +122,7 @@ public class DataPacket {
 			}else if(fi.listComponentClass!=null) {
 				Context ctx = ci.contextOfField(fi.name);
 				List<Object> value = (List<Object>) fi.get(this);
+				value = value == null ? Collections.emptyList() : value;
 				/*
 				 * validity check is done in ClassInfo
 				 */
@@ -345,19 +346,30 @@ public class DataPacket {
 		ClassInfo ci = getClassInfo();
 		int ret = 0;
 		for(FieldInfo fi:ci.fieldInfoList()) {
-			int length = fi.listComponentClass!=null ? ((List)fi.get(this)).size() : 1;
+			int length = 0;
+			if(fi.listComponentClass!=null) {
+				List lst = (List)fi.get(this);
+				if(lst!=null) {
+					length = lst.size();
+				}
+			}else {
+				length = 1;
+			}
 			if(length==0) {
 				continue;
 			}
 			if(fi.type==null) {
 				if(DataPacket.class.isAssignableFrom(fi.fieldClass)) {
-					assert length==1;
-					ret += ((DataPacket)fi.get(this)).length() * length;
+					DataPacket dp = (DataPacket)fi.get(this);
+					if(dp!=null) {
+						ret += dp.length() * length;
+					}
 				}else {
-					assert DataPacket.class.isAssignableFrom(fi.listComponentClass);
 					List lst = ((List)fi.get(this));
-					for(int i=0;i<lst.size();++i) {
-						ret += ((DataPacket)lst.get(i)).length();
+					if(lst!=null) {
+						for(int i=0;i<lst.size();++i) {
+							ret += ((DataPacket)lst.get(i)).length();
+						}
 					}
 				}
 			}else {
@@ -380,6 +392,8 @@ public class DataPacket {
 				case RAW:
 					ret += Utils.lengthForSerializingRAW(ci.contextOfField(fi.name), this) * length;
 					break;
+				default:
+					throw new UnsupportedOperationException();
 				}
 			}
 		}
