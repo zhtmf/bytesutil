@@ -11,15 +11,14 @@ import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 public class DateConverter implements Converter<Date>{
 	
 	@Override
-	public void serialize(Date value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(Date value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, UnsupportedOperationException {
 		if(value==null) {
 			throw new IllegalArgumentException("java.util.Date value should not be null");
@@ -31,7 +30,7 @@ public class DateConverter implements Converter<Date>{
 		String str = getThreadLocalObject(datePattern).format(value);
 		byte[] bytes = str.getBytes(StandardCharsets.ISO_8859_1);
 		
-		switch(target) {
+		switch(ctx.type) {
 		case BCD:
 			if(ctx.annotation(BCD.class).value()!=str.length()/2) {
 				throw new IllegalArgumentException(String.format(
@@ -71,14 +70,14 @@ public class DateConverter implements Converter<Date>{
 	}
 
 	@Override
-	public Date deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public Date deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException, UnsupportedOperationException {
 		String datePattern = ctx.datePattern;
 		if(datePattern==null) {
 			throw new IllegalArgumentException("define a date pattern");
 		}
 		try {
-			switch(src) {
+			switch(ctx.type) {
 			case BCD:
 					return getThreadLocalObject(datePattern)
 							.parse(StreamUtils.readStringBCD(

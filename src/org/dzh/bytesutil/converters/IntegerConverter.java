@@ -5,17 +5,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 
 public class IntegerConverter implements Converter<Integer> {
 
 	@Override
-	public void serialize(Integer value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(Integer value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		int val = value==null ? 0 : (int)value;
-		switch(target) {
+		switch(ctx.type) {
 		case BYTE:{
 			boolean unsigned = ctx.unsigned;
 			int min = unsigned ? 0 : Byte.MIN_VALUE;
@@ -65,9 +64,9 @@ public class IntegerConverter implements Converter<Integer> {
 	}
 
 	@Override
-	public Integer deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public Integer deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
-		switch(src) {
+		switch(ctx.type) {
 		case BYTE:{
 			int value = StreamUtils.readBYTE(is);
 			if(ctx.signed) {

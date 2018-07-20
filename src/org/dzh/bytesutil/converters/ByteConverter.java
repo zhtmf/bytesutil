@@ -5,8 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 
 /**
@@ -18,10 +17,10 @@ import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 public class ByteConverter implements Converter<Byte> {
 
 	@Override
-	public void serialize(Byte value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		byte val = value==null ? 0 : (byte)value;
-		switch(target) {
+		switch(ctx.type) {
 		case BYTE:
 			if(ctx.unsigned && val<0) {
 				throw new IllegalArgumentException(
@@ -41,9 +40,9 @@ public class ByteConverter implements Converter<Byte> {
 	}
 
 	@Override
-	public Byte deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public Byte deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
-		switch(src) {
+		switch(ctx.type) {
 		case BYTE:{
 			int val = StreamUtils.readBYTE(is);
 			if(ctx.unsigned && val>Byte.MAX_VALUE) {

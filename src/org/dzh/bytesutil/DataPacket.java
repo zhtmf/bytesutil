@@ -24,8 +24,7 @@ import org.dzh.bytesutil.converters.LongConverter;
 import org.dzh.bytesutil.converters.ShortConverter;
 import org.dzh.bytesutil.converters.StringConverter;
 import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
-import org.dzh.bytesutil.converters.auxiliary.ClassInfo.FieldInfo;
-import org.dzh.bytesutil.converters.auxiliary.Context;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -120,20 +119,19 @@ public class DataPacket {
 				((DataPacket)obj).serialize(dest);
 			//this field is a list
 			}else if(fi.listComponentClass!=null) {
-				Context ctx = ci.contextOfField(fi.name);
 				List<Object> value = (List<Object>) fi.get(this);
 				value = value == null ? Collections.emptyList() : value;
 				/*
 				 * validity check is done in ClassInfo
 				 */
-				int length = Utils.lengthForSerializingListLength(ctx, this);
+				int length = Utils.lengthForSerializingListLength(fi, this);
 				if(length<0) {
-					length = Utils.lengthForSerializingLength(ctx, this);
+					length = Utils.lengthForSerializingLength(fi, this);
 				}
 				if(length<0) {
 					try {
 						length = value.size();
-						StreamUtils.writeIntegerOfType(dest, ctx.lengthType, value.size(), ctx.bigEndian);
+						StreamUtils.writeIntegerOfType(dest, fi.lengthType, value.size(), fi.bigEndian);
 					} catch (IOException e) {
 						throw new ConversionException(this.getClass(),fi.name,e);
 					}
@@ -153,7 +151,7 @@ public class DataPacket {
 					//class of list elements is pre-defined data types
 					for(int i=0;i<length;++i) {
 						try {
-							cv.serialize(value.get(i), fi.type, dest, ctx, this);
+							cv.serialize(value.get(i), dest, fi, this);
 						} catch (UnsupportedOperationException e) {
 							throw new ConversionException(
 									this.getClass(),fi.name,
@@ -182,7 +180,7 @@ public class DataPacket {
 							String.format("class [%s] is not supported", fi.fieldClass));
 				}else {
 					try {
-						cv.serialize(fi.get(this), fi.type, dest, ci.contextOfField(fi.name),this);
+						cv.serialize(fi.get(this), dest, fi,this);
 					} catch (UnsupportedOperationException e) {
 						throw new ConversionException(
 								this.getClass(),fi.name,
@@ -255,15 +253,14 @@ public class DataPacket {
 				value = object;
 			//this field is defined as a list
 			}else if(fi.listComponentClass!=null) {
-				Context ctx = ci.contextOfField(fi.name);
 				
-				int length = Utils.lengthForDeserializingListLength(ctx, this, _src);
+				int length = Utils.lengthForDeserializingListLength(fi, this, _src);
 				if(length<0) {
-					length = Utils.lengthForDeserializingLength(ctx, this, _src);
+					length = Utils.lengthForDeserializingLength(fi, this, _src);
 				}
 				if(length<0) {
 					try {
-						length = StreamUtils.readIntegerOfType(_src, ctx.lengthType, ctx.bigEndian);
+						length = StreamUtils.readIntegerOfType(_src, fi.lengthType, fi.bigEndian);
 					} catch (IOException e) {
 						throw new ConversionException(this.getClass(),fi.name,e);
 					}
@@ -275,7 +272,7 @@ public class DataPacket {
 					List<Object> tmp = new ArrayList<>(length);
 					while(length-->0) {
 						try {
-							tmp.add(cv.deserialize(fi.type, _src, ctx, this));
+							tmp.add(cv.deserialize(_src, fi, this));
 						} catch (UnsupportedOperationException e) {
 							throw new ConversionException(
 									this.getClass(),fi.name,
@@ -317,7 +314,7 @@ public class DataPacket {
 					throw new RuntimeException(fi.fieldClass+" not supported");
 				}else {
 					try {
-						value = cv.deserialize(fi.type, _src, ci.contextOfField(fi.name),this);
+						value = cv.deserialize(_src, fi,this);
 					} catch (UnsupportedOperationException e) {
 						throw new ConversionException(
 								this.getClass(),fi.name,
@@ -373,7 +370,7 @@ public class DataPacket {
 			}
 			switch(fi.type) {
 			case BCD:
-				ret += ((BCD)fi.annotations.get(BCD.class)).value() * length;
+				ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
 				break;
 			case BYTE:
 				ret += 1 * length;
@@ -385,10 +382,12 @@ public class DataPacket {
 				ret += 4 * length;
 				break;
 			case CHAR:
-				ret += Utils.lengthForSerializingCHAR(ci.contextOfField(fi.name), this)/* x1 */;
+				//length of individual CHAR * size of (maybe) list
+				ret += Utils.lengthForSerializingCHAR(fi, this) * length;
 				break;
 			case RAW:
-				ret += Utils.lengthForSerializingRAW(ci.contextOfField(fi.name), this)/* x1 */;
+				//length of individual byte array * size of (maybe) list
+				ret += Utils.lengthForSerializingRAW(fi, this) * length;
 				break;
 			default:
 				throw new UnsupportedOperationException();

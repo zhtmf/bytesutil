@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -18,10 +17,10 @@ import org.dzh.bytesutil.converters.auxiliary.Utils;
 public class IntArrayConverter implements Converter<int[]>{
 	
 	@Override
-	public void serialize(int[] value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(int[] value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		value = value == null ? new int[0] : value;
-		switch(target) {
+		switch(ctx.type) {
 		case RAW:
 			int length = Utils.lengthForSerializingRAW(ctx, self);
 			if(length<0) {
@@ -43,9 +42,9 @@ public class IntArrayConverter implements Converter<int[]>{
 	}
 
 	@Override
-	public int[] deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public int[] deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
-		switch(src) {
+		switch(ctx.type) {
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(ctx, self, (BufferedInputStream) is);
 			if(length<0) {

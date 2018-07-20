@@ -1,6 +1,6 @@
 package org.dzh.bytesutil;
 
-import org.dzh.bytesutil.converters.auxiliary.Context;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 
 /**
  * Generic Exception class for <tt>runtime</tt> error produced by this library.<br/>
@@ -11,15 +11,15 @@ public class ConversionException extends Exception {
 	private String entityClassName;
 	private String fieldName;
 	
-	public ConversionException(Context ctx, String msg) {
+	public ConversionException(FieldInfo ctx, String msg) {
 		this(ctx.enclosingEntityClass, ctx.name, msg);
 	}
 	
-	public ConversionException(Context ctx, Throwable cause) {
+	public ConversionException(FieldInfo ctx, Throwable cause) {
 		this(ctx.enclosingEntityClass, ctx.name, cause);
 	}
 	
-	public ConversionException(Context ctx, String msg, Throwable cause) {
+	public ConversionException(FieldInfo ctx, String msg, Throwable cause) {
 		this(ctx.enclosingEntityClass, ctx.name, msg, cause);
 	}
 	

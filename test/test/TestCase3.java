@@ -195,7 +195,8 @@ public class TestCase3{
 		entity.totalLength = entity.length();
 		entity.serialize(baos);
 		byte[] arr = baos.toByteArray();
-		Assert.assertEquals(arr.length, entity.length());
+		Assert.assertEquals(arr.length, entity.totalLength);
+		
 		Entity2 e2 = new Entity2();
 		e2.deserialize(new ByteArrayInputStream(arr));
 		Assert.assertTrue(Utils.equals(entity, e2));

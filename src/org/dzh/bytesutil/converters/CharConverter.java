@@ -6,15 +6,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 public class CharConverter implements Converter<Character> {
 
 	@Override
-	public void serialize(Character value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(Character value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		value = value == null ? 0 : value;
 		Charset cs = ctx.charset;
@@ -22,7 +21,7 @@ public class CharConverter implements Converter<Character> {
 			cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name, self);
 		}
 		byte[] bytes = value.toString().getBytes(cs);
-		switch(target) {
+		switch(ctx.type) {
 		case CHAR:{
 			
 			int length = Utils.lengthForSerializingCHAR(ctx, self);
@@ -46,13 +45,13 @@ public class CharConverter implements Converter<Character> {
 	}
 
 	@Override
-	public Character deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public Character deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		Charset cs = ctx.charset;
 		if(cs==null) {
 			cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name, self);
 		}
-		switch(src) {
+		switch(ctx.type) {
 		case CHAR:{
 			
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);

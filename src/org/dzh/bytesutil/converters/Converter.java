@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 
 public interface Converter<T> {
-	void serialize(T value, DataType target, OutputStream dest
-			, Context ctx, Object self) 
+	void serialize(T value, OutputStream dest
+			, FieldInfo fi, Object self) 
 			throws IOException,UnsupportedOperationException;
-	T deserialize(DataType src
-			, InputStream is, Context ctx, Object self)
+	T deserialize(InputStream is, FieldInfo fi, Object self)
 			throws IOException,UnsupportedOperationException;
 }

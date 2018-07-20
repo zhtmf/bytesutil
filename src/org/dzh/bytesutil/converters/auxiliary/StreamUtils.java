@@ -163,12 +163,12 @@ public class StreamUtils {
 		case INT:
 			long _length = StreamUtils.readInt(src, bigEndian);
 			if(_length>Integer.MAX_VALUE) {
-				throw new IllegalArgumentException("unsigned int value encountered");
+				throw new IOException("unsigned int value encountered");
 			}
 			length = (int)_length;
 			break;
 		default:
-			throw new IllegalArgumentException("data type "+type+" unsupported for length type");
+			throw new IOException("data type "+type+" unsupported for length type");
 		}
 		return length;
 	}

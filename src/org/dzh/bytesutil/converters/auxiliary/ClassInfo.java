@@ -18,7 +18,6 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
 
@@ -35,102 +34,12 @@ public class ClassInfo {
 	 */
 	private Map<Class<? extends Annotation>, Annotation> globalAnnotations = new HashMap<>();
 	/**
-	 * {@link Context} objects that will be passed to client code
-	 */
-	private Map<String,Context> contextsByField = new HashMap<>();
-	/**
 	 * {@link FieldInfo} objects that are used internally, in the order specified by
 	 * {@link Order} annotation.
 	 */
 	private Map<String,FieldInfo> fieldInfoByField = new LinkedHashMap<>();
 	
-	Class<?> entityClass;
-	/**
-	 * Internal class that stores compile-time information of a {@link Field}
-	 * 
-	 * @author dzh
-	 */
-	public static final class FieldInfo{
-		private Field field;
-		public final String name;
-		public final Class<?> fieldClass;
-		public final DataType type;
-		public final ModifierHandler<DataPacket> variantEntityHandler;
-		public final boolean isEntity;
-		public final Class<?> listComponentClass;
-		public final boolean isEntityList;
-		public final Map<Class<? extends Annotation>,Annotation> annotations;
-		FieldInfo(Field field, String name, Class<?> fieldClass, DataType type) {
-			this.field = field;
-			this.name = name;
-			this.fieldClass = fieldClass;
-			this.type = type;
-			this.isEntity = DataPacket.class.isAssignableFrom(fieldClass);
-			if(List.class.isAssignableFrom(fieldClass)) {
-				Class<?> componentClass = firstTypeParameterClass(field);
-				if(componentClass==null) {
-					throw new RuntimeException(
-						String.format("field [%s] should declare type parameter if it is a List", name));
-				}
-				this.listComponentClass = componentClass;
-				this.isEntityList = DataPacket.class.isAssignableFrom(listComponentClass);
-			}else {
-				this.listComponentClass = null;
-				this.isEntityList = false;
-			}
-			
-			Map<Class<? extends Annotation>,Annotation> _annotations = new HashMap<>();
-			for(Annotation an:field.getAnnotations()) {
-				_annotations.put(an.annotationType(), an);
-			}
-			this.annotations = Collections.unmodifiableMap(_annotations);
-			
-			Variant cond = getAnnotation(Variant.class);
-			try {
-				this.variantEntityHandler = cond != null ? cond.value().newInstance() : null;
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw new RuntimeException(
-						String.format("VariantEntityHandler class [%s] cannot be initialized by no-arg contructor"
-								, cond.value()));
-			}
-		}
-		/**
-		 * Wrapper of {@link Field#get(Object)}
-		 * @param self this object
-		 * @return
-		 */
-		public Object get(Object self) {
-			try {
-				return field.get(self);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				throw new RuntimeException(
-						String.format("cannot obtain value of field [%s] by reflection"
-								,field.getName()),e);
-			}
-		}
-		/**
-		 * Wrapper of {@link Field#set(Object, Object)}
-		 * @param self
-		 * @param val
-		 */
-		public void set(Object self, Object val) {
-			try {
-				field.set(self, val);
-			} catch (IllegalArgumentException | IllegalAccessException e) {
-				throw new RuntimeException(
-						String.format("cannot set value of field [%s] by reflection"
-								,field.getName()),e);
-			}
-		}
-		@SuppressWarnings("unchecked")
-		public <T extends Annotation> T getAnnotation(Class<T> annoCls) {
-			return (T) annotations.get(annoCls);
-		}
-	}
-	
 	public ClassInfo(Class<?> cls) {
-		
-		this.entityClass = cls;
 		
 		for(Annotation an:cls.getAnnotations()) {
 			globalAnnotations.put(an.annotationType(), an);
@@ -205,26 +114,24 @@ public class ClassInfo {
 					throw new IllegalArgumentException(String.format("field [%s] is not marked with a DataType", name));
 				}
 			}
-			FieldInfo fi = new FieldInfo(f, name, f.getType(), type);
+			FieldInfo fi = new FieldInfo(f,type,this);
 			fieldInfoByField.put(name, fi);
 			
 			if(fi.listComponentClass!=null) {
-				if(annotationOfField(name, Length.class)==null
-				&& annotationOfField(name, ListLength.class)==null) {
+				if(fi.localAnnotation(Length.class)==null
+				&& fi.localAnnotation(ListLength.class)==null) {
 					throw new IllegalArgumentException(String.format(
 							"field [%s] is a list but Length or ListLength annotation are not present on it", name));
 				}
-				if(((fi.type == DataType.RAW && annotationOfField(name, RAW.class).value()<0)
-				|| (fi.type == DataType.CHAR && annotationOfField(name, CHAR.class).value()<0))
-				&& annotationOfField(name, ListLength.class)==null) {
+				if(((fi.type == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
+				|| (fi.type == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
+				&& fi.localAnnotation(ListLength.class)==null) {
 					throw new IllegalArgumentException(String.format(
 							"field [%s] is a list of Data Type that supports dynamic length, "
 							+ "but a ListLength annotation is not present on it, to avoid ambiguity, use ListLength but not "
 							+ "Length annotation to specify the length ", name));
 				}
 			}
-			
-			contextsByField.put(name, new Context(this,name));
 		}
 	}
 	
@@ -235,24 +142,14 @@ public class ClassInfo {
 	public List<FieldInfo> fieldInfoList() {
 		return new ArrayList<>(fieldInfoByField.values());
 	}
-	public FieldInfo fieldInfoByName(String name) {
-		return fieldInfoByField.get(name);
-	}
-	
-	public Context contextOfField(String name) {
-		return contextsByField.get(name);
-	}
 	
 	@SuppressWarnings("unchecked")
 	<T extends Annotation> T globalAnnotation(Class<T> annoCls) {
 		return (T) globalAnnotations.get(annoCls);
 	}
-	<T extends Annotation> T annotationOfField(String name,Class<T> annoCls) {
-		return (T) fieldInfoByField.get(name).getAnnotation(annoCls);
-	}
 	
 	//return null for non-generic field definitions
-	private static Class<?> firstTypeParameterClass(Field field){
+	static Class<?> firstTypeParameterClass(Field field){
 		Type type = field.getGenericType();
 		if( ! (type instanceof ParameterizedType)) {
 			return null;

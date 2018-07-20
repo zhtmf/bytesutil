@@ -4,17 +4,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 
 public class LongConverter implements Converter<Long> {
 
 	@Override
-	public void serialize(Long value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(Long value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		long val = value==null ? 0 : value;
-		switch(target) {
+		switch(ctx.type) {
 		case BYTE:{
 			boolean unsigned = ctx.unsigned;
 			int min = unsigned ? 0 : Byte.MIN_VALUE;
@@ -57,9 +56,9 @@ public class LongConverter implements Converter<Long> {
 	}
 
 	@Override
-	public Long deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public Long deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
-		switch(src) {
+		switch(ctx.type) {
 		case BYTE:{
 			int value = StreamUtils.readBYTE(is);
 			if(ctx.signed) {

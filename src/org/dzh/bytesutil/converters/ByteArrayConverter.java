@@ -5,8 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -18,22 +17,22 @@ import org.dzh.bytesutil.converters.auxiliary.Utils;
 public class ByteArrayConverter implements Converter<byte[]>{
 	
 	@Override
-	public void serialize(byte[] value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(byte[] value, OutputStream dest, FieldInfo fi, Object self)
 			throws IOException,UnsupportedOperationException {
 		value = value == null ? new byte[0] : value;
-		switch(target) {
+		switch(fi.type) {
 		case RAW:
-			int length = Utils.lengthForSerializingRAW(ctx, self);
+			int length = Utils.lengthForSerializingRAW(fi, self);
 			if(length<0) {
 				//due to the pre-check in Context class, Length must be present at this point
 				length = value.length;
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				StreamUtils.writeIntegerOfType(dest, fi.lengthType, length, fi.bigEndian);
 				
 			}else if(length!=value.length) {
 				throw new RuntimeException(
 						String.format("field [%s] is defined as a byte array,"
 								+ " but the defined length [%d] is not the same as length [%d] of the list"
-								, ctx.name,length,value.length));
+								, fi.name,length,value.length));
 			}
 			StreamUtils.writeBytes(dest, value);
 			break;
@@ -43,9 +42,9 @@ public class ByteArrayConverter implements Converter<byte[]>{
 	}
 
 	@Override
-	public byte[] deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public byte[] deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
-		switch(src) {
+		switch(ctx.type) {
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(ctx, self, (BufferedInputStream) is);
 			if(length<0) {

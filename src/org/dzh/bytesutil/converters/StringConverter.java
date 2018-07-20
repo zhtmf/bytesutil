@@ -7,18 +7,17 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 public class StringConverter implements Converter<String> {
 
 	@Override
-	public void serialize(String value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(String value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, UnsupportedOperationException {
 		value = value == null ? "" : value;
-		switch(target) {
+		switch(ctx.type) {
 		case CHAR:{
 			
 			Charset cs = ctx.charset;
@@ -64,9 +63,9 @@ public class StringConverter implements Converter<String> {
 	}
 
 	@Override
-	public String deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public String deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException, UnsupportedOperationException {
-		switch(src) {
+		switch(ctx.type) {
 		case CHAR:{
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
 			if(length<0) {

@@ -5,17 +5,16 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.converters.auxiliary.Context;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 
 public class ShortConverter implements Converter<Short> {
 
 	@Override
-	public void serialize(Short value, DataType target, OutputStream dest, Context ctx, Object self)
+	public void serialize(Short value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		short val = value==null ? 0 : (short)value;
-		switch(target) {
+		switch(ctx.type) {
 		case BYTE:{
 			boolean unsigned = ctx.unsigned;
 			short min = unsigned ? 0 : Byte.MIN_VALUE;
@@ -53,9 +52,9 @@ public class ShortConverter implements Converter<Short> {
 	}
 
 	@Override
-	public Short deserialize(DataType src, InputStream is, Context ctx, Object self)
+	public Short deserialize(InputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
-		switch(src) {
+		switch(ctx.type) {
 		case BYTE:{
 			int value = StreamUtils.readBYTE(is);
 			return (short)value;

@@ -1,8 +1,14 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
@@ -11,40 +17,33 @@ import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
+import org.dzh.bytesutil.annotations.modifiers.Variant;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.converters.auxiliary.ClassInfo.FieldInfo;
 
 /**
- * Information of a specific Field, it is named <code>Context</code> in the
- * sense that it provides clues for conversion between Java types and binary
- * data types.
- * <p>
- * Unlike the internal class {@link FieldInfo}, it provides information from
- * annotations under <tt>annotations.modifiers</tt> package and is used by both
- * internal and custom converters.
+ * Internal class that stores compile-time information of a {@link Field}
  * 
  * @author dzh
- *
  */
-public class Context {
+public final class FieldInfo{
+	private final Field field;
+	private final ClassInfo base;
+	private final Map<Class<? extends Annotation>,Annotation> annotations;
 	
-	private ClassInfo base;
+	public final String name;
+	public final Class<?> fieldClass;
+	public final DataType type;
+	public final boolean isEntity;
+	public final boolean isEntityList;
+	public final Class<?> listComponentClass;
+	
+	public final ModifierHandler<DataPacket> variantEntityHandler;
 	
 	/**
 	 * Entity class that declares this field
 	 */
 	public final Class<?> enclosingEntityClass;
-	
-	/**
-	 * Class of this field
-	 */
-	public final Class<?> fieldClass;
-	
-	/**
-	 * Field name
-	 */
-	public final String name;
 	/**
 	 * whether this field is defined as little-endian
 	 */
@@ -61,10 +60,6 @@ public class Context {
 	 * whether this field is defined as unsigned
 	 */
 	public final boolean unsigned;
-	/**
-	 * Whether there is a {@link Length} annotation present on this field
-	 */
-	public final boolean lengthDefined;
 	/**
 	 * Value of {@link Length} annotation.
 	 * <p>
@@ -102,11 +97,44 @@ public class Context {
 	 */
 	public final String datePattern;
 	
-	Context(ClassInfo base, String name) {
+	FieldInfo(Field field, DataType type, ClassInfo base) {
 		this.base = base;
-		this.name = name;
-		this.enclosingEntityClass = base.entityClass;
-		this.fieldClass = base.fieldInfoByName(name).fieldClass;
+		this.field = field;
+		this.name = field.getName();
+		this.fieldClass = field.getType();
+		this.type = type;
+		this.enclosingEntityClass = field.getDeclaringClass();
+		
+		this.isEntity = DataPacket.class.isAssignableFrom(fieldClass);
+		
+		if(List.class.isAssignableFrom(fieldClass)) {
+			Class<?> componentClass = ClassInfo.firstTypeParameterClass(field);
+			if(componentClass==null) {
+				throw new RuntimeException(
+					String.format("field [%s] should declare type parameter if it is a List", name));
+			}
+			this.listComponentClass = componentClass;
+			this.isEntityList = DataPacket.class.isAssignableFrom(listComponentClass);
+		}else {
+			this.listComponentClass = null;
+			this.isEntityList = false;
+		}
+		
+		Map<Class<? extends Annotation>,Annotation> _annotations = new HashMap<>();
+		for(Annotation an:field.getAnnotations()) {
+			_annotations.put(an.annotationType(), an);
+		}
+		this.annotations = Collections.unmodifiableMap(_annotations);
+		
+		Variant cond = localAnnotation(Variant.class);
+		try {
+			this.variantEntityHandler = cond != null ? cond.value().newInstance() : null;
+		} catch (InstantiationException | IllegalAccessException e) {
+			throw new RuntimeException(
+					String.format("VariantEntityHandler class [%s] cannot be initialized by no-arg contructor"
+							, cond.value()));
+		}
+		
 		{
 			Annotation ret = mutualExclusive(BigEndian.class,LittleEndian.class);
 			this.littleEndian = ret!=null && ret instanceof LittleEndian;
@@ -161,12 +189,10 @@ public class Context {
 									+ "and  a Length annotation is not present on it",name));
 				}
 				
-				lengthDefined = false;
 				length = -1;
 				lengthHandler = null;
 				lengthType = null;
 			}else {
-				lengthDefined = true;
 				this.length = len.value();
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
@@ -221,6 +247,34 @@ public class Context {
 			}
 		}
 	}
+	/**
+	 * Wrapper of {@link Field#get(Object)}
+	 * @param self this object
+	 * @return
+	 */
+	public Object get(Object self) {
+		try {
+			return field.get(self);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(
+					String.format("cannot obtain value of field [%s] by reflection"
+							,field.getName()),e);
+		}
+	}
+	/**
+	 * Wrapper of {@link Field#set(Object, Object)}
+	 * @param self
+	 * @param val
+	 */
+	public void set(Object self, Object val) {
+		try {
+			field.set(self, val);
+		} catch (IllegalArgumentException | IllegalAccessException e) {
+			throw new RuntimeException(
+					String.format("cannot set value of field [%s] by reflection"
+							,field.getName()),e);
+		}
+	}
 	
 	/**
 	 * Annotation of specific class for this field, if the same annotation is
@@ -244,8 +298,9 @@ public class Context {
 	 * @return returns null if it is not present on the field, even it is present on
 	 *         the class
 	 */
+	@SuppressWarnings("unchecked")
 	public <T extends Annotation> T localAnnotation(Class<T> annoCls) {
-		return (T) base.annotationOfField(name, annoCls);
+		return (T) annotations.get(annoCls);
 	}
 
 	/**
