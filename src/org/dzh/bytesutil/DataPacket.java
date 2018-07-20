@@ -346,11 +346,24 @@ public class DataPacket {
 		ClassInfo ci = getClassInfo();
 		int ret = 0;
 		for(FieldInfo fi:ci.fieldInfoList()) {
+			if(fi.isEntity) {
+				DataPacket dp = (DataPacket)fi.get(this);
+				if(dp!=null) {
+					ret += dp.length();
+				}
+				continue;
+			}
 			int length = 0;
 			if(fi.listComponentClass!=null) {
 				List lst = (List)fi.get(this);
 				if(lst!=null) {
 					length = lst.size();
+					if(fi.isEntityList) {
+						for(int i=0;i<length;++i) {
+							ret += ((DataPacket)lst.get(i)).length();
+						}
+						continue;
+					}
 				}
 			}else {
 				length = 1;
@@ -358,43 +371,27 @@ public class DataPacket {
 			if(length==0) {
 				continue;
 			}
-			if(fi.type==null) {
-				if(DataPacket.class.isAssignableFrom(fi.fieldClass)) {
-					DataPacket dp = (DataPacket)fi.get(this);
-					if(dp!=null) {
-						ret += dp.length() * length;
-					}
-				}else {
-					List lst = ((List)fi.get(this));
-					if(lst!=null) {
-						for(int i=0;i<lst.size();++i) {
-							ret += ((DataPacket)lst.get(i)).length();
-						}
-					}
-				}
-			}else {
-				switch(fi.type) {
-				case BCD:
-					ret += ((BCD)fi.annotations.get(BCD.class)).value() * length;
-					break;
-				case BYTE:
-					ret += 1 * length;
-					break;
-				case SHORT:
-					ret += 2 * length;
-					break;
-				case INT:
-					ret += 4 * length;
-					break;
-				case CHAR:
-					ret += Utils.lengthForSerializingCHAR(ci.contextOfField(fi.name), this) * length;
-					break;
-				case RAW:
-					ret += Utils.lengthForSerializingRAW(ci.contextOfField(fi.name), this) * length;
-					break;
-				default:
-					throw new UnsupportedOperationException();
-				}
+			switch(fi.type) {
+			case BCD:
+				ret += ((BCD)fi.annotations.get(BCD.class)).value() * length;
+				break;
+			case BYTE:
+				ret += 1 * length;
+				break;
+			case SHORT:
+				ret += 2 * length;
+				break;
+			case INT:
+				ret += 4 * length;
+				break;
+			case CHAR:
+				ret += Utils.lengthForSerializingCHAR(ci.contextOfField(fi.name), this)/* x1 */;
+				break;
+			case RAW:
+				ret += Utils.lengthForSerializingRAW(ci.contextOfField(fi.name), this)/* x1 */;
+				break;
+			default:
+				throw new UnsupportedOperationException();
 			}
 		}
 		return ret;
