@@ -16,8 +16,7 @@ import java.lang.annotation.Target;
  * <li><code>java.util.Date</code> (8 digits decimal in the form of
  * YYYYMMDD)</li>
  * <li><code>String</code> (numeric strings)</li>
- * <li><code>byte/Byte,short/Short,int/Integer</code>, if digits of the number is not even,
- * the leftmost bits remain zero</li>
+ * <li><code>byte/Byte,short/Short,int/Integer</code></li>
  * </ul>
  * @author dzh
  */

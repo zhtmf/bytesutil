@@ -7,6 +7,7 @@ import java.io.OutputStream;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 /**
  * Converter for a single byte
@@ -22,17 +23,12 @@ public class ByteConverter implements Converter<Byte> {
 		byte val = value==null ? 0 : (byte)value;
 		switch(ctx.type) {
 		case BYTE:
-			if(ctx.unsigned && val<0) {
-				throw new IllegalArgumentException(
-					String.format("value [%d] cannot be stored as unsigned value", val));
-			}
+			Utils.checkRange(val,Byte.class,ctx.unsigned);
 			StreamUtils.writeBYTE(dest, val);
 			return;
 		case BCD:
-			if(val<0) {
-				throw new IllegalArgumentException("BCD cannot be negative");
-			}
-			StreamUtils.writeBCD(dest, val, ctx.localAnnotation(BCD.class).value());
+			StreamUtils.writeBCD(
+					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
 			return;
 		default:
 			throw new UnsupportedOperationException();
@@ -44,20 +40,13 @@ public class ByteConverter implements Converter<Byte> {
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case BYTE:{
-			int val = StreamUtils.readBYTE(is);
-			if(ctx.unsigned && val>Byte.MAX_VALUE) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in Java byte", val));
-			}
-			return (byte)val;
+			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
+			Utils.checkRange(value,Byte.class,false);
+			return (byte)value;
 		}
 		case BCD:{
-			int digits = ctx.localAnnotation(BCD.class).value();
-			long val = StreamUtils.readIntegerBCD(is, digits);
-			if(val>Byte.MAX_VALUE) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in Java byte", val));
-			}
+			long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+			Utils.checkRange(val,Byte.class,false);
 			return (byte)val;
 		}
 		default:

@@ -51,8 +51,9 @@ public class StreamUtils {
 			values[ptr--] = num % 10;
 			num /= 10;
 		}
-		if(num>0) {
-			throw new IOException("BCD digits "+digits+" not equal to that of decimal number:"+num);
+		if(num>0 || ptr>0) {
+			throw new IOException(
+					String.format("string format of number [%d] does not match BCD length [%d]", num, digits));
 		}
 		writeBCD(os, values);
 	}
@@ -94,15 +95,24 @@ public class StreamUtils {
 	
 	//---------------------------------
 	
-	public static int readBYTE(InputStream is) throws IOException{
+	public static int readUnsignedByte(InputStream is) throws IOException{
 		return read(is);
 	}
-	public static int readSHORT(InputStream is, boolean bigendian) throws IOException{
+	public static int readSignedByte(InputStream is) throws IOException{
+		return (byte)readUnsignedByte(is);
+	}
+	public static int readSignedShort(InputStream is, boolean bigendian) throws IOException{
+		return (short)readUnsignedShort(is,bigendian);
+	}
+	public static int readUnsignedShort(InputStream is, boolean bigendian) throws IOException{
 		int b1 = read(is);
 		int b2 = read(is);
 		return bigendian ? ((b1<<8) | b2) : ((b2<<8) | b1);
 	}
-	public static long readInt(InputStream is, boolean bigendian) throws IOException{
+	public static long readSignedInt(InputStream is, boolean bigendian) throws IOException{
+		return (int)readUnsignedInt(is,bigendian);
+	}
+	public static long readUnsignedInt(InputStream is, boolean bigendian) throws IOException{
 		long ret = 0;
 		if(bigendian) {
 			ret |= ((long)read(is))<<24;
@@ -133,7 +143,7 @@ public class StreamUtils {
 			ret = ret * 10 + ((arr[i] >> 4) & 0x0F);
 			ret = ret * 10 + (arr[i] & 0x0F);
 			if(ret<0) {
-				throw new IOException("BCD value overflow");
+				throw new IOException("BCD value overflows Java long type range");
 			}
 		}
 		return ret;
@@ -155,13 +165,13 @@ public class StreamUtils {
 		int length = 0;
 		switch(type) {
 		case BYTE:
-			length = StreamUtils.readBYTE(src);
+			length = StreamUtils.readUnsignedByte(src);
 			break;
 		case SHORT:
-			length = StreamUtils.readSHORT(src, bigEndian);
+			length = StreamUtils.readUnsignedShort(src, bigEndian);
 			break;
 		case INT:
-			long _length = StreamUtils.readInt(src, bigEndian);
+			long _length = StreamUtils.readUnsignedInt(src, bigEndian);
 			if(_length>Integer.MAX_VALUE) {
 				throw new IOException("unsigned int value encountered");
 			}

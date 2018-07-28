@@ -1,6 +1,7 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
@@ -81,5 +82,62 @@ public class Utils {
 			}
 		}
 		return length;
+	}
+	
+	public static int[] checkAndConvertToBCD(long val, int bcdBytes) {
+		if(val<0) {
+			throw new IllegalArgumentException(String.format("negative numbe [%d] cannot be stored as BCD",val));
+		}
+		long copy = val;
+		int[] values = new int[bcdBytes*2];
+		int ptr = values.length-1;
+		while(ptr>=0 && copy>0) {
+			values[ptr--] = (int) (copy % 10);
+			copy /= 10;
+		}
+		if(copy>0 || ptr>0) {
+			throw new IllegalArgumentException(
+					String.format("string format of number [%d] cannot fit in [%d] bytes BCD", val, bcdBytes));
+		}
+		return values;
+	}
+	
+	public static void checkRange(long val, Class<? extends Number> sizeClass, boolean unsigned) {
+		if(sizeClass == Byte.class) {
+			if(unsigned) {
+				if(val<0 || val>((long)Byte.MAX_VALUE*2+1)) {
+					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 1-byte integer value",val));
+				}
+			}else {
+				if(val<Byte.MIN_VALUE || val>Byte.MAX_VALUE) {
+					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as signed 1-byte integer value",val));
+				}
+			}
+		}else if(sizeClass == Short.class) {
+			if(unsigned) {
+				if(val<0 || val>((long)Short.MAX_VALUE*2+1)) {
+					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 2-byte integer value",val));
+				}
+			}else {
+				if(val<Short.MIN_VALUE || val>Short.MAX_VALUE) {
+					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as signed 2-byte integer value",val));
+				}
+			}
+		}else if(sizeClass == Integer.class) {
+			if(unsigned) {
+				if(val<0 || val>((long)Integer.MAX_VALUE*2+1)) {
+					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 4-byte integer value",val));
+				}
+			}else {
+				if(val<Integer.MIN_VALUE || val>Integer.MAX_VALUE) {
+					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as signed 4-byte integer value",val));
+				}
+			}
+		}else if(sizeClass == Long.class) {
+			if(unsigned && val<0) {
+				throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 8-byte integer value",val));
+			}
+			return;
+		}
 	}
 }
