@@ -1,7 +1,6 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
 import java.io.BufferedInputStream;
-import java.io.IOException;
 
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
@@ -102,6 +101,11 @@ public class Utils {
 		return values;
 	}
 	
+	/**
+	 * @param val
+	 * @param sizeClass	not data type but rather use number classes in Java to denote size of a number in bytes.
+	 * @param unsigned
+	 */
 	public static void checkRange(long val, Class<? extends Number> sizeClass, boolean unsigned) {
 		if(sizeClass == Byte.class) {
 			if(unsigned) {
