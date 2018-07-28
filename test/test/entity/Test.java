@@ -15,7 +15,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeBYTE(os, b);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println(StreamUtils.readBYTE(bis)==val);
+			System.out.println(StreamUtils.readUnsignedByte(bis)==val);
 		}
 		{
 			int val = -3;
@@ -23,7 +23,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeBYTE(os, b);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println((byte)StreamUtils.readBYTE(bis)==val);
+			System.out.println((byte)StreamUtils.readUnsignedByte(bis)==val);
 		}
 		
 		{
@@ -32,7 +32,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeSHORT(os, b, true);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println(StreamUtils.readSHORT(bis, true)==val);
+			System.out.println(StreamUtils.readUnsignedShort(bis, true)==val);
 		}
 		{
 			int val = Short.MAX_VALUE+333;
@@ -40,7 +40,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeSHORT(os, b, false);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println((short)StreamUtils.readSHORT(bis, false)==(short)val);
+			System.out.println((short)StreamUtils.readUnsignedShort(bis, false)==(short)val);
 		}
 		
 		{
@@ -49,7 +49,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeInt(os, b, true);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println(StreamUtils.readInt(bis, true)==val);
+			System.out.println(StreamUtils.readUnsignedInt(bis, true)==val);
 		}
 		{
 			long val = (long)Integer.MAX_VALUE+(long)133333;
@@ -57,7 +57,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeInt(os, b, false);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println(StreamUtils.readInt(bis, false)==val);
+			System.out.println(StreamUtils.readUnsignedInt(bis, false)==val);
 		}
 		
 		{
@@ -66,7 +66,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeInt(os, b, true);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println(StreamUtils.readInt(bis, true)==val);
+			System.out.println(StreamUtils.readUnsignedInt(bis, true)==val);
 		}
 		{
 			long val = (long)Integer.MAX_VALUE+(long)133333;
@@ -74,7 +74,7 @@ public class Test {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			StreamUtils.writeInt(os, b, false);
 			BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(os.toByteArray()));
-			System.out.println(StreamUtils.readInt(bis, false)==val);
+			System.out.println(StreamUtils.readUnsignedInt(bis, false)==val);
 		}
 	}
 }
