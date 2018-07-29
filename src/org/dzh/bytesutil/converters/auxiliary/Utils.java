@@ -102,7 +102,7 @@ public class Utils {
 	}
 	
 	public static final void checkBCDLength(String src, int length) {
-		if((src.length()<<1)!=length) {
+		if((src.length()>>1)!=length) {
 			throw new IllegalArgumentException(String.format(
 					"length of string should be [%d] (double long as declared BCD value), but it was [%d]", length*2, src.length()));
 		}
