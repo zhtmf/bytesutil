@@ -9,6 +9,7 @@ import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.types.BCD;
+import org.dzh.bytesutil.annotations.types.CHAR;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,11 +26,32 @@ public class TestCase4{
 		@Order(-1)
 		@BCD(5)
 		public long n1;
+		
+		@Order(1)
+		@CHAR(3)
+		public byte b;
+		
+		@Order(2)
+		@CHAR(5)
+		public short s;
+		
+		@Order(3)
+		@CHAR(10)
+		public int i;
+		
+		@Order(4)
+		@CHAR(19)
+		public long l;
 	}
 	
 	@Before
 	public void setValues() {
 		entity.n1 = 1234567070L;
+		entity.b = 125;
+		entity.s = Short.MAX_VALUE;
+		entity.i = Integer.MAX_VALUE;
+		entity.l = Long.MAX_VALUE;
+		
 	}
 	
 	

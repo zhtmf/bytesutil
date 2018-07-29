@@ -1,5 +1,6 @@
 package org.dzh.bytesutil.converters;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,6 +27,22 @@ public class ShortConverter implements Converter<Short> {
 			StreamUtils.writeSHORT(dest, val, ctx.bigEndian);
 			return;
 		}
+		case CHAR:
+			if(val<0) {
+				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
+			}
+			String str = Long.toString(val);
+			int length = Utils.lengthForSerializingCHAR(ctx, self);
+			if(length<0) {
+				length = str.length();
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+			}else if(length!=str.length()) {
+				throw new IllegalArgumentException(
+						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
+									,str, val,length));
+			}
+			StreamUtils.writeBytes(dest, str.getBytes());
+			return;
 		case BCD:
 			StreamUtils.writeBCD(
 					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
@@ -47,6 +64,22 @@ public class ShortConverter implements Converter<Short> {
 			int value = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
 			Utils.checkRange(value, Short.class, false);
 			return (short)value;
+		}
+		case CHAR:{
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			if(length<0) {
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+			}
+			byte[] numChars = StreamUtils.readBytes(is, length);
+			int ret = 0;
+			for(byte b:numChars) {
+				if(!(b>='0' && b<='9')) {
+					throw new IllegalArgumentException("streams contains non-numeric character");
+				}
+				ret = ret*10 + (b-'0');
+				Utils.checkRange(ret, Short.class, false);
+			}
+			return (short)ret;
 		}
 		case BCD:{
 			long value = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());

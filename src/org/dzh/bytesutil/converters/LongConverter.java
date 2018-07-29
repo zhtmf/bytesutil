@@ -1,5 +1,6 @@
 package org.dzh.bytesutil.converters;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -26,6 +27,22 @@ public class LongConverter implements Converter<Long> {
 			StreamUtils.writeSHORT(dest, (short) val, ctx.bigEndian);
 			return;
 		}
+		case CHAR:
+			if(val<0) {
+				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
+			}
+			String str = Long.toString(val);
+			int length = Utils.lengthForSerializingCHAR(ctx, self);
+			if(length<0) {
+				length = str.length();
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+			}else if(length!=str.length()) {
+				throw new IllegalArgumentException(
+						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
+									,str, val,length));
+			}
+			StreamUtils.writeBytes(dest, str.getBytes());
+			return;
 		case INT:{
 			Utils.checkRange(val, Integer.class, ctx.unsigned);
 			StreamUtils.writeInt(dest, (int) val, ctx.bigEndian);
@@ -55,6 +72,14 @@ public class LongConverter implements Converter<Long> {
 		case INT:{
 			long value = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
 			return value;
+		}
+		case CHAR:{
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			if(length<0) {
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+			}
+			byte[] numChars = StreamUtils.readBytes(is, length);
+			return Long.valueOf(new String(numChars));
 		}
 		case BCD:{
 			long value = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
