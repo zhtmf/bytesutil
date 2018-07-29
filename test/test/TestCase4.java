@@ -6,10 +6,12 @@ import java.io.ByteArrayOutputStream;
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
+import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
+import org.dzh.bytesutil.annotations.types.RAW;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +44,16 @@ public class TestCase4{
 		@Order(4)
 		@CHAR(19)
 		public long l;
+		
+		@Order(5)
+		@CHAR
+		@Length
+		public String str;
+		
+		@Order(6)
+		@RAW
+		@Length
+		public int[] ints;
 	}
 	
 	@Before
@@ -51,7 +63,8 @@ public class TestCase4{
 		entity.s = Short.MAX_VALUE;
 		entity.i = Integer.MAX_VALUE;
 		entity.l = Long.MAX_VALUE;
-		
+		entity.str = "abc";
+		entity.ints = new int[] {120,55,-32,-1};
 	}
 	
 	
@@ -60,6 +73,7 @@ public class TestCase4{
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		entity.serialize(baos);
 		byte[] arr = baos.toByteArray();
+		Assert.assertEquals(entity.length(), arr.length);
 		Entity2 e2 = new Entity2();
 		e2.deserialize(new ByteArrayInputStream(arr));
 		Assert.assertTrue(Utils.equals(entity, e2));
