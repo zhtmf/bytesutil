@@ -341,7 +341,7 @@ public class DataPacket {
 	 * 
 	 * @return length in bytes
 	 */
-	@SuppressWarnings({ "rawtypes", "incomplete-switch" })
+	@SuppressWarnings({ "rawtypes"})
 	public int length(){
 		ClassInfo ci = getClassInfo();
 		int ret = 0;
@@ -371,18 +371,15 @@ public class DataPacket {
 			if(length==0) {
 				continue;
 			}
-			switch(fi.type) {
+			DataType type = fi.type;
+			switch(type) {
 			case BCD:
 				ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
 				break;
 			case BYTE:
-				ret += 1 * length;
-				break;
 			case SHORT:
-				ret += 2 * length;
-				break;
 			case INT:
-				ret += 4 * length;
+				ret += type.size() * length;
 				break;
 			case CHAR:{
 				int size = Utils.lengthForSerializingCHAR(fi, this);
@@ -391,19 +388,8 @@ public class DataPacket {
 					//get the actual value and calculate its length
 					Object val = fi.get(this);
 					size = val == null ? 0 : val.toString().length();
-					DataType lengthType = fi.annotation(Length.class).type();
-					switch(lengthType) {
-					case BYTE:
-						ret += 1;
-						break;
-					case SHORT:
-						ret += 2;
-						break;
-					case INT:
-						ret += 4;
-						break;
-						//other types have been checked by FieldInfo class
-					}
+					//other types have been checked by FieldInfo class
+					ret += fi.annotation(Length.class).type().size();
 				}
 				//length of individual CHAR * size of (maybe) list
 				ret += size * length;
@@ -414,19 +400,8 @@ public class DataPacket {
 				if(size<0) {
 					Object val = fi.get(this);
 					size = val==null ? 0 : Array.getLength(val);
-					DataType lengthType = fi.annotation(Length.class).type();
-					switch(lengthType) {
-					case BYTE:
-						ret += 1;
-						break;
-					case SHORT:
-						ret += 2;
-						break;
-					case INT:
-						ret += 4;
-						break;
-						//other types have been checked by FieldInfo class
-					}
+					//other types have been checked by FieldInfo class
+					ret += fi.annotation(Length.class).type().size();
 				}
 				//length of individual byte array * size of (maybe) list
 				ret += size * length;
