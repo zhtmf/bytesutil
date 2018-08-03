@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.ByteArrayConverter;
@@ -24,6 +26,7 @@ import org.dzh.bytesutil.converters.LongConverter;
 import org.dzh.bytesutil.converters.ShortConverter;
 import org.dzh.bytesutil.converters.StringConverter;
 import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
+import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
@@ -330,15 +333,15 @@ public class DataPacket {
 	}
 	
 	/**
-	 * Calculate the length in bytes as if this entity has been serialized to an
+	 * Calculate the length in bytes of this entity as if it was serialized to an
 	 * output stream.
 	 * <p>
-	 * This is <b>NOT</b> a constant time operation, as the actual length should and
+	 * This is <b>NOT</b> a constant time operation as the actual length should and
 	 * can only be calculated at runtime.
 	 * 
-	 * @return	length in bytes
+	 * @return length in bytes
 	 */
-	@SuppressWarnings("rawtypes")
+	@SuppressWarnings({ "rawtypes"})
 	public int length(){
 		ClassInfo ci = getClassInfo();
 		int ret = 0;
@@ -368,27 +371,42 @@ public class DataPacket {
 			if(length==0) {
 				continue;
 			}
-			switch(fi.type) {
+			DataType type = fi.type;
+			switch(type) {
 			case BCD:
 				ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
 				break;
 			case BYTE:
-				ret += 1 * length;
-				break;
 			case SHORT:
-				ret += 2 * length;
-				break;
 			case INT:
-				ret += 4 * length;
+				ret += type.size() * length;
 				break;
-			case CHAR:
+			case CHAR:{
+				int size = Utils.lengthForSerializingCHAR(fi, this);
+				if(size<0) {
+					//dynamic length that is written to stream prior to serializing value
+					//get the actual value and calculate its length
+					Object val = fi.get(this);
+					size = val == null ? 0 : val.toString().length();
+					//other types have been checked by FieldInfo class
+					ret += fi.annotation(Length.class).type().size();
+				}
 				//length of individual CHAR * size of (maybe) list
-				ret += Utils.lengthForSerializingCHAR(fi, this) * length;
+				ret += size * length;
 				break;
-			case RAW:
+			}
+			case RAW:{
+				int size = Utils.lengthForSerializingRAW(fi, this);
+				if(size<0) {
+					Object val = fi.get(this);
+					size = val==null ? 0 : Array.getLength(val);
+					//other types have been checked by FieldInfo class
+					ret += fi.annotation(Length.class).type().size();
+				}
 				//length of individual byte array * size of (maybe) list
-				ret += Utils.lengthForSerializingRAW(fi, this) * length;
+				ret += size * length;
 				break;
+			}
 			default:
 				throw new UnsupportedOperationException();
 			}

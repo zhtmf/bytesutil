@@ -206,6 +206,14 @@ public final class FieldInfo{
 					this.lengthHandler = null;
 				}
 				lengthType = len.type();
+				switch(lengthType) {
+				case BYTE:
+				case SHORT:
+				case INT:
+					break;
+				default:
+					throw new IllegalArgumentException("data type "+lengthType+" cannot be set as length type");
+				}
 			}
 		}
 		{
@@ -335,5 +343,10 @@ public final class FieldInfo{
 			return global2;
 		}
 		return null;
+	}
+	
+	@Override
+	public String toString() {
+		return "FieldInfo:entity["+enclosingEntityClass+"],field:["+name+"]";
 	}
 }

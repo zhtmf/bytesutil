@@ -43,9 +43,7 @@ public class StringConverter implements Converter<String> {
 		}
 		case BCD:{
 			int length = ctx.localAnnotation(BCD.class).value();
-			if(length!=value.length()/2) {
-				throw new IllegalArgumentException("string value should be double long as the declared BCD length");
-			}
+			Utils.checkBCDLength(value, length);
 			int[] values = new int[length*2];
 			for(int i=0;i<values.length;++i) {
 				char c = value.charAt(i);
@@ -79,11 +77,7 @@ public class StringConverter implements Converter<String> {
 			return new String(StreamUtils.readBytes(is, length),cs);
 		}
 		case BCD:{
-			int length = ctx.localAnnotation(BCD.class).value();
-			if(length<=0) {
-				throw new IllegalArgumentException("declare a valid length");
-			}
-			return StreamUtils.readStringBCD(is, length);
+			return StreamUtils.readStringBCD(is, ctx.localAnnotation(BCD.class).value());
 		}
 		default:
 			throw new UnsupportedOperationException();

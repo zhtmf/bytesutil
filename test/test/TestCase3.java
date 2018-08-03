@@ -98,7 +98,7 @@ public class TestCase3{
 		@INT
 		public int b3;
 		@Order(3)
-		@BCD(4)
+		@BCD(2)
 		public int b4;
 		@Order(4)
 		@CHAR(5)

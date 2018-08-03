@@ -1,11 +1,14 @@
 package org.dzh.bytesutil.converters;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 public class LongConverter implements Converter<Long> {
 
@@ -15,41 +18,40 @@ public class LongConverter implements Converter<Long> {
 		long val = value==null ? 0 : value;
 		switch(ctx.type) {
 		case BYTE:{
-			boolean unsigned = ctx.unsigned;
-			int min = unsigned ? 0 : Byte.MIN_VALUE;
-			int max = unsigned ? 255 : Byte.MAX_VALUE;
-			if (val > max || val < min) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in %s single byte"
-										,val,unsigned?"unsigned":"signed"));
-			}
+			Utils.checkRange(val, Byte.class, ctx.unsigned);
 			StreamUtils.writeBYTE(dest, (byte)val);
 			return;
 		}
 		case SHORT:{
-			boolean unsigned = ctx.unsigned;
-			int min = unsigned ? 0 : Short.MIN_VALUE;
-			int max = unsigned ? Character.MAX_VALUE : Short.MAX_VALUE;
-			if(val > max || val < min) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in %s 2-byte value"
-								,val,unsigned?"unsigned":"signed"));
-			}
+			Utils.checkRange(val, Short.class, ctx.unsigned);
 			StreamUtils.writeSHORT(dest, (short) val, ctx.bigEndian);
 			return;
 		}
-		case INT:{
-			boolean unsigned = ctx.unsigned;
-			long min = unsigned ? 0 : Integer.MIN_VALUE;
-			long max = unsigned ? ((long)Integer.MAX_VALUE)*2 : Integer.MAX_VALUE;
-			if(val > max || val < min) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in %s 4-byte value"
-								,val,unsigned?"unsigned":"signed"));
+		case CHAR:
+			if(val<0) {
+				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
 			}
+			String str = Long.toString(val);
+			int length = Utils.lengthForSerializingCHAR(ctx, self);
+			if(length<0) {
+				length = str.length();
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+			}else if(length!=str.length()) {
+				throw new IllegalArgumentException(
+						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
+									,str, val,length));
+			}
+			StreamUtils.writeBytes(dest, str.getBytes());
+			return;
+		case INT:{
+			Utils.checkRange(val, Integer.class, ctx.unsigned);
 			StreamUtils.writeInt(dest, (int) val, ctx.bigEndian);
 			return;
 		}
+		case BCD:
+			StreamUtils.writeBCD(
+					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
+			return;
 		default:
 			throw new UnsupportedOperationException();
 		}
@@ -60,21 +62,28 @@ public class LongConverter implements Converter<Long> {
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case BYTE:{
-			int value = StreamUtils.readBYTE(is);
-			if(ctx.signed) {
-				value = (int)(byte)value;
-			}
+			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
 			return (long) value;
 		}
 		case SHORT:{
-			int value = StreamUtils.readSHORT(is, ctx.bigEndian);
-			if(ctx.signed) {
-				value = (int)(short)value;
-			}
+			int value = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
 			return (long) value;
 		}
 		case INT:{
-			return StreamUtils.readInt(is, ctx.bigEndian);
+			long value = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
+			return value;
+		}
+		case CHAR:{
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			if(length<0) {
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+			}
+			byte[] numChars = StreamUtils.readBytes(is, length);
+			return Long.valueOf(new String(numChars));
+		}
+		case BCD:{
+			long value = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+			return value;
 		}
 		default:
 			throw new UnsupportedOperationException();

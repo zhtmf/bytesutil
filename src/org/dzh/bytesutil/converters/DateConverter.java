@@ -32,11 +32,7 @@ public class DateConverter implements Converter<Date>{
 		
 		switch(ctx.type) {
 		case BCD:
-			if(ctx.annotation(BCD.class).value()!=str.length()/2) {
-				throw new IllegalArgumentException(String.format(
-						"defined BCD length [%d] should be double the length of formatted string [%s]"
-						,ctx.annotation(BCD.class).value(),str));
-			}
+			Utils.checkBCDLength(str, ctx.annotation(BCD.class).value());
 			int[] values = new int[str.length()];
 			for(int i=0;i<str.length();++i) {
 				char c = str.charAt(i);
@@ -84,12 +80,10 @@ public class DateConverter implements Converter<Date>{
 									is,ctx.annotation(BCD.class).value()));
 				
 			case CHAR:{
-				
 				int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
 				if(length<0) {
 					length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 				}
-				
 				return getThreadLocalObject(datePattern)
 						.parse(new String(
 								StreamUtils.readBytes(

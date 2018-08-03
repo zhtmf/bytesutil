@@ -1,5 +1,6 @@
 package org.dzh.bytesutil.converters;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -7,6 +8,7 @@ import java.io.OutputStream;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 /**
  * Converter for a single byte
@@ -22,17 +24,28 @@ public class ByteConverter implements Converter<Byte> {
 		byte val = value==null ? 0 : (byte)value;
 		switch(ctx.type) {
 		case BYTE:
-			if(ctx.unsigned && val<0) {
-				throw new IllegalArgumentException(
-					String.format("value [%d] cannot be stored as unsigned value", val));
-			}
+			Utils.checkRange(val,Byte.class,ctx.unsigned);
 			StreamUtils.writeBYTE(dest, val);
 			return;
-		case BCD:
+		case CHAR:
 			if(val<0) {
-				throw new IllegalArgumentException("BCD cannot be negative");
+				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
 			}
-			StreamUtils.writeBCD(dest, val, ctx.localAnnotation(BCD.class).value());
+			String str = Long.toString(val);
+			int length = Utils.lengthForSerializingCHAR(ctx, self);
+			if(length<0) {
+				length = str.length();
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+			}else if(length!=str.length()) {
+				throw new IllegalArgumentException(
+						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
+									,str, val,length));
+			}
+			StreamUtils.writeBytes(dest, str.getBytes());
+			return;
+		case BCD:
+			StreamUtils.writeBCD(
+					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
 			return;
 		default:
 			throw new UnsupportedOperationException();
@@ -44,20 +57,29 @@ public class ByteConverter implements Converter<Byte> {
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case BYTE:{
-			int val = StreamUtils.readBYTE(is);
-			if(ctx.unsigned && val>Byte.MAX_VALUE) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in Java byte", val));
+			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
+			Utils.checkRange(value,Byte.class,false);
+			return (byte)value;
+		}
+		case CHAR:{
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			if(length<0) {
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 			}
-			return (byte)val;
+			byte[] numChars = StreamUtils.readBytes(is, length);
+			int ret = 0;
+			for(byte b:numChars) {
+				if(!(b>='0' && b<='9')) {
+					throw new IllegalArgumentException("streams contains non-numeric character");
+				}
+				ret = ret*10 + (b-'0');
+				Utils.checkRange(ret, Byte.class, false);
+			}
+			return (byte)ret;
 		}
 		case BCD:{
-			int digits = ctx.localAnnotation(BCD.class).value();
-			long val = StreamUtils.readIntegerBCD(is, digits);
-			if(val>Byte.MAX_VALUE) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in Java byte", val));
-			}
+			long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+			Utils.checkRange(val,Byte.class,false);
 			return (byte)val;
 		}
 		default:

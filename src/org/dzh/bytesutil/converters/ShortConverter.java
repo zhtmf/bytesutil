@@ -1,5 +1,6 @@
 package org.dzh.bytesutil.converters;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -7,6 +8,7 @@ import java.io.OutputStream;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 public class ShortConverter implements Converter<Short> {
 
@@ -16,35 +18,34 @@ public class ShortConverter implements Converter<Short> {
 		short val = value==null ? 0 : (short)value;
 		switch(ctx.type) {
 		case BYTE:{
-			boolean unsigned = ctx.unsigned;
-			short min = unsigned ? 0 : Byte.MIN_VALUE;
-			short max = unsigned ? (short)255 : Byte.MAX_VALUE;
-			if(val > max || val<min) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in %s single byte"
-								,val,unsigned?"unsigned":"signed"));
-			}
+			Utils.checkRange(val, Byte.class, ctx.unsigned);
 			StreamUtils.writeBYTE(dest, (byte)val);
 			return;
 		}
 		case SHORT:{
-			boolean unsigned = ctx.unsigned;
-			int min = unsigned ? 0 : Short.MIN_VALUE;
-			int max = unsigned ? Character.MAX_VALUE : Short.MAX_VALUE;
-			if(val > max || val < min) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in %s 2-byte value"
-								,val,unsigned?"unsigned":"signed"));
-			}
+			Utils.checkRange(val, Short.class, ctx.unsigned);
 			StreamUtils.writeSHORT(dest, val, ctx.bigEndian);
 			return;
 		}
-		case BCD:
+		case CHAR:
 			if(val<0) {
-				throw new IllegalArgumentException("BCD cannot be negative");
+				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
 			}
-			int digits = ctx.localAnnotation(BCD.class).value();
-			StreamUtils.writeBCD(dest, val, digits);
+			String str = Long.toString(val);
+			int length = Utils.lengthForSerializingCHAR(ctx, self);
+			if(length<0) {
+				length = str.length();
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+			}else if(length!=str.length()) {
+				throw new IllegalArgumentException(
+						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
+									,str, val,length));
+			}
+			StreamUtils.writeBytes(dest, str.getBytes());
+			return;
+		case BCD:
+			StreamUtils.writeBCD(
+					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
 			return;
 		default:
 			throw new UnsupportedOperationException();
@@ -56,24 +57,33 @@ public class ShortConverter implements Converter<Short> {
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case BYTE:{
-			int value = StreamUtils.readBYTE(is);
+			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
 			return (short)value;
 		}
 		case SHORT:{
-			int value = StreamUtils.readSHORT(is, ctx.bigEndian);
-			if(ctx.unsigned && value > Short.MAX_VALUE) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in Java short", value));
-			}
+			int value = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
+			Utils.checkRange(value, Short.class, false);
 			return (short)value;
 		}
-		case BCD:{
-			int digits = ctx.localAnnotation(BCD.class).value();
-			long value = StreamUtils.readIntegerBCD(is, digits);
-			if(value>Short.MAX_VALUE) {
-				throw new IllegalArgumentException(
-						String.format("value [%d] cannot be stored in Java short", value));
+		case CHAR:{
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			if(length<0) {
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 			}
+			byte[] numChars = StreamUtils.readBytes(is, length);
+			int ret = 0;
+			for(byte b:numChars) {
+				if(!(b>='0' && b<='9')) {
+					throw new IllegalArgumentException("streams contains non-numeric character");
+				}
+				ret = ret*10 + (b-'0');
+				Utils.checkRange(ret, Short.class, false);
+			}
+			return (short)ret;
+		}
+		case BCD:{
+			long value = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+			Utils.checkRange(value, Short.class, false);
 			return (short)value;
 		}
 		default:

@@ -18,6 +18,7 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
+import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
 
@@ -114,6 +115,14 @@ public class ClassInfo {
 					throw new IllegalArgumentException(String.format("field [%s] is not marked with a DataType", name));
 				}
 			}
+			
+			if(type == DataType.BCD) {
+				BCD anno = f.getAnnotation(BCD.class);
+				if(anno.value()<0) {
+					throw new IllegalArgumentException(String.format("should not define negative BCD length for field [%s]", name));
+				}
+			}
+			
 			FieldInfo fi = new FieldInfo(f,type,this);
 			fieldInfoByField.put(name, fi);
 			
