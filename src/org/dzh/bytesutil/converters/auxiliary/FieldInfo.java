@@ -12,6 +12,7 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
+import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
@@ -60,11 +61,18 @@ public final class FieldInfo{
 	 * whether this field is defined as unsigned
 	 */
 	public final boolean unsigned;
+	
+	/**
+	 * TODO:
+	 */
+	public final String endsWith;
+	
 	/**
 	 * Value of {@link Length} annotation.
 	 * <p>
 	 * If the annotation is absent, or it declares a dynamic length, value of this
 	 * field will be -1.
+	 * TODO:
 	 */
 	public final int length;
 	public final int listLength;
@@ -170,23 +178,36 @@ public final class FieldInfo{
 			}
 		}
 		{
+			EndsWith ew = localAnnotation(EndsWith.class);
+			if(ew==null) {
+				endsWith = null;
+			}else {
+				String mark = ew.value().trim();
+				if(mark.isEmpty()) {
+					throw new IllegalArgumentException("should not define an empty or whitespace only end mark."); 
+				}
+				endsWith = mark;
+			}
+		}
+		{
 			Length len = localAnnotation(Length.class);
 			if(len==null) {
-				
 				//either specify a positive value property or use a Length annotation to 
 				//declare the length
 				CHAR ch = localAnnotation(CHAR.class);
-				if(ch!=null && ch.value()==-1) {
-					throw new IllegalArgumentException(
-							String.format("field [%s] is defined as CHAR, but its value property is negative"
-									+ " and a Length annotation is not present on it",name));
+				if(ch!=null && ch.value()<0) {
+					if(endsWith==null)
+						throw new IllegalArgumentException(
+								String.format("field [%s] is defined as CHAR, but its value property is negative"
+										+ " and a Length annotation is not present on it",name));
 				}
 				
 				RAW raw = localAnnotation(RAW.class);
-				if(raw!=null && raw.value()==-1) {
-					throw new IllegalArgumentException(
-							String.format("field [%s] is defined as RAW, but its value property is negative"
-									+ "and  a Length annotation is not present on it",name));
+				if(raw!=null && raw.value()<0) {
+					if(endsWith==null)
+						throw new IllegalArgumentException(
+								String.format("field [%s] is defined as RAW, but its value property is negative"
+										+ "and  a Length annotation is not present on it",name));
 				}
 				
 				length = -1;

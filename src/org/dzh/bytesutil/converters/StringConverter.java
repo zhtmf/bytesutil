@@ -1,8 +1,10 @@
 package org.dzh.bytesutil.converters;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
@@ -25,12 +27,19 @@ public class StringConverter implements Converter<String> {
 				cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name,self);
 			}
 			byte[] bytes = value.getBytes(cs);
+			byte[] bytes2 = null;
 			
 			int length = Utils.lengthForSerializingCHAR(ctx, self);
 			if(length<0) {
-				//due to the pre-check in Context class, Length must be present at this point
-				length = bytes.length;
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				if(ctx.endsWith!=null) {
+					//this string is of nondeterministic length
+					//but will always ends with specific char in the stream
+					bytes2 = ctx.endsWith.getBytes(cs);
+				}else {
+					//due to the pre-check in Context class, Length must be present at this point
+					length = bytes.length;
+					StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				}
 				
 			}else if(length!=bytes.length) {
 				throw new IllegalArgumentException(
@@ -39,6 +48,9 @@ public class StringConverter implements Converter<String> {
 			}
 			
 			StreamUtils.writeBytes(dest, bytes);
+			if(bytes2!=null) {
+				StreamUtils.writeBytes(dest, bytes2);
+			}
 			break;
 		}
 		case BCD:{
@@ -65,14 +77,33 @@ public class StringConverter implements Converter<String> {
 			throws IOException, UnsupportedOperationException {
 		switch(ctx.type) {
 		case CHAR:{
-			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
-			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
-			}
 			Charset cs = ctx.charset;
 			if(cs==null) {
 				cs = ctx.charsetHandler.handleDeserialize(
 						ctx.name,self,(BufferedInputStream) is);
+			}
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			if(length<0) {
+				if(ctx.endsWith!=null) {
+					//read the stream until specified end mark is seen
+					String mark = ctx.endsWith;
+					int pos = 0;
+					char c = 0;
+					StringBuilder sb = new StringBuilder();
+					InputStreamReader isr = new InputStreamReader(is,cs);
+					while((c = (char) isr.read())!=-1) {
+						sb.append(c);
+						if(c == mark.charAt(pos)) {
+							++pos;
+						}
+						if(pos == mark.length()) {
+							return sb.substring(0,sb.length()-mark.length());
+						}
+					}
+					throw new EOFException("end mark ["+mark+"] not met before end of stream");
+				}else {
+					length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+				}
 			}
 			return new String(StreamUtils.readBytes(is, length),cs);
 		}
