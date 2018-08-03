@@ -91,10 +91,12 @@ public class StringConverter implements Converter<String> {
 					char c = 0;
 					StringBuilder sb = new StringBuilder();
 					InputStreamReader isr = new InputStreamReader(is,cs);
-					while((c = (char) isr.read())!=-1) {
+					while((c = (char) isr.read())!=Character.MAX_VALUE) {
 						sb.append(c);
 						if(c == mark.charAt(pos)) {
 							++pos;
+						}else {
+							pos = 0;
 						}
 						if(pos == mark.length()) {
 							return sb.substring(0,sb.length()-mark.length());
