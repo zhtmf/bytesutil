@@ -6,7 +6,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
@@ -107,7 +113,7 @@ public class StringConverter implements Converter<String> {
 						}else {
 							pos = 0;
 						}
-						lookback += bytesForChar(c,cs);
+						lookback += bytesCountForChar(c,cs);
 						if(pos == mark.length()) {
 							bis.reset();
 							while(lookback-->0) {
@@ -131,7 +137,60 @@ public class StringConverter implements Converter<String> {
 		}
 	}
 	
-	private static int bytesForChar(char c,Charset cs) {
-		return (c+"").getBytes(cs).length;
+	private static int bytesCountForChar(char c,Charset cs) {
+		return getThreadLocalObject(cs).countForChar(c);
+	}
+	
+	private static final CharEncoder getThreadLocalObject(Charset cs) {
+		ThreadLocal<CharEncoder> tl = formatterMap.get(cs);
+		if (tl == null) {
+			tl = new _TLFormatter(cs);
+			formatterMap.put(cs, tl);
+		}
+		return tl.get();
+	}
+	
+	private static final ConcurrentHashMap<Charset, ThreadLocal<CharEncoder>> formatterMap = new ConcurrentHashMap<>();
+
+	private static final class _TLFormatter extends ThreadLocal<CharEncoder> {
+		private CharEncoder cs;
+		public _TLFormatter(Charset cs) {
+			this.cs = new CharEncoder(cs);
+		}
+		@Override
+		protected CharEncoder initialValue() {
+			return cs;
+		}
+	}
+	
+	static final class CharEncoder{
+		CharsetEncoder ce;
+		ByteBuffer bb;
+		CharBuffer cb;
+		public CharEncoder(Charset cs) {
+			this.ce = cs.newEncoder();
+			this.bb = ByteBuffer.wrap(new byte[(int)ce.maxBytesPerChar()]);
+			this.cb = CharBuffer.wrap(new char[1]);
+		}
+		public int countForChar(char c) {
+			reset(c);
+			try {
+	            CoderResult cr = ce.encode(cb, bb, true);
+	            if (!cr.isUnderflow())
+	                cr.throwException();
+	            cr = ce.flush(bb);
+	            if (!cr.isUnderflow())
+	                cr.throwException();
+	        } catch (CharacterCodingException x) {
+	            throw new Error(x);
+	        }
+	        return bb.position();
+		}
+		private void reset(char c) {
+			ce.reset();
+			bb.clear();
+			cb.rewind();
+			cb.put(0, c);
+		}
 	}
 }
