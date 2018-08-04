@@ -87,10 +87,19 @@ public class StringConverter implements Converter<String> {
 				if(ctx.endsWith!=null) {
 					//read the stream until specified end mark is seen
 					String mark = ctx.endsWith;
+					int lookback = 0;
 					int pos = 0;
 					char c = 0;
-					StringBuilder sb = new StringBuilder();
+					/*
+					 * the InputStreamReader internally maintains a buffer and it will read more bytes than actually need, 
+					 * so we have to put all the bytes it reads back to the stream and skip bytes for 
+					 * the string and the end mark again. So the remaining bytes unnecessarily read by the InputStreamReader
+					 * can be seen and parsed by other codes.
+					 */
+					BufferedInputStream bis = (BufferedInputStream)is;
+					bis.mark(Integer.MAX_VALUE);
 					InputStreamReader isr = new InputStreamReader(is,cs);
+					StringBuilder sb = new StringBuilder();
 					while((c = (char) isr.read())!=Character.MAX_VALUE) {
 						sb.append(c);
 						if(c == mark.charAt(pos)) {
@@ -98,7 +107,12 @@ public class StringConverter implements Converter<String> {
 						}else {
 							pos = 0;
 						}
+						lookback += bytesForChar(c,cs);
 						if(pos == mark.length()) {
+							bis.reset();
+							while(lookback-->0) {
+								bis.read();
+							}
 							return sb.substring(0,sb.length()-mark.length());
 						}
 					}
@@ -115,5 +129,9 @@ public class StringConverter implements Converter<String> {
 		default:
 			throw new UnsupportedOperationException();
 		}
+	}
+	
+	private static int bytesForChar(char c,Charset cs) {
+		return (c+"").getBytes(cs).length;
 	}
 }
