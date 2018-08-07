@@ -108,7 +108,7 @@ public class ClassInfo {
 				}
 			}
 			if(type==null){
-				Class<?> componentClass = null;
+				Class<?> componentClass;
 				if( ! DataPacket.class.isAssignableFrom(f.getType())
 				&& ((componentClass = firstTypeParameterClass(f))==null
 				|| ! DataPacket.class.isAssignableFrom(componentClass))) {
@@ -124,23 +124,60 @@ public class ClassInfo {
 			}
 			
 			FieldInfo fi = new FieldInfo(f,type,this);
-			fieldInfoByField.put(name, fi);
 			
 			if(fi.listComponentClass!=null) {
-				if(fi.localAnnotation(Length.class)==null
-				&& fi.localAnnotation(ListLength.class)==null) {
-					throw new IllegalArgumentException(String.format(
-							"field [%s] is a list but Length or ListLength annotation are not present on it", name));
+				if((fi.localAnnotation(Length.class)!=null
+				|| fi.localAnnotation(ListLength.class)!=null) && fi.listEOF) {
+					throw new IllegalArgumentException(
+							String.format("both EOF and ListLength/Length annotation are present on list type field [%s], "
+									+ "which is not permitted.",name));
 				}
-				if(((fi.type == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
-				|| (fi.type == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
-				&& fi.localAnnotation(ListLength.class)==null) {
-					throw new IllegalArgumentException(String.format(
-							"field [%s] is a list of Data Type that supports dynamic length, "
-							+ "but a ListLength annotation is not present on it, to avoid ambiguity, use ListLength but not "
-							+ "Length annotation to specify the length ", name));
+				if(!fi.listEOF) {
+					if(fi.localAnnotation(Length.class)==null
+							&& fi.localAnnotation(ListLength.class)==null) {
+						throw new IllegalArgumentException(String.format(
+								"field [%s] is a list but Length or ListLength annotation are not present on it", name));
+					}
+					if(((fi.type == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
+							|| (fi.type == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
+							&& fi.localAnnotation(ListLength.class)==null) {
+						throw new IllegalArgumentException(String.format(
+								"field [%s] is a list of Data Type that supports dynamic length, "
+										+ "but a ListLength annotation is not present on it, to avoid ambiguity, use ListLength but not "
+										+ "Length annotation to specify the length ", name));
+					}
 				}
 			}
+			
+			//either specify a positive value property or use a Length annotation to 
+			//declare the length
+			CHAR ch = fi.localAnnotation(CHAR.class);
+			if(ch!=null && ch.value()<0) {
+				if(fi.endsWith==null && !fi.lengthDefined)
+					throw new IllegalArgumentException(
+							String.format("field [%s] is defined as CHAR, but its value property is negative"
+									+ " and a Length annotation is not present on it",name));
+				if(fi.endsWith!=null && fi.lengthDefined) {
+					throw new IllegalArgumentException(
+							String.format("both EndsWith and Length annotation are present on field [%s], "
+									+ "which is not permitted.",name));
+				}
+			}
+			
+			RAW raw = fi.localAnnotation(RAW.class);
+			if(raw!=null && raw.value()<0) {
+				if(fi.endsWith==null && !fi.lengthDefined)
+					throw new IllegalArgumentException(
+							String.format("field [%s] is defined as RAW, but its value property is negative"
+									+ "and  a Length annotation is not present on it",name));
+				if(fi.endsWith!=null && fi.lengthDefined) {
+					throw new IllegalArgumentException(
+							String.format("both EndsWith and Length annotation are present on field [%s], "
+									+ "which is not permitted.",name));
+				}
+			}
+			
+			fieldInfoByField.put(name, fi);
 		}
 	}
 	

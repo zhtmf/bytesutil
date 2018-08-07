@@ -12,6 +12,7 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
+import org.dzh.bytesutil.annotations.modifiers.EOF;
 import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
@@ -19,8 +20,6 @@ import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.RAW;
 
 /**
  * Internal class that stores compile-time information of a {@link Field}
@@ -104,6 +103,16 @@ public final class FieldInfo{
 	 * Pattern string defined in {@link DatePattern} annotation, null if not present.
 	 */
 	public final String datePattern;
+	
+	/**
+	 * TODO:
+	 */
+	public final boolean listEOF;
+	
+	/**
+	 * TODO:
+	 */
+	final boolean lengthDefined;
 	
 	FieldInfo(Field field, DataType type, ClassInfo base) {
 		this.base = base;
@@ -192,33 +201,11 @@ public final class FieldInfo{
 		{
 			Length len = localAnnotation(Length.class);
 			if(len==null) {
-				//either specify a positive value property or use a Length annotation to 
-				//declare the length
-				CHAR ch = localAnnotation(CHAR.class);
-				if(ch!=null && ch.value()<0) {
-					if(endsWith==null)
-						throw new IllegalArgumentException(
-								String.format("field [%s] is defined as CHAR, but its value property is negative"
-										+ " and a Length annotation is not present on it",name));
-				}
-				
-				RAW raw = localAnnotation(RAW.class);
-				if(raw!=null && raw.value()<0) {
-					if(endsWith==null)
-						throw new IllegalArgumentException(
-								String.format("field [%s] is defined as RAW, but its value property is negative"
-										+ "and  a Length annotation is not present on it",name));
-				}
-				
 				length = -1;
 				lengthHandler = null;
 				lengthType = null;
+				lengthDefined = false;
 			}else {
-				if(endsWith!=null) {
-					throw new IllegalArgumentException(
-								String.format("both EndsWith and Length annotation are present on field [%s], "
-										+ "which is not permitted.",name));
-				}
 				this.length = len.value();
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
@@ -240,6 +227,8 @@ public final class FieldInfo{
 				default:
 					throw new IllegalArgumentException("data type "+lengthType+" cannot be set as length type");
 				}
+				
+				lengthDefined = true;
 			}
 		}
 		{
@@ -280,6 +269,8 @@ public final class FieldInfo{
 				this.datePattern = val;
 			}
 		}
+		
+		this.listEOF = localAnnotation(EOF.class)!=null;
 	}
 	/**
 	 * Wrapper of {@link Field#get(Object)}
