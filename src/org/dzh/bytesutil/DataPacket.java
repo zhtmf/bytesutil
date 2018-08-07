@@ -132,11 +132,13 @@ public class DataPacket {
 					length = Utils.lengthForSerializingLength(fi, this);
 				}
 				if(length<0) {
-					try {
-						length = value.size();
-						StreamUtils.writeIntegerOfType(dest, fi.lengthType, value.size(), fi.bigEndian);
-					} catch (IOException e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+					length = value.size();
+					if( ! fi.listEOF) {
+						try {
+							StreamUtils.writeIntegerOfType(dest, fi.lengthType, value.size(), fi.bigEndian);
+						} catch (IOException e) {
+							throw new ConversionException(this.getClass(),fi.name,e);
+						}
 					}
 				}
 				
@@ -152,16 +154,16 @@ public class DataPacket {
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
 				if(cv!=null) {
 					//class of list elements is pre-defined data types
-					for(int i=0;i<length;++i) {
-						try {
+					try {
+						for(int i=0;i<length;++i) {
 							cv.serialize(value.get(i), dest, fi, this);
-						} catch (UnsupportedOperationException e) {
-							throw new ConversionException(
-									this.getClass(),fi.name,
-									"Unsupported conversion to "+fi.type);
-						} catch (Exception e) {
-							throw new ConversionException(this.getClass(),fi.name,e);
 						}
+					} catch (UnsupportedOperationException e) {
+						throw new ConversionException(
+								this.getClass(),fi.name,
+								"Unsupported conversion to "+fi.type);
+					} catch (Exception e) {
+						throw new ConversionException(this.getClass(),fi.name,e);
 					}
 				}else if(DataPacket.class.isAssignableFrom(fi.listComponentClass)){
 					//class of list elements is another Data
@@ -257,49 +259,73 @@ public class DataPacket {
 			//this field is defined as a list
 			}else if(fi.listComponentClass!=null) {
 				
+				boolean terminateByEOF = fi.listEOF;
+				
 				int length = Utils.lengthForDeserializingListLength(fi, this, _src);
 				if(length<0) {
 					length = Utils.lengthForDeserializingLength(fi, this, _src);
 				}
 				if(length<0) {
-					try {
-						length = StreamUtils.readIntegerOfType(_src, fi.lengthType, fi.bigEndian);
-					} catch (IOException e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+					if( ! terminateByEOF) {
+						try {
+							length = StreamUtils.readIntegerOfType(_src, fi.lengthType, fi.bigEndian);
+						} catch (IOException e) {
+							throw new ConversionException(this.getClass(),fi.name,e);
+						}
 					}
 				}
 				
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
+				List<Object> tmp = null;
 				//component class is a pre-defined data type
 				if(cv!=null) {
-					List<Object> tmp = new ArrayList<>(length);
-					while(length-->0) {
-						try {
-							tmp.add(cv.deserialize(_src, fi, this));
-						} catch (UnsupportedOperationException e) {
-							throw new ConversionException(
-									this.getClass(),fi.name,
-									"Unsupported conversion to "+fi.type,e);
-						} catch (Exception e) {
-							throw new ConversionException(this.getClass(),fi.name,e);
+					try {
+						if(terminateByEOF) {
+							tmp = new ArrayList<>();
+							while( ! StreamUtils.eof(_src)) {
+								tmp.add(cv.deserialize(_src, fi, this));
+							}
+						}else {
+							tmp = new ArrayList<>(length);
+							while(length-->0) {
+								tmp.add(cv.deserialize(_src, fi, this));
+							}
 						}
+					} catch (UnsupportedOperationException e) {
+						throw new ConversionException(
+								this.getClass(),fi.name,
+								"Unsupported conversion to "+fi.type,e);
+					} catch (Exception e) {
+						throw new ConversionException(this.getClass(),fi.name,e);
 					}
 					value = tmp;
 				//component class is a Data
 				}else if(fi.isEntityList){
-					List<Object> tmp = new ArrayList<>(length);
-					while(length-->0) {
-						try {
-							DataPacket object = (DataPacket) fi.listComponentClass.newInstance();
-							object.deserialize(_src);
-							tmp.add(object);
-						} catch (InstantiationException | IllegalAccessException e) {
-							throw new ConversionException(
-									this.getClass(),fi.name,
-									String.format(
-									"instance of component class [%s] cannot be created by calling no-arg constructor"
-									, fi.listComponentClass),e);
+					try {
+						if(terminateByEOF) {
+							tmp = new ArrayList<>();
+							while( ! StreamUtils.eof(_src)) {
+								DataPacket object = (DataPacket) fi.listComponentClass.newInstance();
+								object.deserialize(_src);
+								tmp.add(object);
+							}
+						}else {
+							tmp = new ArrayList<>(length);
+							while(length-->0) {
+								DataPacket object = (DataPacket) fi.listComponentClass.newInstance();
+								object.deserialize(_src);
+								tmp.add(object);
+							}
 						}
+					} catch (InstantiationException | IllegalAccessException e) {
+						throw new ConversionException(
+								this.getClass(),fi.name,
+								String.format(
+								"instance of component class [%s] cannot be created by calling no-arg constructor"
+								, fi.listComponentClass),e);
+					} catch (IOException e) {
+						throw new ConversionException(
+								this.getClass(),fi.name,e);
 					}
 					value = tmp;
 				}else {

@@ -1,6 +1,7 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
 import java.io.InputStream;
+import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -181,6 +182,20 @@ public class StreamUtils {
 			throw new IOException("data type "+type+" unsupported for length type");
 		}
 		return length;
+	}
+	
+	public static boolean eof(BufferedInputStream bis) throws IOException {
+		bis.mark(1);
+		try {
+			int b = bis.read();
+			bis.reset();
+			return b == -1;
+		} catch (IOException e) {
+			if(e instanceof EOFException) {
+				return true;
+			}
+			throw e;
+		}
 	}
 	
 	private static int read(InputStream bis) throws IOException {
