@@ -87,7 +87,9 @@ public class ClassInfo {
 		
 		Collections.reverse(fieldList);
 		
-		for(Field f:fieldList) {
+		for(int i=0;i<fieldList.size();++i) {
+			
+			Field f = fieldList.get(i);
 			
 			String name = f.getName();
 			
@@ -145,6 +147,12 @@ public class ClassInfo {
 								"field [%s] is a list of Data Type that supports dynamic length, "
 										+ "but a ListLength annotation is not present on it, to avoid ambiguity, use ListLength but not "
 										+ "Length annotation to specify the length ", name));
+					}
+				}else{
+					if(i!=fieldList.size()-1) {
+						throw new IllegalArgumentException(String.format(
+								"field [%s] is defined as a list that reaches end of input, "
+										+ "but it is not the last field in the entity, which is not permitted", name));
 					}
 				}
 			}
