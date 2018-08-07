@@ -214,6 +214,11 @@ public final class FieldInfo{
 				lengthHandler = null;
 				lengthType = null;
 			}else {
+				if(endsWith!=null) {
+					throw new IllegalArgumentException(
+								String.format("both EndsWith and Length annotation are present on field [%s], "
+										+ "which is not permitted.",name));
+				}
 				this.length = len.value();
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
