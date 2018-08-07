@@ -2,6 +2,8 @@ package test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
+import java.util.List;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
@@ -9,6 +11,7 @@ import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
+import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.types.BCD;
@@ -45,6 +48,16 @@ public class TestCase5{
 		@RAW
 		@Length
 		public int[] ints;
+		
+		@Order(7)
+		@CHAR
+		@EndsWith("\r\n")
+		@ListLength(3)
+		public List<String> strWithEndMarks;
+		
+		@Order(8)
+		@CHAR(3)
+		public String after;
 	}
 	
 	
@@ -56,6 +69,8 @@ public class TestCase5{
 			entity.char1 = "abcdef";
 			entity.char2 = "啊啊啊";
 			entity.ints = new int[] {120,55,-32,-1};
+			entity.strWithEndMarks = Arrays.asList("abc","def","ghi");
+			entity.after = "xxx";
 			entity.serialize(baos);
 			byte[] arr = baos.toByteArray();
 			{
@@ -75,6 +90,8 @@ public class TestCase5{
 			entity.char1 = "asdfasd啊啊啊fx啊zc啊v";
 			entity.char2 = "啊啊啊ywwuyi呵呵呵";
 			entity.ints = new int[] {1,1,1,127};
+			entity.strWithEndMarks = Arrays.asList("abc","def","ghi");
+			entity.after = "xxx";
 			entity.serialize(baos);
 			byte[] arr = baos.toByteArray();
 			{

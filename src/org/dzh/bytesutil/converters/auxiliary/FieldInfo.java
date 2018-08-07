@@ -182,7 +182,7 @@ public final class FieldInfo{
 			if(ew==null) {
 				endsWith = null;
 			}else {
-				String mark = ew.value().trim();
+				String mark = ew.value();
 				if(mark.isEmpty()) {
 					throw new IllegalArgumentException("should not define an empty or whitespace only end mark."); 
 				}
