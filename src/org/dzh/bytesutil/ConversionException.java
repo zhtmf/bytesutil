@@ -30,7 +30,7 @@ public class ConversionException extends Exception {
 	}
 	
 	public ConversionException(Class<?> enclosingEntityClass ,String fieldName, Throwable cause) {
-		super(String.format("Entity Class[%s], field [%s], error:[%s]", enclosingEntityClass, fieldName,cause.getMessage()),cause);
+		super(String.format("Entity Class[%s], field [%s], error:[%s]", enclosingEntityClass, fieldName,cause),cause);
 		this.entityClassName = enclosingEntityClass.getName();
 		this.fieldName = fieldName;
 	}
