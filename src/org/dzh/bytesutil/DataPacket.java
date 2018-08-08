@@ -224,7 +224,7 @@ public class DataPacket {
 	}
 	
 	@SuppressWarnings({ "unchecked"})
-	public void deserialize0(MarkableStream _src) throws ConversionException {
+	private void deserialize0(MarkableStream _src) throws ConversionException {
 		ClassInfo ci = getClassInfo();
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			Object value = null;

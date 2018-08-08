@@ -11,7 +11,16 @@ import java.nio.charset.CoderMalfunctionError;
 import java.nio.charset.CoderResult;
 
 /**
- * TODO:
+ * A replacement for {@link java.io.InputStreamReader InputStreamReader}.
+ * <p>
+ * For the same reason as {@link MarkableStream}, <tt>InputStreamReader</tt>s
+ * which maintains internal read-ahead buffer have negative impact on our
+ * processing.
+ * <p>
+ * This class works by reading bytes from incoming stream, one at a time, until
+ * decoder of specified charset successfully decodes a valid char from bytes
+ * read so far.
+ * 
  * @author dzh
  */
 public class CharDecoder{

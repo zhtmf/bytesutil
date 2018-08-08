@@ -28,7 +28,7 @@ public class TestCase6{
 	
 	@Signed
 	@BigEndian
-	@CHARSET("UTF-8")
+	@CHARSET("UTF32")
 	public static final class Entity extends DataPacket{
 		@Order(-1)
 		@BCD(5)
@@ -36,7 +36,7 @@ public class TestCase6{
 		
 		@Order(1)
 		@CHAR
-		@EndsWith(",")
+		@EndsWith("额")
 		public String char1;
 		
 		@Order(2)

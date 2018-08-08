@@ -1,15 +1,21 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
 /**
- * A input stream implementation that supports <tt>mark()</tt> and
- * <tt>reset()</tt> operations but does not maintain any internal buffer as
- * {@link BufferedInputStream} does.
- * TODO:
+ * An input stream implementation that supports <tt>mark()</tt> and
+ * <tt>reset()</tt> operations but does not maintain any internal buffer.
+ * <p>
+ * Due to the way how this library is used, the <tt>InputStream</tt> object
+ * passed in by client code will continue to be used again by client code after
+ * we finish our work. Classes like {@link java.io.BufferedInputStream
+ * BufferedInputStream} effectively prevent such use
+ * because of their internal buffering mechanics, which reads more data than
+ * needed and those data are "detained" by them and cannot be "put back" to the
+ * original stream.
+ * 
  * @author dzh
  */
 public final class MarkableStream extends InputStream implements AutoCloseable{
@@ -37,8 +43,10 @@ public final class MarkableStream extends InputStream implements AutoCloseable{
 		if(!marked())
 			return in.read();
 		if( ! expandIfNeeded()) {
-			//read beyond defined max buffer size
-			//throw away all bytes read before
+			/*
+			 * throw away all bytes recorded after last call to mark() 
+			 * because more data than readlimit has been read
+			 */
 			reset0();
 			return in.read();
 		}else {
@@ -62,6 +70,10 @@ public final class MarkableStream extends InputStream implements AutoCloseable{
 			readlimit = INITIAL_BUFFER_SIZE;
 		}
 		if(marked()) {
+			/*
+			 * mark again, throw away bytes before pos 
+			 * and copy the remaining data to the beginning of buffer
+			 */
 			if(readlimit<buffer.length) {
 				readlimit = buffer.length;
 			}

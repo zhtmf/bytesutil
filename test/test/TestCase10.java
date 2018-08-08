@@ -36,7 +36,7 @@ public class TestCase10{
 		test(s, StandardCharsets.UTF_16BE);
 		test(s, StandardCharsets.UTF_16BE);
 		test(s, StandardCharsets.UTF_16BE);
-		//TODO: UTF16 with BOM sucks
+		//UTF16 with BOM sucks
 	}
 	
 	public static void main(String[] args) throws Exception {

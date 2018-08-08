@@ -62,7 +62,7 @@ public final class FieldInfo{
 	public final boolean unsigned;
 	
 	/**
-	 * TODO:
+	 * end mark of the string (instead of a well-defined length)
 	 */
 	public final String endsWith;
 	
@@ -71,7 +71,6 @@ public final class FieldInfo{
 	 * <p>
 	 * If the annotation is absent, or it declares a dynamic length, value of this
 	 * field will be -1.
-	 * TODO:
 	 */
 	public final int length;
 	public final int listLength;
@@ -103,14 +102,13 @@ public final class FieldInfo{
 	 * Pattern string defined in {@link DatePattern} annotation, null if not present.
 	 */
 	public final String datePattern;
-	
 	/**
-	 * TODO:
+	 * End of the list value represented by this field should be detected by EOF,
+	 * rather than a well defined length.
 	 */
 	public final boolean listEOF;
-	
 	/**
-	 * TODO:
+	 * Whether Length/ListLength annotation is present, used only by ClassInfo
 	 */
 	final boolean lengthDefined;
 	

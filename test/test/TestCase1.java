@@ -107,6 +107,20 @@ public class TestCase1 {
 			Assert.assertTrue(Utils.equals(entity, entity2));
 			Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
 		}
+		
+		{
+			baos = new ByteArrayOutputStream();
+			for(int i=0;i<100000;++i) {
+				entity.serialize(baos);
+			}
+			byte[] bts = baos.toByteArray();
+			ByteArrayInputStream bais = new ByteArrayInputStream(bts);
+			for(int i=0;i<100000;++i) {
+				MyEntity entity2 = new MyEntity();
+				entity2.deserialize(bais);
+				Assert.assertTrue(Utils.equals(entity, entity2));
+			}
+		}
 	}
 
 	@Test
