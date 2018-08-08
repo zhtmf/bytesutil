@@ -1,9 +1,7 @@
 package org.dzh.bytesutil.converters;
 
-import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -16,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
+import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -79,22 +78,22 @@ public class StringConverter implements Converter<String> {
 	}
 
 	@Override
-	public String deserialize(InputStream is, FieldInfo ctx, Object self)
+	public String deserialize(MarkableStream is, FieldInfo ctx, Object self)
 			throws IOException, UnsupportedOperationException {
 		switch(ctx.type) {
 		case CHAR:{
 			Charset cs = ctx.charset;
 			if(cs==null) {
-				cs = ctx.charsetHandler.handleDeserialize(
-						ctx.name,self,(BufferedInputStream) is);
+				cs = ctx.charsetHandler.handleDeserialize(ctx.name,self,is);
 			}
-			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 			if(length<0) {
 				if(ctx.endsWith!=null) {
 					//read the stream until specified end mark is seen
 					String mark = ctx.endsWith;
 					int lookback = 0;
 					int pos = 0;
+					int read = 0;
 					char c = 0;
 					/*
 					 * the InputStreamReader internally maintains a buffer and it will read more bytes than actually need, 
@@ -102,11 +101,11 @@ public class StringConverter implements Converter<String> {
 					 * the string and the end mark again. So the remaining bytes unnecessarily read by the InputStreamReader
 					 * can be seen and parsed by other codes.
 					 */
-					BufferedInputStream bis = (BufferedInputStream)is;
-					bis.mark(Integer.MAX_VALUE);
+					is.mark(Integer.MAX_VALUE);
 					InputStreamReader isr = new InputStreamReader(is,cs);
 					StringBuilder sb = new StringBuilder();
-					while((c = (char) isr.read())!=Character.MAX_VALUE) {
+					while((read = isr.read())!=-1) {
+						c = (char)read;
 						sb.append(c);
 						if(c == mark.charAt(pos)) {
 							++pos;
@@ -115,10 +114,8 @@ public class StringConverter implements Converter<String> {
 						}
 						lookback += bytesCountForChar(c,cs);
 						if(pos == mark.length()) {
-							bis.reset();
-							while(lookback-->0) {
-								bis.read();
-							}
+							is.reset();
+							is.skip(lookback);
 							return sb.substring(0,sb.length()-mark.length());
 						}
 					}

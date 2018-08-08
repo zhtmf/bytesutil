@@ -1,6 +1,5 @@
 package org.dzh.bytesutil;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -28,6 +27,7 @@ import org.dzh.bytesutil.converters.StringConverter;
 import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
 import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
+import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -216,19 +216,15 @@ public class DataPacket {
 	 * @throws NullPointerException
 	 *             if <tt>src</tt> is null.
 	 */
-	@SuppressWarnings({ "unchecked", "resource" })
 	public void deserialize(InputStream src) throws ConversionException {
 		if(src==null) {
 			throw new NullPointerException("source input stream should not be null");
 		}
-		/*
-		 * BufferedInputStream should not be nested or the stream will unexpectedly reach its end.
-		 * The src will be a BufferedInputStream if this method is called recursively, if it is not one 
-		 * from the very beginning.
-		 */
-		BufferedInputStream _src = (BufferedInputStream) (
-				src instanceof BufferedInputStream ? src : new BufferedInputStream(src));
-		
+		deserialize0(new MarkableStream(src));
+	}
+	
+	@SuppressWarnings({ "unchecked"})
+	public void deserialize0(MarkableStream _src) throws ConversionException {
 		ClassInfo ci = getClassInfo();
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			Object value = null;

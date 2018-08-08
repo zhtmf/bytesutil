@@ -1,11 +1,10 @@
 package org.dzh.bytesutil.converters;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
+import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -42,11 +41,11 @@ public class IntArrayConverter implements Converter<int[]>{
 	}
 
 	@Override
-	public int[] deserialize(InputStream is, FieldInfo ctx, Object self)
+	public int[] deserialize(MarkableStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case RAW:
-			int length = Utils.lengthForDeserializingRAW(ctx, self, (BufferedInputStream) is);
+			int length = Utils.lengthForDeserializingRAW(ctx, self, is);
 			if(length<0) {
 				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 			}

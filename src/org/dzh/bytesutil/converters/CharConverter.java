@@ -1,12 +1,11 @@
 package org.dzh.bytesutil.converters;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
+import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -45,7 +44,7 @@ public class CharConverter implements Converter<Character> {
 	}
 
 	@Override
-	public Character deserialize(InputStream is, FieldInfo ctx, Object self)
+	public Character deserialize(MarkableStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		Charset cs = ctx.charset;
 		if(cs==null) {
@@ -54,7 +53,7 @@ public class CharConverter implements Converter<Character> {
 		switch(ctx.type) {
 		case CHAR:{
 			
-			int length = Utils.lengthForDeserializingCHAR(ctx, self, (BufferedInputStream) is);
+			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 			if(length<0) {
 				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 			}

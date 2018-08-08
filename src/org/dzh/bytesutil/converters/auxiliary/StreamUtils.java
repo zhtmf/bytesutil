@@ -1,7 +1,6 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
 import java.io.InputStream;
-import java.io.BufferedInputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -184,7 +183,7 @@ public class StreamUtils {
 		return length;
 	}
 	
-	public static boolean eof(BufferedInputStream bis) throws IOException {
+	public static boolean eof(MarkableStream bis) throws IOException {
 		bis.mark(1);
 		try {
 			int b = bis.read();
