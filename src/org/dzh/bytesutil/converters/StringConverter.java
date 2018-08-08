@@ -2,17 +2,12 @@ package org.dzh.bytesutil.converters;
 
 import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.annotations.types.BCD;
+import org.dzh.bytesutil.converters.auxiliary.CharDecoder;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
@@ -91,35 +86,30 @@ public class StringConverter implements Converter<String> {
 				if(ctx.endsWith!=null) {
 					//read the stream until specified end mark is seen
 					String mark = ctx.endsWith;
-					int lookback = 0;
 					int pos = 0;
-					int read = 0;
 					char c = 0;
 					/*
 					 * the InputStreamReader internally maintains a buffer and it will read more bytes than actually need, 
-					 * so we have to put all the bytes it reads back to the stream and skip bytes for 
-					 * the string and the end mark again. So the remaining bytes unnecessarily read by the InputStreamReader
-					 * can be seen and parsed by other codes.
+					 * so it should not be used here
 					 */
-					is.mark(Integer.MAX_VALUE);
-					InputStreamReader isr = new InputStreamReader(is,cs);
+					CharDecoder cd = getThreadLocalObject(cs);
 					StringBuilder sb = new StringBuilder();
-					while((read = isr.read())!=-1) {
-						c = (char)read;
-						sb.append(c);
-						if(c == mark.charAt(pos)) {
-							++pos;
-						}else {
-							pos = 0;
+					try {
+						for(;;) {
+							c = cd.decodeAndReset(is);
+							sb.append(c);
+							if(c == mark.charAt(pos)) {
+								++pos;
+							}else {
+								pos = 0;
+							}
+							if(pos == mark.length()) {
+								return sb.substring(0,sb.length()-mark.length());
+							}
 						}
-						lookback += bytesCountForChar(c,cs);
-						if(pos == mark.length()) {
-							is.reset();
-							is.skip(lookback);
-							return sb.substring(0,sb.length()-mark.length());
-						}
+					} catch (EOFException e) {
+						throw new EOFException("end mark ["+mark+"] not met before end of stream");
 					}
-					throw new EOFException("end mark ["+mark+"] not met before end of stream");
 				}else {
 					length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
 				}
@@ -134,12 +124,8 @@ public class StringConverter implements Converter<String> {
 		}
 	}
 	
-	private static int bytesCountForChar(char c,Charset cs) {
-		return getThreadLocalObject(cs).countForChar(c);
-	}
-	
-	private static final CharEncoder getThreadLocalObject(Charset cs) {
-		ThreadLocal<CharEncoder> tl = formatterMap.get(cs);
+	private static final CharDecoder getThreadLocalObject(Charset cs) {
+		ThreadLocal<CharDecoder> tl = formatterMap.get(cs);
 		if (tl == null) {
 			tl = new _TLFormatter(cs);
 			formatterMap.put(cs, tl);
@@ -147,47 +133,16 @@ public class StringConverter implements Converter<String> {
 		return tl.get();
 	}
 	
-	private static final ConcurrentHashMap<Charset, ThreadLocal<CharEncoder>> formatterMap = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<Charset, ThreadLocal<CharDecoder>> formatterMap = new ConcurrentHashMap<>();
 
-	private static final class _TLFormatter extends ThreadLocal<CharEncoder> {
-		private CharEncoder cs;
+	private static final class _TLFormatter extends ThreadLocal<CharDecoder> {
+		private CharDecoder cs;
 		public _TLFormatter(Charset cs) {
-			this.cs = new CharEncoder(cs);
+			this.cs = new CharDecoder(cs);
 		}
 		@Override
-		protected CharEncoder initialValue() {
+		protected CharDecoder initialValue() {
 			return cs;
-		}
-	}
-	
-	static final class CharEncoder{
-		CharsetEncoder ce;
-		ByteBuffer bb;
-		CharBuffer cb;
-		public CharEncoder(Charset cs) {
-			this.ce = cs.newEncoder();
-			this.bb = ByteBuffer.wrap(new byte[(int)ce.maxBytesPerChar()]);
-			this.cb = CharBuffer.wrap(new char[1]);
-		}
-		public int countForChar(char c) {
-			reset(c);
-			try {
-	            CoderResult cr = ce.encode(cb, bb, true);
-	            if (!cr.isUnderflow())
-	                cr.throwException();
-	            cr = ce.flush(bb);
-	            if (!cr.isUnderflow())
-	                cr.throwException();
-	        } catch (CharacterCodingException x) {
-	            throw new Error(x);
-	        }
-	        return bb.position();
-		}
-		private void reset(char c) {
-			ce.reset();
-			bb.clear();
-			cb.rewind();
-			cb.put(0, c);
 		}
 	}
 }

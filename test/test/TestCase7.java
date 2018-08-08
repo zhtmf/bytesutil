@@ -94,6 +94,15 @@ public class TestCase7{
 			e2.deserialize(new ByteArrayInputStream(arr));
 			Assert.assertTrue(Utils.equals(entity, e2));
 		}
+		baos = new ByteArrayOutputStream();
+		for(int i=0;i<10;++i) {
+			entity.serialize(baos);
+		}
+		for(int i=0;i<10;++i) {
+			Entity e2 = new Entity();
+			e2.deserialize(new ByteArrayInputStream(arr));
+			Assert.assertTrue(Utils.equals(entity, e2));
+		}
 	}
 	
 	public static void main(String[] args) throws ConversionException {

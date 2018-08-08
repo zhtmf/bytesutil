@@ -9,7 +9,7 @@ import java.util.Arrays;
  * A input stream implementation that supports <tt>mark()</tt> and
  * <tt>reset()</tt> operations but does not maintain any internal buffer as
  * {@link BufferedInputStream} does.
- * 
+ * TODO:
  * @author dzh
  */
 public final class MarkableStream extends InputStream implements AutoCloseable{
