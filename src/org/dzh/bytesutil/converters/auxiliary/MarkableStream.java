@@ -57,7 +57,7 @@ public final class MarkableStream extends InputStream implements AutoCloseable{
 			if(b==-1) {
 				return b;
 			}
-			buffer[pos++] = (byte) b;
+			buffer[pos++] = b;
 			++cur;
 			return b;
 		}
