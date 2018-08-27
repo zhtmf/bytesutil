@@ -35,6 +35,8 @@ public class TestCaseR {
 		entity.inner.b3 = 0xFFDE;
 	}
 	
+	@Unsigned
+	@LittleEndian
 	public static final class Inner extends DataPacket{
 		@Order(0)
 		@SHORT
@@ -69,6 +71,7 @@ public class TestCaseR {
 			public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
 				int b = is.read();
 				int b2 = is.read();
+				Assert.assertEquals((b2<<8 | b), 0x55DF);
 				return new Inner();
 			}
 		};
