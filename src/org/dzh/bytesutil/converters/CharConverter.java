@@ -27,7 +27,7 @@ public class CharConverter implements Converter<Character> {
 			if(length<0) {
 				//due to the pre-check in Context class, Length must be present at this point
 				length = bytes.length;
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
 				
 			}else if(length!=bytes.length) {
 				throw new IllegalArgumentException(
@@ -55,7 +55,7 @@ public class CharConverter implements Converter<Character> {
 			
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 			}
 			
 			String str = new String(StreamUtils.readBytes(is, length),cs);

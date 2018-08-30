@@ -48,7 +48,7 @@ public class DateConverter implements Converter<Date>{
 			if(length<0) {
 				//due to the pre-check in Context class, Length must be present at this point
 				length = bytes.length;
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
 				
 			}else if(length!=bytes.length) {
 				throw new IllegalArgumentException(
@@ -81,7 +81,7 @@ public class DateConverter implements Converter<Date>{
 			case CHAR:{
 				int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 				if(length<0) {
-					length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+					length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 				}
 				return getThreadLocalObject(datePattern)
 						.parse(new String(

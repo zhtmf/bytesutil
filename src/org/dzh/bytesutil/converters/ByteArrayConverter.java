@@ -25,7 +25,7 @@ public class ByteArrayConverter implements Converter<byte[]>{
 			if(length<0) {
 				//due to the pre-check in Context class, Length must be present at this point
 				length = value.length;
-				StreamUtils.writeIntegerOfType(dest, fi.lengthType, length, fi.bigEndian);
+				StreamUtils.writeIntegerOfType(dest, fi.lengthType(), length, fi.bigEndian);
 				
 			}else if(length!=value.length) {
 				throw new RuntimeException(
@@ -47,7 +47,7 @@ public class ByteArrayConverter implements Converter<byte[]>{
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(ctx, self, is);
 			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 			}
 			return StreamUtils.readBytes(is, length);
 		default:

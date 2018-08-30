@@ -38,7 +38,7 @@ public class StringConverter implements Converter<String> {
 				}else {
 					//due to the pre-check in Context class, Length must be present at this point
 					length = bytes.length;
-					StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+					StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
 				}
 				
 			}else if(length!=bytes.length) {
@@ -111,7 +111,7 @@ public class StringConverter implements Converter<String> {
 						throw new EOFException("end mark ["+mark+"] not met before end of stream");
 					}
 				}else {
-					length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+					length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 				}
 			}
 			return new String(StreamUtils.readBytes(is, length),cs);

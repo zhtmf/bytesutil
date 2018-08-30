@@ -25,7 +25,7 @@ public class IntArrayConverter implements Converter<int[]>{
 			if(length<0) {
 				//due to the pre-check in Context class, Length must be present at this point
 				length = value.length;
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
 				
 			}else if(length!=value.length) {
 				throw new RuntimeException(
@@ -47,7 +47,7 @@ public class IntArrayConverter implements Converter<int[]>{
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(ctx, self, is);
 			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 			}
 			byte[] raw = StreamUtils.readBytes(is, length);
 			int[] ret = new int[length];

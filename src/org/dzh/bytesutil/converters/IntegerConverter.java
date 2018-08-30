@@ -34,7 +34,7 @@ public class IntegerConverter implements Converter<Integer> {
 			int length = Utils.lengthForSerializingCHAR(ctx, self);
 			if(length<0) {
 				length = str.length();
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType, length, ctx.bigEndian);
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
 			}else if(length!=str.length()) {
 				throw new IllegalArgumentException(
 						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
@@ -76,7 +76,7 @@ public class IntegerConverter implements Converter<Integer> {
 		case CHAR:{
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType, ctx.bigEndian);
+				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 			}
 			byte[] numChars = StreamUtils.readBytes(is, length);
 			long ret = 0;

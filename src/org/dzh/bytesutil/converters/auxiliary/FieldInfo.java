@@ -79,8 +79,8 @@ public final class FieldInfo{
 	 * defines length as unsigned byte, while others defines it as unsigned short
 	 * etc.
 	 */
-	public final DataType lengthType;
-	public final DataType listLengthType;
+	private final DataType lengthType;
+	private final DataType listLengthType;
 	/**
 	 * {@link ModifierHandler} object which is used to obtain the length value
 	 * dynamically for this field, null if it is not defined in the {@link Length}
@@ -297,6 +297,14 @@ public final class FieldInfo{
 					String.format("cannot set value of field [%s] by reflection"
 							,field.getName()),e);
 		}
+	}
+	
+	/**
+	 * Returns lengthType or listLengthType
+	 * @return
+	 */
+	public DataType lengthType() {
+		return lengthType!=null ? lengthType : listLengthType;
 	}
 	
 	/**

@@ -35,7 +35,7 @@ public class TestCaseR {
 		entity.b2 = 0x66FF;
 		entity.b3 = 0xFFDE;
 		entity.b4 = 0xFFAA;
-		entity.b5 = 0xFFBA;
+		entity.b5 = (long)Integer.MAX_VALUE*2;
 		inner.b1 = 0x55DF;
 		inner.b2 = 0x66FF;
 		inner.b3 = 0xFFDE;
@@ -95,8 +95,9 @@ public class TestCaseR {
 		@SHORT
 		public int b4;
 		@Order(5)
-		@SHORT
-		public int b5;
+		@INT
+		@Unsigned
+		public long b5;
 		
 		public static final class handler extends EntityHandler{
 

@@ -70,6 +70,19 @@ public class Utils {
 		return length;
 	}
 	
+	public static int lengthForList(FieldInfo fi,Object self) {
+		/*
+		 * ListLength first
+		 * If the component type is not a dynamic-length data type, both listLength or Length may be present,
+		 * if the component type is a dynamic-length data type, then listLenght must be present or an exception 
+		 * will be thrown by ClassInfo
+		 */
+		int length = Utils.lengthForSerializingListLength(fi, self);
+		if(length==-1)
+			length = Utils.lengthForSerializingLength(fi, self);
+		return length;
+	}
+	
 	public static int lengthForDeserializingListLength(FieldInfo ctx,Object self, MarkableStream bis) {
 		int length = ctx.listLength;
 		if(length<0 && ctx.listLengthHandler!=null) {

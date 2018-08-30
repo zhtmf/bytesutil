@@ -127,15 +127,12 @@ public class DataPacket {
 				/*
 				 * validity check is done in ClassInfo
 				 */
-				int length = Utils.lengthForSerializingListLength(fi, this);
-				if(length<0) {
-					length = Utils.lengthForSerializingLength(fi, this);
-				}
+				int length = Utils.lengthForList(fi, this);
 				if(length<0) {
 					length = value.size();
 					if( ! fi.listEOF) {
 						try {
-							StreamUtils.writeIntegerOfType(dest, fi.lengthType, value.size(), fi.bigEndian);
+							StreamUtils.writeIntegerOfType(dest, fi.lengthType(), value.size(), fi.bigEndian);
 						} catch (IOException e) {
 							throw new ConversionException(this.getClass(),fi.name,e);
 						}
@@ -264,7 +261,7 @@ public class DataPacket {
 				if(length<0) {
 					if( ! terminateByEOF) {
 						try {
-							length = StreamUtils.readIntegerOfType(_src, fi.lengthType, fi.bigEndian);
+							length = StreamUtils.readIntegerOfType(_src, fi.lengthType(), fi.bigEndian);
 						} catch (IOException e) {
 							throw new ConversionException(this.getClass(),fi.name,e);
 						}
@@ -377,21 +374,30 @@ public class DataPacket {
 			}
 			int length = 0;
 			if(fi.listComponentClass!=null) {
+				length = Utils.lengthForList(fi, this);
+				if(length<0) {
+					//write ahead
+					//size of the write-ahead length should be considered
+					//even the list itself is null or empty
+					ret += fi.lengthType().size();
+				}
 				List lst = (List)fi.get(this);
 				if(lst!=null) {
-					length = lst.size();
+					//use the defined length but not the actual list size
+					if(length<0) {
+						length = lst.size();
+					}
 					if(fi.isEntityList) {
 						for(int i=0;i<length;++i) {
 							ret += ((DataPacket)lst.get(i)).length();
 						}
 						continue;
 					}
+				}else {
+					continue;
 				}
 			}else {
 				length = 1;
-			}
-			if(length==0) {
-				continue;
 			}
 			DataType type = fi.type;
 			switch(type) {
