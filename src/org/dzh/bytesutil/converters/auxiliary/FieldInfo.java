@@ -3,6 +3,8 @@ package org.dzh.bytesutil.converters.auxiliary;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +22,8 @@ import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.modifiers.Variant;
+
+import static org.dzh.bytesutil.converters.auxiliary.Utils.forContext;
 
 /**
  * Internal class that stores compile-time information of a {@link Field}
@@ -125,8 +129,7 @@ public final class FieldInfo{
 		if(List.class.isAssignableFrom(fieldClass)) {
 			Class<?> componentClass = ClassInfo.firstTypeParameterClass(field);
 			if(componentClass==null) {
-				throw new RuntimeException(
-					String.format("field [%s] should declare type parameter if it is a List", name));
+				throw forContext(base.entityClass, name, "should declare type parameter if it is a List");
 			}
 			this.listComponentClass = componentClass;
 			this.isEntityList = DataPacket.class.isAssignableFrom(listComponentClass);
@@ -145,9 +148,7 @@ public final class FieldInfo{
 		try {
 			this.variantEntityHandler = cond != null ? cond.value().newInstance() : null;
 		} catch (InstantiationException | IllegalAccessException e) {
-			throw new RuntimeException(
-					String.format("VariantEntityHandler class [%s] cannot be initialized by no-arg contructor"
-							, cond.value()));
+			throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor");
 		}
 		
 		{
@@ -170,16 +171,13 @@ public final class FieldInfo{
 				try {
 					charsetHandler = cs.handler().newInstance();
 				} catch (InstantiationException | IllegalAccessException e) {
-					throw new RuntimeException(
-							String.format("ModifierHandler class [%s] cannot be initialized by no-arg contructor"
-									, cs.handler()));
+					throw forContext(base.entityClass, name, "Charset ModifierHandler cannot be initialized by no-arg contructor");
 				}
 			}else {
 				try {
 					charset = Charset.forName(cs.value());
-				} catch (Exception e) {
-					throw new RuntimeException(
-							String.format("Charset name [%s] is illegal in field [%s]",cs.value(),name),e);
+				} catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
+					throw forContext(base.entityClass, name, "Illegal charset name");
 				}
 				charsetHandler = null;
 			}
@@ -191,7 +189,7 @@ public final class FieldInfo{
 			}else {
 				String mark = ew.value();
 				if(mark.isEmpty()) {
-					throw new IllegalArgumentException("should not define an empty or whitespace only end mark."); 
+					throw forContext(base.entityClass, name, "empty or whitespace only end mark.");
 				}
 				endsWith = mark;
 			}
@@ -209,9 +207,7 @@ public final class FieldInfo{
 					try {
 						this.lengthHandler = len.handler().newInstance();
 					} catch (InstantiationException | IllegalAccessException e) {
-						throw new RuntimeException(
-								String.format("ModifierHandler class [%s] cannot be initialized by no-arg contructor"
-										, len.handler()),e);
+						throw forContext(base.entityClass, name, "Length ModifierHandler cannot be initialized by no-arg contructor");
 					}
 				}else {
 					this.lengthHandler = null;
@@ -241,9 +237,7 @@ public final class FieldInfo{
 					try {
 						this.listLengthHandler = len.handler().newInstance();
 					} catch (InstantiationException | IllegalAccessException e) {
-						throw new RuntimeException(
-								String.format("ModifierHandler class [%s] cannot be initialized by no-arg contructor"
-										, len.handler()),e);
+						throw forContext(base.entityClass, name, "ListLength ModifierHandler cannot be initialized by no-arg contructor");
 					}
 				}else {
 					this.listLengthHandler = null;
@@ -259,9 +253,8 @@ public final class FieldInfo{
 				String val = df.value();
 				for(int i=0;i<val.length();++i) {
 					if(val.charAt(i)>127) {
-						throw new IllegalArgumentException(
-								String.format(
-								"date pattern %s is illegal, as only ASCII characters are permitted in a date pattern", val));
+						throw forContext(base.entityClass, name, "Illegal date pattern,"
+								+ " only ASCII characters are permitted");
 					}
 				}
 				this.datePattern = val;
@@ -279,7 +272,8 @@ public final class FieldInfo{
 		try {
 			return field.get(self);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new RuntimeException(
+			//for backward-compatibility, do not throw checked exception here 
+			throw new Error(
 					String.format("cannot obtain value of field [%s] by reflection"
 							,field.getName()),e);
 		}
@@ -293,7 +287,8 @@ public final class FieldInfo{
 		try {
 			field.set(self, val);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
-			throw new RuntimeException(
+			//for backward-compatibility, do not throw checked exception here 
+			throw new Error(
 					String.format("cannot set value of field [%s] by reflection"
 							,field.getName()),e);
 		}
@@ -348,7 +343,7 @@ public final class FieldInfo{
 		Annotation local1 = localAnnotation(def);
 		Annotation local2 = localAnnotation(another);
 		if(local1!=null && local2!=null) {
-			throw new IllegalArgumentException(
+			throw forContext(base.entityClass, name, 
 					String.format("[%s] and [%s] should not be both present on the same field declaration",def,another));
 		}else if(local1!=null && local2==null) {
 			return local1;
@@ -358,7 +353,7 @@ public final class FieldInfo{
 		Annotation global1 = globalAnnotation(def);
 		Annotation global2 = globalAnnotation(another);
 		if(global1!=null && global2!=null) {
-			throw new IllegalArgumentException(
+			throw forContext(base.entityClass, name, 
 					String.format("[%s] and [%s] should not be both present on the same class declaration",def,another));
 		}else if(global1!=null && global2==null) {
 			return global1;
@@ -370,6 +365,6 @@ public final class FieldInfo{
 	
 	@Override
 	public String toString() {
-		return "FieldInfo:entity["+enclosingEntityClass+"],field:["+name+"]";
+		return "FieldInfo:Entity["+enclosingEntityClass+"],Field:["+name+"]";
 	}
 }

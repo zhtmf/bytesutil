@@ -162,4 +162,22 @@ public class Utils {
 			return;
 		}
 	}
+	
+	static IllegalArgumentException forContext(Class<?> entity, String field, String error) {
+		StringBuilder ret = new StringBuilder();
+		if(entity!=null) {
+			ret.append("Entity:"+entity);
+		}
+		if(field!=null) {
+			if(ret.length()>0) {
+				ret.append(", ");
+			}
+			ret.append("Field:").append(field);
+		}
+		if(ret.length()>0) {
+			ret.append(", ");
+		}
+		ret.append("Error:").append(error);
+		return new IllegalArgumentException(ret.toString());
+	}
 }

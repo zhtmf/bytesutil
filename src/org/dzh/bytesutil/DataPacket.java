@@ -92,13 +92,19 @@ public class DataPacket {
 	 * 
 	 * @param dest
 	 *            destination stream of serialization
+	 * @throws ConversionException
+	 *             If invalid input encountered during runtime.
+	 * @throws IllegalArgumentException
+	 *             If initial parsing of annotations on entity class or fields
+	 *             failed, this exception should be eliminated during compile time but not caught and 
+	 *             handled during runtime.
 	 * @throws NullPointerException
 	 *             if <tt>dest</tt> is null.
 	 */
 	@SuppressWarnings("unchecked")
-	public void serialize(OutputStream dest) throws ConversionException{
+	public void serialize(OutputStream dest) throws ConversionException, IllegalArgumentException{
 		if(dest==null) {
-			throw new NullPointerException("destination stream should not be null");
+			throw new NullPointerException();
 		}
 		
 		//lazy initialization
@@ -209,13 +215,18 @@ public class DataPacket {
 	 * is called or class of it defines a no-arg constructor.
 	 * 
 	 * @param src
-	 * @throws IOException
+	 * @throws ConversionException
+	 *             If invalid input encountered during runtime.
+	 * @throws IllegalArgumentException
+	 *             If initial parsing of annotations on entity class or fields
+	 *             failed, this exception should be eliminated during compile time but not caught and 
+	 *             handled during runtime.
 	 * @throws NullPointerException
 	 *             if <tt>src</tt> is null.
 	 */
-	public void deserialize(InputStream src) throws ConversionException {
+	public void deserialize(InputStream src) throws ConversionException, IllegalArgumentException {
 		if(src==null) {
-			throw new NullPointerException("source input stream should not be null");
+			throw new NullPointerException();
 		}
 		deserialize0(new MarkableStream(src));
 	}

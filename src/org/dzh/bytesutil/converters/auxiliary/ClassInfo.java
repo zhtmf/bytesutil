@@ -22,6 +22,8 @@ import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
 
+import static org.dzh.bytesutil.converters.auxiliary.Utils.forContext;
+
 /**
  * Internal class that records info about annotations, fields of a specific
  * class for quick access, should not be used in client code.
@@ -30,6 +32,9 @@ import org.dzh.bytesutil.annotations.types.RAW;
  * @author dzh
  */
 public class ClassInfo {
+	
+	final Class<?> entityClass;
+	
 	/**
 	 * Annotations that are present on the class (on the type)
 	 */
@@ -41,6 +46,8 @@ public class ClassInfo {
 	private Map<String,FieldInfo> fieldInfoByField = new LinkedHashMap<>();
 	
 	public ClassInfo(Class<?> cls) {
+		
+		this.entityClass = cls;
 		
 		for(Annotation an:cls.getAnnotations()) {
 			globalAnnotations.put(an.annotationType(), an);
@@ -70,9 +77,7 @@ public class ClassInfo {
 				try {
 					f.setAccessible(true);
 				} catch (SecurityException e) {
-					throw new RuntimeException(
-							String.format("field %s is marked for serialization, but cannot be made accessible."
-									,f.getName()),e);
+					throw forContext(cls, f.getName(), "field cannot be made accessible.");
 				}
 			}
 			
@@ -103,8 +108,7 @@ public class ClassInfo {
 			for(DataType tp:DataType.values()) {
 				if(f.getAnnotation(tp.annotationClassOfThisType())!=null) {
 					if(type!=null) {
-						throw new IllegalArgumentException(
-								String.format("multiple data type declaration on field [%s] is not allowed", name));
+						throw forContext(cls, name, "multiple data type declaration on same field is not allowed");
 					}
 					type = tp;
 				}
@@ -114,14 +118,14 @@ public class ClassInfo {
 				if( ! DataPacket.class.isAssignableFrom(f.getType())
 				&& ((componentClass = firstTypeParameterClass(f))==null
 				|| ! DataPacket.class.isAssignableFrom(componentClass))) {
-					throw new IllegalArgumentException(String.format("field [%s] is not marked with a DataType", name));
+					throw forContext(cls, name, "field not marked with a DataType");
 				}
 			}
 			
 			if(type == DataType.BCD) {
 				BCD anno = f.getAnnotation(BCD.class);
 				if(anno.value()<0) {
-					throw new IllegalArgumentException(String.format("should not define negative BCD length for field [%s]", name));
+					throw forContext(cls, name, "BCD length should not be negative");
 				}
 			}
 			
@@ -130,29 +134,22 @@ public class ClassInfo {
 			if(fi.listComponentClass!=null) {
 				if((fi.localAnnotation(Length.class)!=null
 				|| fi.localAnnotation(ListLength.class)!=null) && fi.listEOF) {
-					throw new IllegalArgumentException(
-							String.format("both EOF and ListLength/Length annotation are present on list type field [%s], "
-									+ "which is not permitted.",name));
+					throw forContext(cls, name, "both EOF and ListLength/Length annotation are present on list type field");
 				}
 				if(!fi.listEOF) {
 					if(fi.localAnnotation(Length.class)==null
 							&& fi.localAnnotation(ListLength.class)==null) {
-						throw new IllegalArgumentException(String.format(
-								"field [%s] is a list but Length or ListLength annotation are not present on it", name));
+						throw forContext(cls, name, "neither Length nor ListLength annotation are present on it");
 					}
 					if(((fi.type == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
 							|| (fi.type == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
 							&& fi.localAnnotation(ListLength.class)==null) {
-						throw new IllegalArgumentException(String.format(
-								"field [%s] is a list of Data Type that supports dynamic length, "
-										+ "but a ListLength annotation is not present on it, to avoid ambiguity, use ListLength but not "
-										+ "Length annotation to specify the length ", name));
+						throw forContext(cls, name, "this field is a list of Data Type that supports dynamic length, "
+								+ "to avoid ambiguity, use ListLength but not Length to specify the list length");
 					}
 				}else{
 					if(i!=fieldList.size()-1) {
-						throw new IllegalArgumentException(String.format(
-								"field [%s] is defined as a list that reaches end of input, "
-										+ "but it is not the last field in the entity, which is not permitted", name));
+						throw forContext(cls, name, "field marked with EOF is not the last field in the entity class");
 					}
 				}
 			}
@@ -162,26 +159,20 @@ public class ClassInfo {
 			CHAR ch = fi.localAnnotation(CHAR.class);
 			if(ch!=null && ch.value()<0) {
 				if(fi.endsWith==null && !fi.lengthDefined)
-					throw new IllegalArgumentException(
-							String.format("field [%s] is defined as CHAR, but its value property is negative"
-									+ " and a Length annotation is not present on it",name));
+					throw forContext(cls, name, "this field is defined as CHAR, but its value property is negative"
+							+ " and a Length annotation is not present on it");
 				if(fi.endsWith!=null && fi.lengthDefined) {
-					throw new IllegalArgumentException(
-							String.format("both EndsWith and Length annotation are present on field [%s], "
-									+ "which is not permitted.",name));
+					throw forContext(cls, name, "both EndsWith and Length annotation are present");
 				}
 			}
 			
 			RAW raw = fi.localAnnotation(RAW.class);
 			if(raw!=null && raw.value()<0) {
 				if(fi.endsWith==null && !fi.lengthDefined)
-					throw new IllegalArgumentException(
-							String.format("field [%s] is defined as RAW, but its value property is negative"
-									+ "and  a Length annotation is not present on it",name));
+					throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
+							+ " and a Length annotation is not present on it");
 				if(fi.endsWith!=null && fi.lengthDefined) {
-					throw new IllegalArgumentException(
-							String.format("both EndsWith and Length annotation are present on field [%s], "
-									+ "which is not permitted.",name));
+					throw forContext(cls, name, "both EndsWith and Length annotation are present");
 				}
 			}
 			
@@ -221,12 +212,10 @@ public class ClassInfo {
 			int val1 = o1.getAnnotation(Order.class).value();
 			int val2 = o2.getAnnotation(Order.class).value();
 			if(val1==val2) {
-				throw new RuntimeException(String.format("field %s and field %s have same order value",
-						o1.getName(),o2.getName()));
+				throw forContext(null, o1.getName()+"/"+o2.getName(), "two fields have same order value");
 			}
 			/*
-			 * sort them reversely there to prevent always insert into the beginning of
-			 * result list.
+			 * sort them reversely there to prevent inserting into the beginning
 			 */
 			return -(val1 - val2);
 		}
