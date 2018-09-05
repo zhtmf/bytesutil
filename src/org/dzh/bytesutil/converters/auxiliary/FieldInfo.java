@@ -109,8 +109,9 @@ public final class FieldInfo{
 	/**
 	 * End of the list value represented by this field should be detected by EOF,
 	 * rather than a well defined length.
+	 * TODO:
 	 */
-	public final boolean listEOF;
+	public final boolean eof;
 	/**
 	 * Whether Length/ListLength annotation is present, used only by ClassInfo
 	 */
@@ -261,7 +262,7 @@ public final class FieldInfo{
 			}
 		}
 		
-		this.listEOF = localAnnotation(EOF.class)!=null;
+		this.eof = localAnnotation(EOF.class)!=null;
 	}
 	/**
 	 * Wrapper of {@link Field#get(Object)}

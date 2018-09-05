@@ -1,5 +1,6 @@
 package org.dzh.bytesutil.converters;
 
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -26,31 +27,33 @@ public class StringConverter implements Converter<String> {
 			if(cs==null) {
 				cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name,self);
 			}
-			byte[] bytes = value.getBytes(cs);
-			byte[] bytes2 = null;
+			byte[] bytes = null;
 			
 			int length = Utils.lengthForSerializingCHAR(ctx, self);
 			if(length<0) {
 				if(ctx.endsWith!=null) {
 					//this string is of nondeterministic length
 					//but will always ends with specific char in the stream
-					bytes2 = ctx.endsWith.getBytes(cs);
+					//concatenation is necessary! As BOM will be duplicated if these two strings 
+					//are converted to byte array separately
+					bytes = (value + ctx.endsWith).getBytes(cs);
+				}else if(ctx.eof) {
+					//TODO:
+					bytes = value.getBytes(cs);
 				}else {
+					bytes = value.getBytes(cs);
 					//due to the pre-check in Context class, Length must be present at this point
 					length = bytes.length;
 					StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
 				}
 				
-			}else if(length!=bytes.length) {
+			}else if(length!=(bytes = value.getBytes(cs)).length) {
 				throw new IllegalArgumentException(
 						String.format("encoded byte array length [%d] not equals with declared CHAR length [%d]"
 									,bytes.length,length));
 			}
 			
 			StreamUtils.writeBytes(dest, bytes);
-			if(bytes2!=null) {
-				StreamUtils.writeBytes(dest, bytes2);
-			}
 			break;
 		}
 		case BCD:{
@@ -110,6 +113,17 @@ public class StringConverter implements Converter<String> {
 					} catch (EOFException e) {
 						throw new EOFException("end mark ["+mark+"] not met before end of stream");
 					}
+				}else if(ctx.eof) {
+					//TODO:
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					for(;;) {
+						int b = is.read();
+						if(b==-1) {
+							break;
+						}
+						baos.write(b);
+					}
+					return new String(baos.toByteArray(),cs);
 				}else {
 					length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 				}

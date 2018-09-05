@@ -138,7 +138,7 @@ public abstract class DataPacket {
 				int length = Utils.lengthForList(fi, this);
 				if(length<0) {
 					length = value.size();
-					if( ! fi.listEOF) {
+					if( ! fi.eof) {
 						try {
 							StreamUtils.writeIntegerOfType(dest, fi.lengthType(), value.size(), fi.bigEndian);
 						} catch (IOException e) {
@@ -265,7 +265,7 @@ public abstract class DataPacket {
 			//this field is defined as a list
 			}else if(fi.listComponentClass!=null) {
 				
-				boolean terminateByEOF = fi.listEOF;
+				boolean terminateByEOF = fi.eof;
 				
 				int length = Utils.lengthForDeserializingListLength(fi, this, _src);
 				if(length<0) {
@@ -389,10 +389,12 @@ public abstract class DataPacket {
 			if(fi.listComponentClass!=null) {
 				length = Utils.lengthForList(fi, this);
 				if(length<0) {
-					//write ahead
-					//size of the write-ahead length should be considered
-					//even the list itself is null or empty
-					ret += fi.lengthType().size();
+					if( ! fi.eof) {
+						//write ahead
+						//size of the write-ahead length should be considered
+						//even the list itself is null or empty
+						ret += fi.lengthType().size();
+					}
 				}
 				List lst = (List)fi.get(this);
 				if(lst!=null) {
@@ -425,12 +427,14 @@ public abstract class DataPacket {
 			case CHAR:{
 				int size = Utils.lengthForSerializingCHAR(fi, this);
 				if(size<0) {
-					//dynamic length that is written to stream prior to serializing value
-					//get the actual value and calculate its length
 					Object val = fi.get(this);
 					size = val == null ? 0 : val.toString().length();
-					//other types have been checked by FieldInfo class
-					ret += fi.annotation(Length.class).type().size();
+					if(!fi.eof) {
+						//dynamic length that is written to stream prior to serializing value
+						//get the actual value and calculate its length
+						//other types have been checked by FieldInfo class
+						ret += fi.annotation(Length.class).type().size();
+					}
 				}
 				//length of individual CHAR * size of (maybe) list
 				ret += size * length;

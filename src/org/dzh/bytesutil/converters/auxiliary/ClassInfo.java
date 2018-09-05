@@ -133,10 +133,10 @@ public class ClassInfo {
 			
 			if(fi.listComponentClass!=null) {
 				if((fi.localAnnotation(Length.class)!=null
-				|| fi.localAnnotation(ListLength.class)!=null) && fi.listEOF) {
+				|| fi.localAnnotation(ListLength.class)!=null) && fi.eof) {
 					throw forContext(cls, name, "both EOF and ListLength/Length annotation are present on list type field");
 				}
-				if(!fi.listEOF) {
+				if(!fi.eof) {
 					if(fi.localAnnotation(Length.class)==null
 							&& fi.localAnnotation(ListLength.class)==null) {
 						throw forContext(cls, name, "neither Length nor ListLength annotation are present on it");
@@ -147,33 +147,31 @@ public class ClassInfo {
 						throw forContext(cls, name, "this field is a list of Data Type that supports dynamic length, "
 								+ "to avoid ambiguity, use ListLength but not Length to specify the list length");
 					}
-				}else{
-					if(i!=fieldList.size()-1) {
-						throw forContext(cls, name, "field marked with EOF is not the last field in the entity class");
-					}
 				}
+			}
+			
+			if(fi.eof && i!=fieldList.size()-1) {
+				throw forContext(cls, name, "field marked with EOF is not the last field in the entity class");
 			}
 			
 			//either specify a positive value property or use a Length annotation to 
 			//declare the length
 			CHAR ch = fi.localAnnotation(CHAR.class);
 			if(ch!=null && ch.value()<0) {
-				if(fi.endsWith==null && !fi.lengthDefined)
+				if(fi.endsWith==null && !fi.eof && !fi.lengthDefined)
+					//TODO:
 					throw forContext(cls, name, "this field is defined as CHAR, but its value property is negative"
 							+ " and a Length annotation is not present on it");
-				if(fi.endsWith!=null && fi.lengthDefined) {
+				if((fi.endsWith!=null || fi.eof) && fi.lengthDefined) {
 					throw forContext(cls, name, "both EndsWith and Length annotation are present");
 				}
 			}
 			
 			RAW raw = fi.localAnnotation(RAW.class);
 			if(raw!=null && raw.value()<0) {
-				if(fi.endsWith==null && !fi.lengthDefined)
+				if(!fi.lengthDefined)
 					throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
 							+ " and a Length annotation is not present on it");
-				if(fi.endsWith!=null && fi.lengthDefined) {
-					throw forContext(cls, name, "both EndsWith and Length annotation are present");
-				}
 			}
 			
 			fieldInfoByField.put(name, fi);
