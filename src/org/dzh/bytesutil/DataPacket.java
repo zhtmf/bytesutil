@@ -27,27 +27,29 @@ import org.dzh.bytesutil.converters.StringConverter;
 import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
 import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
-import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
+import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
 /**
  * <p>
  * Entrace of this library.
- * <p> 
- * Make your entity classes subclass of this class and use the
- * {@link #serialize(OutputStream)} and {@link #deserialize(InputStream)} method
- * to serialize entities into or restore them from streams.
+ * <p>
+ * Make your entity classes subclass of this base class and inherit 3 methods
+ * from it: {@link #serialize(OutputStream) serialize},
+ * {@link #deserialize(InputStream) deserialize}, {@link #length() length} which
+ * helps you converting entity class to/from byte streams.
  * <p>
  * This class itself is thread-safe, as it does not define any non-static
- * fields. For the same reason, it does not define (and cannot define)
- * reasonable {@link #equals(Object)} and {@link #hashCode()} method, so you
- * should define them in your subclasses.
+ * fields.
+ * <p>
+ * It does not define any abstract methods but declared as abstract to remind
+ * that it should not be used alone but subclassed.
  * 
  * @author dzh
  *
  */
-public class DataPacket {
+public abstract class DataPacket {
 	
 	//thread-safe map of class info objects
 	private static final ConcurrentHashMap<Class<?>,ClassInfo> 
@@ -212,7 +214,7 @@ public class DataPacket {
 	 * Fields can also be specified by no annotation classes under
 	 * <tt>annotations</tt> package but defined of type {@link DataPacket}, under
 	 * this situation, it is either non-null (initialized manually) when this method
-	 * is called or class of it defines a no-arg constructor.
+	 * is called or class of it declares a no-arg constructor.
 	 * 
 	 * @param src
 	 * @throws ConversionException
@@ -228,11 +230,11 @@ public class DataPacket {
 		if(src==null) {
 			throw new NullPointerException();
 		}
-		deserialize0(new MarkableStream(src));
+		deserialize0(new MarkableInputStream(src));
 	}
 	
 	@SuppressWarnings({ "unchecked"})
-	private void deserialize0(MarkableStream _src) throws ConversionException {
+	private void deserialize0(MarkableInputStream _src) throws ConversionException {
 		ClassInfo ci = getClassInfo();
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			Object value = null;

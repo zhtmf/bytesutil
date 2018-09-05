@@ -31,7 +31,7 @@ public @interface ListLength {
 	 */
 	int value() default -1;
 	/**
-	 * how the length value itself is stored in the stream.<br/>
+	 * How the length value itself is stored in the stream.<br/>
 	 * by default it is treated as a single byte value.
 	 * @return	the data type which describes how the length value itself is stored in the stream
 	 */

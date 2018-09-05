@@ -18,10 +18,14 @@ import org.dzh.bytesutil.annotations.modifiers.Unsigned;
  * annotation. Endianness is specified using {@link BigEndian} / {@link LittleEndian}
  * annotation.
  * <p>
- * This data type can be converted to
- * <code>byte/Byte,short/Short</code>, note that if an
- * {@link Unsigned} SHORT value which is larger than {@link Short#MAX_VALUE} is
- * converted to a java <code>short/Short</code>, an exception will be thrown.
+ * Java integral types are convertible to/from it.
+ * <p>
+ * Note that as Java does not have unsigned integral types, if large unsigned
+ * values are to be converted to corresponding Java integral types, overflow
+ * exception may be raised by this library or incorrect values may be produced, depends on
+ * whether the field is declared {@link Signed} or {@link Unsigned}. So it is
+ * generally preferable to use "larger" types to store numeric values from
+ * arbitrary byte streams.
  */
 @Retention(RUNTIME)
 @Target(FIELD)

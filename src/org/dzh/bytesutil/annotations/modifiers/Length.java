@@ -11,8 +11,8 @@ import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
 import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 
 /**
- * Annotation used to specify length of various data type. Concretely, it is
- * used in the following cases:
+ * Annotation used to specify length of various data type. It is used in the
+ * following cases:
  * <ul>
  * <li>Specify length of a field declared as a {@link List}.</li>
  * <li>Specify length of a {@link org.dzh.bytesutil.annotations.types.CHAR CHAR}
@@ -26,8 +26,8 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * And it is used in 3 different flavors:
  * <ul>
  * <li>If {@link #value() value} is greater than 0, it is used to declare a
- * static length. In this case, it is the same as the <tt>value</tt>
- * property of <tt>CHAR</tt> or <tt>RAW</tt>.</li>
+ * static length. In this case, it is the same as the <tt>value</tt> property of
+ * <tt>CHAR</tt> or <tt>RAW</tt>.</li>
  * <li>If {@link #value() value} is left unassigned or assigned to a negative
  * value and {@link #handler() handler} is set to a class other than
  * {@link PlaceHolderHandler}, it is used to specify a handler class which
@@ -40,8 +40,8 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * determining how the length value is stored in the stream.</li>
  * </ul>
  * <p>
- * When used to define length of a field of <tt>CHAR</tt> type, this annotation cannot be 
- * used together with {@link EndsWith}.
+ * When used to define length of a field of <tt>CHAR</tt> type, this annotation
+ * should not be used together with {@link EndsWith}.
  * <p>
  * It is necessary that this annotation be used with care, because if all
  * property are left unassigned, the library will try to read from/write to the

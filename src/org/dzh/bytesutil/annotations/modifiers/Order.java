@@ -17,8 +17,7 @@ import java.lang.annotation.Target;
  * <p>
  * Fields are sorted according to their {@link #value() value} in ascending
  * order. It is not mandatory to begin the order value from 0, as long as any
- * two <tt>Order</tt> annotation does not specify same {@link #value() value}
- * property.
+ * two <tt>Order</tt> annotations do not specify same order value.
  * 
  * @author dzh
  *

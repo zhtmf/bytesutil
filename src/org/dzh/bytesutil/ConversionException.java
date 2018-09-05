@@ -3,8 +3,12 @@ package org.dzh.bytesutil;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 
 /**
- * Generic Exception class for <tt>runtime</tt> error produced by this library.<br/>
- * This class contains information about the entity class and the field that failed the parsing.
+ * <p>
+ * General exception class for <tt>runtime</tt> error produced by this library.
+ * <p>
+ * Users can retrieve name of the class and field which failed the processing
+ * through {@link #getEntityClassName() getEntityClassName} and
+ * {@link #getFieldName() getFieldName} for better exception handling.
  */
 public class ConversionException extends Exception {
 	private static final long serialVersionUID = 1L;
@@ -40,18 +44,19 @@ public class ConversionException extends Exception {
 		this.entityClassName = enclosingEntityClass.getName();
 		this.fieldName = fieldName;
 	}
-	
+
 	/**
-	 * Returns name of the entity class which failed parsing and produces this error.
+	 * Returns name of the entity class which causes this
+	 * error.
 	 * 
-	 * @return
+	 * @return name of the entity class represented as a string
 	 */
 	public String getEntityClassName() {
 		return entityClassName;
 	}
 	/**
-	 * Returns name of the field which failed parsing and produces this error.
-	 * @return
+	 * Returns name of the field which causes this error.
+	 * @return name of the field represented as a string
 	 */
 	public String getFieldName() {
 		return fieldName;

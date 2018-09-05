@@ -5,7 +5,7 @@ import java.io.OutputStream;
 
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
-import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
+import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -57,7 +57,7 @@ public class LongConverter implements Converter<Long> {
 	}
 
 	@Override
-	public Long deserialize(MarkableStream is, FieldInfo ctx, Object self)
+	public Long deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case BYTE:{

@@ -13,7 +13,7 @@ import java.nio.charset.CoderResult;
 /**
  * A replacement for {@link java.io.InputStreamReader InputStreamReader}.
  * <p>
- * For the same reason as {@link MarkableStream}, <tt>InputStreamReader</tt>s
+ * For the same reason as {@link MarkableInputStream}, <tt>InputStreamReader</tt>s
  * which maintains internal read-ahead buffer have negative impact on our
  * processing.
  * <p>

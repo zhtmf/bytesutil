@@ -13,7 +13,7 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingCHAR(FieldInfo ctx,Object self, MarkableStream bis) {
+	public static int lengthForDeserializingCHAR(FieldInfo ctx,Object self, MarkableInputStream bis) {
 		int length = ctx.annotation(CHAR.class).value();
 		if(length<0) {
 			length = lengthForDeserializingLength(ctx,self,bis);
@@ -29,7 +29,7 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingRAW(FieldInfo ctx,Object self, MarkableStream bis) {
+	public static int lengthForDeserializingRAW(FieldInfo ctx,Object self, MarkableInputStream bis) {
 		int length = ctx.annotation(RAW.class).value();
 		if(length<0) {
 			length = lengthForDeserializingLength(ctx,self,bis);
@@ -48,7 +48,7 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingLength(FieldInfo ctx,Object self, MarkableStream bis) {
+	public static int lengthForDeserializingLength(FieldInfo ctx,Object self, MarkableInputStream bis) {
 		int length = ctx.length;
 		if(length<0 && ctx.lengthHandler!=null) {
 			length = (Integer)ctx.lengthHandler.handleDeserialize(ctx.name, self, bis);
@@ -83,7 +83,7 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingListLength(FieldInfo ctx,Object self, MarkableStream bis) {
+	public static int lengthForDeserializingListLength(FieldInfo ctx,Object self, MarkableInputStream bis) {
 		int length = ctx.listLength;
 		if(length<0 && ctx.listLengthHandler!=null) {
 			length = (Integer)ctx.listLengthHandler.handleDeserialize(ctx.name, self, bis);

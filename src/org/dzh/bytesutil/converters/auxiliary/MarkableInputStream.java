@@ -18,7 +18,7 @@ import java.util.Arrays;
  * 
  * @author dzh
  */
-public final class MarkableStream extends InputStream implements AutoCloseable{
+public final class MarkableInputStream extends InputStream implements AutoCloseable{
 	
 	private static final int MAX_BUFFER_SIZE = Integer.MAX_VALUE-8;
 	private static final int INITIAL_BUFFER_SIZE = 8;
@@ -29,7 +29,7 @@ public final class MarkableStream extends InputStream implements AutoCloseable{
 	private int pos;
 	private int cur;
 	
-	public MarkableStream(InputStream is) {
+	public MarkableInputStream(InputStream is) {
 		if(is==null) {
 			throw new NullPointerException();
 		}

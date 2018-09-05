@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
-import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
+import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -65,7 +65,7 @@ public class DateConverter implements Converter<Date>{
 	}
 
 	@Override
-	public Date deserialize(MarkableStream is, FieldInfo ctx, Object self)
+	public Date deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException, UnsupportedOperationException {
 		String datePattern = ctx.datePattern;
 		if(datePattern==null) {

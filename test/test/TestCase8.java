@@ -3,7 +3,7 @@ package test;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 
-import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
+import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -12,7 +12,7 @@ public class TestCase8{
 	@Test
 	public void testLength() throws Exception {
 		String str = "1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz";
-		try(MarkableStream bs = new MarkableStream(new ByteArrayInputStream(str.getBytes()))){
+		try(MarkableInputStream bs = new MarkableInputStream(new ByteArrayInputStream(str.getBytes()))){
 			StringBuilder sb = new StringBuilder();
 			for(int i=0;i<str.length();++i) {
 				sb.append((char)bs.read());
@@ -20,7 +20,7 @@ public class TestCase8{
 			bs.close();
 			Assert.assertTrue(str.contentEquals(sb));
 		}
-		try(MarkableStream bs = new MarkableStream(new ByteArrayInputStream(str.getBytes()))){
+		try(MarkableInputStream bs = new MarkableInputStream(new ByteArrayInputStream(str.getBytes()))){
 			StringBuilder sb = new StringBuilder();
 			int marklimit = 23;
 			bs.mark(marklimit);
@@ -52,7 +52,7 @@ public class TestCase8{
 			for(int k=0;k<pre;++k) {
 				bis.read();
 			}
-			MarkableStream bs = new MarkableStream(bis);
+			MarkableInputStream bs = new MarkableInputStream(bis);
 			int marklimit = 10;
 			bs.mark(marklimit);
 			StringBuilder sb = new StringBuilder();
@@ -78,7 +78,7 @@ public class TestCase8{
 		}
 		{
 			ByteArrayInputStream bais = new ByteArrayInputStream(str.getBytes());
-			MarkableStream bs = new MarkableStream(bais);
+			MarkableInputStream bs = new MarkableInputStream(bais);
 			bs.mark(10);
 			StringBuilder sb = new StringBuilder();
 			int marklimit = 10;

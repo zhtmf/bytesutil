@@ -10,24 +10,26 @@ import org.dzh.bytesutil.annotations.modifiers.Length;
 
 /**
  * <p>
- * Consecutive bytes that are read as-is and not specially interpreted.
+ * Consecutive bytes that are read as-is and not specially interpreted. It
+ * exists to represent non-integral and non-string byte data.
  * <p>
- * Length of this type of data can be specified with either {@link #value()}
- * property or additional {@link Length} annotation on the same field. If the
- * <tt>value</tt> property is left unassigned, or assigned to a negative value,
- * the <tt>Length</tt> annotation is referred to, and if that annotation is not
- * present an exception is thrown.
+ * Length of RAW sequences should be specified with either positive
+ * {@link #value() value} property or an additional {@link Length} annotation on
+ * the same field. If neither of them is present, an exception will be thrown
+ * during initial parsing.
  * <p>
- * This data type can only be "converted" to a byte array or an int array.
+ * This data type can be "converted" from/to a byte array or an
+ * <code>int</code> array.
+ * 
  * @author dzh
  */
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface RAW {
 	/**
-	 * Specifies length of this byte stream.
+	 * Specifies length of this block of byte stream.
 	 * 
-	 * @return
+	 * @return number of bytes
 	 */
 	int value() default -1;
 }

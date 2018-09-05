@@ -9,14 +9,14 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Specifies that all integral data types in a class or only the annotated field
+ * Specifies that a single integral field or all integral fields in a class
  * should be interpreted as big-endian.
  * <p>
- * Annotations on a field always override annotations on the class.
+ * Annotations on a specific field always override annotation at the class
+ * level.
  * <p>
- * big-endian is the default endian-ness, if no {@link BigEndian} or
- * {@link LittleEndian} is represent on the current field or enclosing class,
- * big-endian is assumed.
+ * Big-endian is the default, so if neither {@link BigEndian} nor
+ * {@link LittleEndian} is represent big-endian is assumed.
  * 
  * @author dzh
  */

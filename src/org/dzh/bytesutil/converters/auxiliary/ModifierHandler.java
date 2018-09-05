@@ -12,7 +12,7 @@ public abstract class ModifierHandler<E> {
 	 */
 	static final int HANDLER_READ_BUFFER_SIZE = 256;
 	
-	public E handleDeserialize(String fieldName, Object entity, MarkableStream is){
+	public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is){
 		is.mark(HANDLER_READ_BUFFER_SIZE);
 		E ret = handleDeserialize0(fieldName, entity, is);
 		if(ret==null) {

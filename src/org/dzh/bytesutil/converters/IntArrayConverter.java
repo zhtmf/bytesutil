@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
-import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
+import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -41,7 +41,7 @@ public class IntArrayConverter implements Converter<int[]>{
 	}
 
 	@Override
-	public int[] deserialize(MarkableStream is, FieldInfo ctx, Object self)
+	public int[] deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case RAW:

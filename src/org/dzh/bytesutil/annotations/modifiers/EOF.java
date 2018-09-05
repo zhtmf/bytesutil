@@ -7,8 +7,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Annotation used to denote the annotated list value is of indeterministic
- * length and its end is detected by reaching end of the stream.
+ * Annotation used to declare that the annotated list value is of
+ * indeterministic length and its end is detected by reaching end of the stream.
  * <p>
  * This annotation should not be used together with {@link Length} or
  * {@link ListLength}

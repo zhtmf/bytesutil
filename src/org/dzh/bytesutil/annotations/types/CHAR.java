@@ -13,18 +13,16 @@ import org.dzh.bytesutil.annotations.modifiers.CHARSET;
  * Consecutive bytes that are interpreted as human-readable characters.
  * <p>
  * Note that this data type has nothing to do with Java two-bytes <tt>char</tt>
- * type, as CHARs are in fact single-byte arrays.
+ * type, as CHARs are in fact single-byte data.
  * <p>
- * Charset of the string CHAR data represents can be specified using
- * {@link CHARSET} annotation.
+ * Charsets of CHAR sequences are specified using {@link CHARSET}.
  * <p>
- * Length of this type of data can be specified with either {@link #value()}
- * property or additional {@link Length} annotation on the same field. If the
- * <tt>value</tt> property is left unassigned, or assigned to a negative value,
- * the <tt>Length</tt> annotation is referred to, and if that annotation is not
- * present an exception is thrown.
+ * Length of CHARs should be specified with either positive {@link #value()
+ * value} property or an additional {@link Length} annotation on the same field.
+ * If neither of them is present, an exception will be thrown during initial
+ * parsing.
  * <p>
- * This data type can be converted to <tt>char</tt> or <tt>String</tt>.
+ * CHARs can be converted from/to <tt>char</tt> or <tt>String</tt>.
  * 
  * @author dzh
  */
@@ -32,7 +30,7 @@ import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 @Target(FIELD)
 public @interface CHAR {
 	/**
-	 * Specifies length of this byte stream.
+	 * Specifies length of this block of byte stream.
 	 * 
 	 * @return number of bytes
 	 */

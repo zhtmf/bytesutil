@@ -5,7 +5,7 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
-import org.dzh.bytesutil.converters.auxiliary.MarkableStream;
+import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 
@@ -44,7 +44,7 @@ public class CharConverter implements Converter<Character> {
 	}
 
 	@Override
-	public Character deserialize(MarkableStream is, FieldInfo ctx, Object self)
+	public Character deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		Charset cs = ctx.charset;
 		if(cs==null) {

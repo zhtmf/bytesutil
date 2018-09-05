@@ -12,17 +12,20 @@ import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 
 /**
- * 4-byte integral type, some language may use <tt>long</tt> to represent such
- * data type, while we use Java nomination.
+ * 4-byte integral type.
  * <p>
- * Signed/Unsigned are specified using {@link Signed} / {@link Unsigned}
- * annotation. Endianness is specified using {@link BigEndian} / {@link LittleEndian}
+ * Signed/Unsigned is specified with {@link Signed} / {@link Unsigned}
+ * annotation. Endianness is specified with {@link BigEndian} / {@link LittleEndian}
  * annotation.
  * <p>
- * This data type can be converted to
- * <code>byte/Byte,short/Short,int/Integer</code>, note that if an
- * {@link Unsigned} INT value which is larger than {@link Integer#MAX_VALUE} is
- * converted to a java <code>int/Integer</code>, an exception will be thrown.
+ * Java integral types are convertible to/from it.
+ * <p>
+ * Note that as Java does not have unsigned integral types, if large unsigned
+ * values are to be converted to corresponding Java integral types, overflow
+ * exception may be raised by this library or incorrect values may be produced, depends on
+ * whether the field is declared {@link Signed} or {@link Unsigned}. So it is
+ * generally preferable to use "larger" types to store numeric values from
+ * arbitrary byte streams.
  * 
  * @author dzh
  */

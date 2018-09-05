@@ -14,9 +14,10 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 
 /**
  * <p>
- * Specified charset for all CHAR type data in a class or for a specific field.
+ * Specified charset for all CHAR type fields in a class or for a single field.
  * <p>
- * Annotations on a field always override annotations on the class.
+ * Annotations on a specific field always override annotation at the class
+ * level.
  * <p>
  * {@link #DEFAULT_CHARSET} is assumed if no CHARSET annotation is specified for
  * the current target.
@@ -35,14 +36,14 @@ public @interface CHARSET {
 
 	/**
 	 * <p>
-	 * Class of implementation of {@link ModifierHandler} to consult with when the charset of current
-	 * target cannot be determined prior to parsing.
+	 * Implementation class of {@link ModifierHandler} to be referred to when the
+	 * charset of current target cannot be determined during initial parsing.
 	 * <p>
-	 * If this property is set to a value other than the default value, the
-	 * {@link #value()} property is ignored.
+	 * If this property is set, {@link #value() value} is ignored.
 	 * 
-	 * @return	class of implementation of ModifierHandler
+	 * @return Implementation class of ModifierHandler
 	 */
 	Class<? extends ModifierHandler<Charset>> handler() default PlaceHolderHandler.DefaultCharsetHandler.class;
+	
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 }

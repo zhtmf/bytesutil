@@ -16,16 +16,18 @@ import java.lang.annotation.Target;
  * <li><code>java.util.Date</code> (8 digits decimal in the form of
  * YYYYMMDD)</li>
  * <li><code>String</code> (numeric strings)</li>
- * <li><code>byte/Byte,short/Short,int/Integer</code></li>
+ * <li>Integral types</li>
  * </ul>
+ * 
+ * @see https://en.wikipedia.org/wiki/Binary-coded_decimal
  * @author dzh
  */
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface BCD {
 	/**
-	 * Specifies how many bytes that consists of this BCD data, which is typically
-	 * half of the digits of the number it represents.
+	 * Specifies how many <b>bytes<b> that make up of this BCD data, which is half of the
+	 * digits of the number it represents.
 	 * 
 	 * @return number of bytes
 	 */

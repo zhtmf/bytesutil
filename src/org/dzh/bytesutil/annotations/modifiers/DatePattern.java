@@ -11,7 +11,7 @@ import java.text.SimpleDateFormat;
  * <p>
  * Specifies date pattern string for {@link java.util.Date} fields.
  * <p>
- * The pattern string has the same rule as that used by {@link SimpleDateFormat}
+ * The pattern string should comply with the same rule as required by {@link SimpleDateFormat}
  * 
  * @author dzh
  *

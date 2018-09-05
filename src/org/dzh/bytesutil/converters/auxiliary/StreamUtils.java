@@ -183,7 +183,7 @@ public class StreamUtils {
 		return length;
 	}
 	
-	public static boolean eof(MarkableStream bis) throws IOException {
+	public static boolean eof(MarkableInputStream bis) throws IOException {
 		bis.mark(1);
 		try {
 			int b = bis.read();
@@ -200,7 +200,7 @@ public class StreamUtils {
 	private static int read(InputStream bis) throws IOException {
 		int b = bis.read();
 		if(b==-1) {
-			throw new EOFException();
+			throw new EOFException(b+"");
 		}
 		return b;
 	}
