@@ -4,7 +4,18 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.dzh.bytesutil.DataPacket;
+import org.dzh.bytesutil.annotations.modifiers.Variant;
 
+/**
+ * Helper class which is called during runtime to initiate a field annotated
+ * using {@link Variant}
+ * <p>
+ * It is a subclass of {@link ModifierHandler} while it is only called during
+ * deserialization as field values are always supplied by user during
+ * serialization.
+ * 
+ * @author dzh
+ */
 public abstract class EntityHandler extends ModifierHandler<DataPacket> {
 
 	@Override

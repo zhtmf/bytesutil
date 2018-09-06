@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
  * level.
  * <p>
  * Big-endian is the default, so if neither {@link BigEndian} nor
- * {@link LittleEndian} is represent big-endian is assumed.
+ * {@link LittleEndian} is represent, big-endian is assumed.
  * 
  * @author dzh
  */

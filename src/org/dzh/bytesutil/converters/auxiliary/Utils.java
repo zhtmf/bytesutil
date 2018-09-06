@@ -96,7 +96,7 @@ public class Utils {
 	
 	public static int[] checkAndConvertToBCD(long val, int bcdBytes) {
 		if(val<0) {
-			throw new IllegalArgumentException(String.format("negative numbe [%d] cannot be stored as BCD",val));
+			throw new IllegalArgumentException(String.format("negative number [%d] cannot be stored as BCD",val));
 		}
 		long copy = val;
 		int[] values = new int[bcdBytes*2];
@@ -107,7 +107,7 @@ public class Utils {
 		}
 		if(copy>0 || ptr>0) {
 			throw new IllegalArgumentException(
-					String.format("string format of number [%d] cannot fit in [%d] bytes BCD", val, bcdBytes));
+					String.format("string format of number [%d] cannot fit in [%d]-byte BCD value", val, bcdBytes));
 		}
 		return values;
 	}

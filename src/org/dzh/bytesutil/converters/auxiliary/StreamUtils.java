@@ -74,22 +74,19 @@ public class StreamUtils {
 	public static void writeIntegerOfType(OutputStream os, DataType type, int val, boolean bigEndian) throws IOException{
 		switch(type) {
 		case BYTE:
-			if(val>255) {
-				throw new IllegalArgumentException("byte value overflow");
-			}
+			Utils.checkRange(val, Byte.class, true);
 			StreamUtils.writeBYTE(os, (byte)val);
 			break;
 		case SHORT:
-			if(val>Character.MAX_VALUE) {
-				throw new IllegalArgumentException("short value overflow");
-			}
+			Utils.checkRange(val, Short.class, true);
 			StreamUtils.writeSHORT(os, (short)val, bigEndian);
 			break;
 		case INT:
+			Utils.checkRange(val, Integer.class, true);
 			StreamUtils.writeInt(os, val, bigEndian);
 			break;
 		default:
-			throw new IllegalArgumentException("data type "+type+" unsupported for length type");
+			throw new Error("data type "+type+" unsupported for length type");
 		}
 	}
 	
@@ -172,13 +169,11 @@ public class StreamUtils {
 			break;
 		case INT:
 			long _length = StreamUtils.readUnsignedInt(src, bigEndian);
-			if(_length>Integer.MAX_VALUE) {
-				throw new IOException("unsigned int value encountered");
-			}
+			Utils.checkRange(_length, Integer.class, false);
 			length = (int)_length;
 			break;
 		default:
-			throw new IOException("data type "+type+" unsupported for length type");
+			throw new Error("data type "+type+" unsupported for length type");
 		}
 		return length;
 	}

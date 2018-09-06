@@ -4,6 +4,25 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Helper class which is called during runtime to obtain dynamic values such as
+ * length of list, charset of strings etc.
+ * <p>
+ * Within the handler method, typically users can refer to another property of
+ * the (incomplete) entity class object passed as the second parameter, or
+ * directly look ahead from the input stream during deserialization for some
+ * values.
+ * <p>
+ * The input stream object passed as the third parameter is a special one that
+ * any reads will be undone after the method returns, so it is OK to read within
+ * the method, however there is a limit on how many bytes users can read.
+ * 
+ * @author dzh
+ *
+ * @param <E>
+ *            type of the return value of handler methods, as required by
+ *            modifier annotations.
+ */
 public abstract class ModifierHandler<E> {
 	
 	/**
