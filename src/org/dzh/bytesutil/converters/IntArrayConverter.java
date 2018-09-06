@@ -23,10 +23,7 @@ public class IntArrayConverter implements Converter<int[]>{
 		case RAW:
 			int length = Utils.lengthForSerializingRAW(ctx, self);
 			if(length<0) {
-				//due to the pre-check in Context class, Length must be present at this point
-				length = value.length;
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
-				
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
 			}else if(length!=value.length) {
 				throw new RuntimeException(
 						String.format("field [%s] is defined as a int array,"

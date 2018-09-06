@@ -14,8 +14,6 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
-import org.dzh.bytesutil.annotations.modifiers.EOF;
-import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
@@ -64,12 +62,6 @@ public final class FieldInfo{
 	 * whether this field is defined as unsigned
 	 */
 	public final boolean unsigned;
-	
-	/**
-	 * end mark of the string (instead of a well-defined length)
-	 */
-	public final String endsWith;
-	
 	/**
 	 * Value of {@link Length} annotation.
 	 * <p>
@@ -106,12 +98,6 @@ public final class FieldInfo{
 	 * Pattern string defined in {@link DatePattern} annotation, null if not present.
 	 */
 	public final String datePattern;
-	/**
-	 * End of the list value represented by this field should be detected by EOF,
-	 * rather than a well defined length.
-	 * TODO:
-	 */
-	public final boolean eof;
 	/**
 	 * Whether Length/ListLength annotation is present, used only by ClassInfo
 	 */
@@ -184,18 +170,6 @@ public final class FieldInfo{
 			}
 		}
 		{
-			EndsWith ew = localAnnotation(EndsWith.class);
-			if(ew==null) {
-				endsWith = null;
-			}else {
-				String mark = ew.value();
-				if(mark.isEmpty()) {
-					throw forContext(base.entityClass, name, "empty or whitespace only end mark.");
-				}
-				endsWith = mark;
-			}
-		}
-		{
 			Length len = localAnnotation(Length.class);
 			if(len==null) {
 				length = -1;
@@ -261,8 +235,6 @@ public final class FieldInfo{
 				this.datePattern = val;
 			}
 		}
-		
-		this.eof = localAnnotation(EOF.class)!=null;
 	}
 	/**
 	 * Wrapper of {@link Field#get(Object)}

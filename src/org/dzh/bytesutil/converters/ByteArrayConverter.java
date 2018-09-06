@@ -23,10 +23,7 @@ public class ByteArrayConverter implements Converter<byte[]>{
 		case RAW:
 			int length = Utils.lengthForSerializingRAW(fi, self);
 			if(length<0) {
-				//due to the pre-check in Context class, Length must be present at this point
-				length = value.length;
-				StreamUtils.writeIntegerOfType(dest, fi.lengthType(), length, fi.bigEndian);
-				
+				StreamUtils.writeIntegerOfType(dest, fi.lengthType(), value.length, fi.bigEndian);
 			}else if(length!=value.length) {
 				throw new RuntimeException(
 						String.format("field [%s] is defined as a byte array,"
@@ -41,13 +38,13 @@ public class ByteArrayConverter implements Converter<byte[]>{
 	}
 
 	@Override
-	public byte[] deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+	public byte[] deserialize(MarkableInputStream is, FieldInfo fi, Object self)
 			throws IOException,UnsupportedOperationException {
-		switch(ctx.type) {
+		switch(fi.type) {
 		case RAW:
-			int length = Utils.lengthForDeserializingRAW(ctx, self, is);
+			int length = Utils.lengthForDeserializingRAW(fi, self, is);
 			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+				length = StreamUtils.readIntegerOfType(is, fi.lengthType(), fi.bigEndian);
 			}
 			return StreamUtils.readBytes(is, length);
 		default:

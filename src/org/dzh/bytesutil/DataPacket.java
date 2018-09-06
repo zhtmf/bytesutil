@@ -138,12 +138,10 @@ public abstract class DataPacket {
 				int length = Utils.lengthForList(fi, this);
 				if(length<0) {
 					length = value.size();
-					if( ! fi.eof) {
-						try {
-							StreamUtils.writeIntegerOfType(dest, fi.lengthType(), value.size(), fi.bigEndian);
-						} catch (IOException e) {
-							throw new ConversionException(this.getClass(),fi.name,e);
-						}
+					try {
+						StreamUtils.writeIntegerOfType(dest, fi.lengthType(), value.size(), fi.bigEndian);
+					} catch (IOException e) {
+						throw new ConversionException(this.getClass(),fi.name,e);
 					}
 				}
 				
@@ -265,19 +263,15 @@ public abstract class DataPacket {
 			//this field is defined as a list
 			}else if(fi.listComponentClass!=null) {
 				
-				boolean terminateByEOF = fi.eof;
-				
 				int length = Utils.lengthForDeserializingListLength(fi, this, _src);
 				if(length<0) {
 					length = Utils.lengthForDeserializingLength(fi, this, _src);
 				}
 				if(length<0) {
-					if( ! terminateByEOF) {
-						try {
-							length = StreamUtils.readIntegerOfType(_src, fi.lengthType(), fi.bigEndian);
-						} catch (IOException e) {
-							throw new ConversionException(this.getClass(),fi.name,e);
-						}
+					try {
+						length = StreamUtils.readIntegerOfType(_src, fi.lengthType(), fi.bigEndian);
+					} catch (IOException e) {
+						throw new ConversionException(this.getClass(),fi.name,e);
 					}
 				}
 				
@@ -286,16 +280,9 @@ public abstract class DataPacket {
 				//component class is a pre-defined data type
 				if(cv!=null) {
 					try {
-						if(terminateByEOF) {
-							tmp = new ArrayList<>();
-							while( ! StreamUtils.eof(_src)) {
-								tmp.add(cv.deserialize(_src, fi, this));
-							}
-						}else {
-							tmp = new ArrayList<>(length);
-							while(length-->0) {
-								tmp.add(cv.deserialize(_src, fi, this));
-							}
+						tmp = new ArrayList<>(length);
+						while(length-->0) {
+							tmp.add(cv.deserialize(_src, fi, this));
 						}
 					} catch (UnsupportedOperationException e) {
 						throw new ConversionException(
@@ -308,20 +295,11 @@ public abstract class DataPacket {
 				//component class is a Data
 				}else if(fi.isEntityList){
 					try {
-						if(terminateByEOF) {
-							tmp = new ArrayList<>();
-							while( ! StreamUtils.eof(_src)) {
-								DataPacket object = (DataPacket) fi.listComponentClass.newInstance();
-								object.deserialize(_src);
-								tmp.add(object);
-							}
-						}else {
-							tmp = new ArrayList<>(length);
-							while(length-->0) {
-								DataPacket object = (DataPacket) fi.listComponentClass.newInstance();
-								object.deserialize(_src);
-								tmp.add(object);
-							}
+						tmp = new ArrayList<>(length);
+						while(length-->0) {
+							DataPacket object = (DataPacket) fi.listComponentClass.newInstance();
+							object.deserialize(_src);
+							tmp.add(object);
 						}
 					} catch (InstantiationException | IllegalAccessException e) {
 						throw new ConversionException(
@@ -329,9 +307,6 @@ public abstract class DataPacket {
 								String.format(
 								"instance of component class [%s] cannot be created by calling no-arg constructor"
 								, fi.listComponentClass),e);
-					} catch (IOException e) {
-						throw new ConversionException(
-								this.getClass(),fi.name,e);
 					}
 					value = tmp;
 				}else {
@@ -389,12 +364,10 @@ public abstract class DataPacket {
 			if(fi.listComponentClass!=null) {
 				length = Utils.lengthForList(fi, this);
 				if(length<0) {
-					if( ! fi.eof) {
-						//write ahead
-						//size of the write-ahead length should be considered
-						//even the list itself is null or empty
-						ret += fi.lengthType().size();
-					}
+					//write ahead
+					//size of the write-ahead length should be considered
+					//even the list itself is null or empty
+					ret += fi.lengthType().size();
 				}
 				List lst = (List)fi.get(this);
 				if(lst!=null) {
@@ -429,12 +402,10 @@ public abstract class DataPacket {
 				if(size<0) {
 					Object val = fi.get(this);
 					size = val == null ? 0 : val.toString().length();
-					if(!fi.eof) {
-						//dynamic length that is written to stream prior to serializing value
-						//get the actual value and calculate its length
-						//other types have been checked by FieldInfo class
-						ret += fi.annotation(Length.class).type().size();
-					}
+					//dynamic length that is written to stream prior to serializing value
+					//get the actual value and calculate its length
+					//other types have been checked by FieldInfo class
+					ret += fi.annotation(Length.class).type().size();
 				}
 				//length of individual CHAR * size of (maybe) list
 				ret += size * length;
