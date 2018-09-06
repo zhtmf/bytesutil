@@ -35,16 +35,16 @@ import org.dzh.bytesutil.converters.auxiliary.Utils;
  * <p>
  * Entrace of this library.
  * <p>
- * Make your entity classes subclass of this base class and inherit 3 methods
+ * Users make their entity classes subclass of this base class to inherit 3 methods
  * from it: {@link #serialize(OutputStream) serialize},
  * {@link #deserialize(InputStream) deserialize}, {@link #length() length} which
- * helps you converting entity class to/from byte streams.
+ * helps converting entity class to/from byte streams.
  * <p>
- * This class itself is thread-safe, as it does not define any non-static
+ * This class itself is thread-safe as it does not define any non-static
  * fields.
  * <p>
  * It does not define any abstract methods but declared as abstract to remind
- * that it should not be used alone but subclassed.
+ * users that it should not be used alone but subclassed.
  * 
  * @author dzh
  *
@@ -81,16 +81,21 @@ public abstract class DataPacket {
 	 * <p>
 	 * Serialize entity class into the specified output stream.
 	 * <p>
-	 * Unlike JDK serialization or other serialization methods, serialization
-	 * performed by this library does not write any additional information but just
-	 * serialize fields into the stream one by one, in the order specified by
-	 * {@link Order} annotations and according to rules defined by annotation
-	 * classes under <tt>annotations</tt> package.
+	 * Non-final, non-static fields annotated with {@link Order} are processed while
+	 * other fields are effectively ignored. Fields are processed according to their
+	 * ascending order as specified by {@link Order#value()}.
 	 * <p>
-	 * Fields can also be specified by no annotation classes under
-	 * <tt>annotations</tt> package but defined of type {@link DataPacket}, under
-	 * this situation, it should not be null (initialized manually) when this method
-	 * is called or its class should defines a no-arg constructor.
+	 * <b>Null Handling</b><br/>
+	 * If a non-primitive field is null (not supplied by user with a value) when
+	 * this method is called, it is handled as follows:<br/>
+	 * <tt>string</tt> - treated as empty string. <br/>
+	 * <tt>integral type</tt> - treated as 0. <br/>
+	 * <tt>array</tt> - treated as empty arrays of that type. <br/>
+	 * <tt>List</tt> - treated as empty list.<br/>
+	 * <tt>Date</tt> - treated as empty string when serialized to BCD or CHAR,
+	 * otherwise ignored.<br/>
+	 * <tt>DataPacket</tt> (entity classes) - ignored (note that this may not be
+	 * compliant with the protocol you are implementing.<br/>
 	 * 
 	 * @param dest
 	 *            destination stream of serialization
@@ -98,12 +103,11 @@ public abstract class DataPacket {
 	 *             If invalid input encountered during runtime.
 	 * @throws IllegalArgumentException
 	 *             If initial parsing of annotations on entity class or fields
-	 *             failed, this exception should be eliminated during compile time but not caught and 
-	 *             handled during runtime.
+	 *             failed, this exception should be eliminated during compile time
+	 *             but not caught and handled during runtime.
 	 * @throws NullPointerException
 	 *             if <tt>dest</tt> is null.
 	 */
-	@SuppressWarnings("unchecked")
 	public void serialize(OutputStream dest) throws ConversionException, IllegalArgumentException{
 		if(dest==null) {
 			throw new NullPointerException();
@@ -117,19 +121,12 @@ public abstract class DataPacket {
 			if(fi.isEntity) {
 				Object obj = fi.get(this);
 				if(obj==null) {
-					try {
-						obj = fi.fieldClass.newInstance();
-					} catch (InstantiationException | IllegalAccessException e) {
-						throw new ConversionException(
-								this.getClass(),fi.name,
-								String.format("field  value is null and instance of "
-										+ " entity class [%s] cannot be created by calling no-arg constructor"
-										, fi.fieldClass),e);
-					}
+					continue;
 				}
 				((DataPacket)obj).serialize(dest);
 			//this field is a list
 			}else if(fi.listComponentClass!=null) {
+				@SuppressWarnings("unchecked")
 				List<Object> value = (List<Object>) fi.get(this);
 				value = value == null ? Collections.emptyList() : value;
 				/*
@@ -154,6 +151,7 @@ public abstract class DataPacket {
 									"defined list length [%d] is not the same as length [%d] of list value"
 									,length,value.size()));
 				}
+				@SuppressWarnings("unchecked")
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
 				if(cv!=null) {
 					//class of list elements is pre-defined data types
@@ -181,6 +179,7 @@ public abstract class DataPacket {
 				}
 			//a plain field
 			}else {
+				@SuppressWarnings("unchecked")
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.fieldClass);
 				if(cv==null) {
 					throw new ConversionException(
@@ -205,22 +204,22 @@ public abstract class DataPacket {
 	 * <p>
 	 * Deserialize entity class from the specified input stream.
 	 * <p>
-	 * Fields are restored from the stream one by one, in the order specified by
-	 * {@link Order} annotations and according to rules defined by annotation
-	 * classes under <tt>annotations</tt> package.
+	 * Non-final, non-static fields annotated with {@link Order} are processed while
+	 * other fields are effectively ignored. Fields are processed according to their
+	 * ascending order as specified by {@link Order#value()}.
 	 * <p>
-	 * Fields can also be specified by no annotation classes under
-	 * <tt>annotations</tt> package but defined of type {@link DataPacket}, under
-	 * this situation, it is either non-null (initialized manually) when this method
-	 * is called or class of it declares a no-arg constructor.
+	 * Fields declared as subtypes of {@link DataPacket} should declare a no-arg
+	 * constructor and that type should be accessible (not a non-static inner class
+	 * or a private inner class).
 	 * 
 	 * @param src
+	 *            the input stream
 	 * @throws ConversionException
 	 *             If invalid input encountered during runtime.
 	 * @throws IllegalArgumentException
 	 *             If initial parsing of annotations on entity class or fields
-	 *             failed, this exception should be eliminated during compile time but not caught and 
-	 *             handled during runtime.
+	 *             failed, this exception should be eliminated during compile time
+	 *             but not caught and handled during runtime.
 	 * @throws NullPointerException
 	 *             if <tt>src</tt> is null.
 	 */
@@ -338,9 +337,9 @@ public abstract class DataPacket {
 			fi.set(this, value);
 		}
 	}
-	
+
 	/**
-	 * Calculate the length in bytes of this entity as if it was serialized to an
+	 * Calculate the length in bytes of this object as if it was serialized to an
 	 * output stream.
 	 * <p>
 	 * This is <b>NOT</b> a constant time operation as the actual length should and
@@ -348,7 +347,6 @@ public abstract class DataPacket {
 	 * 
 	 * @return length in bytes
 	 */
-	@SuppressWarnings({ "rawtypes"})
 	public int length(){
 		ClassInfo ci = getClassInfo();
 		int ret = 0;
@@ -369,6 +367,7 @@ public abstract class DataPacket {
 					//even the list itself is null or empty
 					ret += fi.lengthType().size();
 				}
+				@SuppressWarnings("rawtypes")
 				List lst = (List)fi.get(this);
 				if(lst!=null) {
 					//use the defined length but not the actual list size
