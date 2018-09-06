@@ -19,14 +19,11 @@ public class DateConverter implements Converter<Date>{
 	@Override
 	public void serialize(Date value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, UnsupportedOperationException {
-		if(value==null) {
-			throw new IllegalArgumentException("java.util.Date value should not be null");
-		}
 		String datePattern = ctx.datePattern;
 		if(datePattern==null) {
 			throw new IllegalArgumentException("define a date pattern");
 		}
-		String str = getThreadLocalObject(datePattern).format(value);
+		String str = value == null ? "" : getThreadLocalObject(datePattern).format(value);
 		byte[] bytes = str.getBytes(StandardCharsets.ISO_8859_1);
 		
 		switch(ctx.type) {
