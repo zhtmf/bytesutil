@@ -22,6 +22,7 @@ Consider the following protocol, which gives a definition of data packet:
 |Packet Type     |1|1-byte unsigned integer|`dynamic value`
 |Sequence Number |2|2-byte unsigned integer|`dynamic value`
 |End Mark        |1|1-byte unsigned integer|0x07
+ 
 Declare the following Java class:
 ````
 import org.dzh.bytesutil.DataPacket;
@@ -75,6 +76,7 @@ INT | 4-byte integer
 CHAR | sequence of bytes which should be interpreted as human readable texts
 BCD | Binary-Coded Decimal
 RAW | sequences of bytes that do not fall in the categories above and should be handled as-is 
+ 
 Annotations for these pseudo data types can be found under the package ````org.dzh.bytesutil.annotations.types````.
 Conversion table between pseudo data types and types in Java is as follows:
 
