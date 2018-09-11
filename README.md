@@ -85,8 +85,9 @@ RAW | sequences of bytes that do not fall in the categories above and should be 
 Annotations for these pseudo data types can be found under the package ````org.dzh.bytesutil.annotations.types````.
 
 Following conversion between above mentioned data types and Java types are defined:
- _| byte/Byte | short/Short | int/Integer | long/Long| String| char/Character| byte[] | java.util.Date | int[]
-----|----|--|--|--|--|--|--|--|--
+
+byte/Byte | short/Short | int/Integer | long/Long| String| char/Character| byte[] | java.util.Date | int[]
+----|----|--|--|--|--|--|--|--
 BYTE | ⚪|  ⚪   |⚪ |⚪ |   | | | |
 SHORT | |  ⚪   |⚪ |⚪ |   | | | |
 INT | |     |⚪ |⚪ |   | | | |
