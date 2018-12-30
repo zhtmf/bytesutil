@@ -19,26 +19,6 @@ import org.dzh.bytesutil.annotations.types.INT;
 import org.junit.Assert;
 import org.junit.Test;
 
-/*
- * 支持整数类型和字符串类型和枚举类型之间的转换
- * 枚举类型需要实现自定义接口I1或I2的getValue方法，返回各枚举成员对应的值（数字或者字符串）。
- * 如果不实现接口，需要用toString()方法返回包含对应值的字符串（如果制定映射到数字会尝试对做转换，失败时报错）
- * 枚举类上不需要用额外的注解来指明，使用和其他属性一致的BYTE INT，CHAR等注解来定义行为
- * 
- * I1 = NumericEnum
- * 定义方法 long getValue()
- * 返回值要和同一属性上的数字类型注解(BYTE INT SHORT)做比对，如果越界要报错。
- * 要检查多个不同的枚举属性返回值是否相同，如有相同要报错
- * 
- * I2 = StringEnum
- * 定义方法 String getValue()
- * 返回值不可为NULL
- * 要检查多个不同的枚举属性返回值是否相同，如有相同要报错
- * 
- * 将这个属性的FieldInfo的fieldClass设置为long/java.lang.String。
- * 在fieldInfo.get里，返回long值或者返回string给调用方法
- * 在fieldInfo.set里，要判断如果是枚举类，要转换为对应的枚举成员值并设置类字段的值
- */
 public class TestEnum {
 	
 	private enum NEnum1 implements NumericEnum{
@@ -102,7 +82,7 @@ public class TestEnum {
 			}
 		};
 	}
-
+	
 	@CHARSET("UTF-8")
 	public static class Test1 extends DataPacket{
 		@INT
