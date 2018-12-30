@@ -40,6 +40,11 @@ public final class FieldInfo{
 	private final Map<Object,Object> mapEnumMemberByValue;
 	
 	public final String name;
+	/*
+	 * set to actual class of this field 
+	 * or Long.class/String.class when this field is an Enum 
+	 * according to DataType annotation it holds
+	 */
 	public final Class<?> fieldClass;
 	public final DataType type;
 	public final boolean isEntity;
