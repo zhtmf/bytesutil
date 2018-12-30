@@ -13,6 +13,11 @@ public enum DataType{
 		public int size() {
 			return 1;
 		}
+
+		@Override
+		Class<?> correspondingJavaClass() {
+			return Byte.class;
+		}
 	},
 	SHORT {
 		@Override
@@ -23,6 +28,11 @@ public enum DataType{
 		@Override
 		public int size() {
 			return 2;
+		}
+
+		@Override
+		Class<?> correspondingJavaClass() {
+			return Short.class;
 		}
 	},
 	INT {
@@ -35,6 +45,11 @@ public enum DataType{
 		public int size() {
 			return 4;
 		}
+
+		@Override
+		Class<?> correspondingJavaClass() {
+			return Integer.class;
+		}
 	},
 	BCD {
 		@Override
@@ -44,6 +59,11 @@ public enum DataType{
 
 		@Override
 		public int size() {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		Class<?> correspondingJavaClass() {
 			throw new UnsupportedOperationException();
 		}
 	},
@@ -58,6 +78,11 @@ public enum DataType{
 		public int size() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		Class<?> correspondingJavaClass() {
+			throw new UnsupportedOperationException();
+		}
 	},
 	CHAR{
 
@@ -70,7 +95,13 @@ public enum DataType{
 		public int size() {
 			throw new UnsupportedOperationException();
 		}
+
+		@Override
+		Class<?> correspondingJavaClass() {
+			throw new UnsupportedOperationException();
+		}
 	};
 	abstract public Class<? extends Annotation> annotationClassOfThisType();
 	abstract public int size();
+	abstract Class<?> correspondingJavaClass();
 }
