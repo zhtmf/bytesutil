@@ -13,8 +13,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.enums.NumericEnum;
-import org.dzh.bytesutil.annotations.enums.StringEnum;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
@@ -30,22 +28,13 @@ import org.dzh.bytesutil.annotations.modifiers.Variant;
  * 
  * @author dzh
  */
-public final class FieldInfo{
+public class FieldInfo{
 	private final Field field;
-	private final ClassInfo base;
+	protected final ClassInfo base;
 	private final Map<Class<? extends Annotation>,Annotation> annotations;
-	
-	private final boolean isEnum;
-	private final Map<Object,Object> mapValueByEnumMember;
-	private final Map<Object,Object> mapEnumMemberByValue;
+	private final Class<?> fieldClass;
 	
 	public final String name;
-	/*
-	 * set to actual class of this field 
-	 * or Long.class/String.class when this field is an Enum 
-	 * according to DataType annotation it holds
-	 */
-	public final Class<?> fieldClass;
 	public final DataType type;
 	public final boolean isEntity;
 	public final boolean isEntityList;
@@ -119,6 +108,7 @@ public final class FieldInfo{
 		this.field = field;
 		this.name = field.getName();
 		Class<?> fieldClass = field.getType();
+		this.fieldClass = fieldClass;
 		this.type = type;
 		this.enclosingEntityClass = field.getDeclaringClass();
 		
@@ -246,73 +236,6 @@ public final class FieldInfo{
 				this.datePattern = val;
 			}
 		}
-		
-		if(fieldClass.isEnum()) {
-			isEnum = true;
-			Map<Object,Object> mapEnumMemberByValue = new HashMap<>();
-			Map<Object,Object> mapValueByEnumMember = new HashMap<>();
-			Object[] constants = fieldClass.getEnumConstants();
-			switch(type) {
-			case BYTE:
-			case SHORT:
-			case INT:
-				@SuppressWarnings("unchecked")
-				Class<? extends Number> numberClass = (Class<? extends Number>) type.correspondingJavaClass();
-				if(StringEnum.class.isAssignableFrom(fieldClass)) {
-					throw forContext(base.entityClass, name, "numeric enum type should implement NumericEnum, not StringEnum");
-				}
-				for(Object constant:constants) {
-					long val = 0;
-					if(NumericEnum.class.isAssignableFrom(fieldClass)) {
-						val = ((NumericEnum)constant).getValue();
-					}else {
-						val = Long.parseLong(constant.toString());
-					}
-					Utils.checkRange(val, numberClass, unsigned);
-					Long key = Long.valueOf(val);
-					if(mapEnumMemberByValue.containsKey(key)) {
-						throw forContext(base.entityClass, name, "multiple enum members should have distinct values");
-					}
-					mapEnumMemberByValue.put(key, constant);
-					mapValueByEnumMember.put(constant, key);
-				}
-				this.fieldClass = Long.class;
-				break;
-			case CHAR:
-				if(NumericEnum.class.isAssignableFrom(fieldClass)) {
-					throw forContext(base.entityClass, name, "numeric enum type should implements StringEnum, not NumericEnum");
-				}
-				for(Object constant:constants) {
-					String key = null;
-					if(StringEnum.class.isAssignableFrom(fieldClass)) {
-						key = ((StringEnum)constant).getValue();
-					}else {
-						key = constant.toString();
-					}
-					if(key==null) {
-						throw forContext(base.entityClass, name,
-								"members of an enum mapped to string values should return"
-								+ " non-null string as values");
-					}
-					if(mapEnumMemberByValue.containsKey(key)) {
-						throw forContext(base.entityClass, name, "multiple enum members should have distinct values");
-					}
-					mapEnumMemberByValue.put(key, constant);
-					mapValueByEnumMember.put(constant, key);
-				}
-				this.fieldClass = String.class;
-				break;
-			default:
-				throw forContext(base.entityClass, name, "enum type fields should be declared as a numeric type or CHAR");
-			}
-			this.mapValueByEnumMember = Collections.unmodifiableMap(mapValueByEnumMember);
-			this.mapEnumMemberByValue = Collections.unmodifiableMap(mapEnumMemberByValue);
-		}else {
-			this.fieldClass = fieldClass;
-			this.isEnum = false;
-			this.mapValueByEnumMember = null;
-			this.mapEnumMemberByValue = null;
-		}
 	}
 	/**
 	 * Wrapper of {@link Field#get(Object)}
@@ -321,12 +244,7 @@ public final class FieldInfo{
 	 */
 	public Object get(Object self) {
 		try {
-			Object raw = field.get(self);
-			if(isEnum) {
-				//cannot be null as all members should be correctly processed in constructor
-				return mapValueByEnumMember.get(raw);
-			}
-			return raw;
+			return field.get(self);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			//for backward-compatibility, do not throw checked exception here 
 			throw new Error(
@@ -341,12 +259,6 @@ public final class FieldInfo{
 	 */
 	public void set(Object self, Object val) {
 		try {
-			if(isEnum) {
-				val = mapEnumMemberByValue.get(val);
-				if(val==null) {
-					throw forContext(base.entityClass, name, "unmapped enum value:"+val);
-				}
-			}
 			field.set(self, val);
 		} catch (IllegalArgumentException | IllegalAccessException e) {
 			//for backward-compatibility, do not throw checked exception here 
@@ -362,6 +274,15 @@ public final class FieldInfo{
 	 */
 	public DataType lengthType() {
 		return lengthType!=null ? lengthType : listLengthType;
+	}
+	
+	/**
+	 * Get class of this field,
+	 * intended to be overridden by sub-classes
+	 * @return
+	 */
+	public Class<?> getFieldType(){
+		return fieldClass;
 	}
 	
 	/**

@@ -129,7 +129,7 @@ public class ClassInfo {
 				}
 			}
 			
-			FieldInfo fi = new FieldInfo(f,type,this);
+			FieldInfo fi = f.getType().isEnum() ? new EnumFieldInfo(f, type, this) : new FieldInfo(f,type,this);
 			
 			if(fi.listComponentClass!=null) {
 				if(fi.localAnnotation(Length.class)==null

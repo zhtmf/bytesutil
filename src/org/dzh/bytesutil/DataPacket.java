@@ -180,11 +180,11 @@ public abstract class DataPacket {
 			//a plain field
 			}else {
 				@SuppressWarnings("unchecked")
-				Converter<Object> cv = (Converter<Object>) converters.get(fi.fieldClass);
+				Converter<Object> cv = (Converter<Object>) converters.get(fi.getFieldType());
 				if(cv==null) {
 					throw new ConversionException(
 							this.getClass(),fi.name,
-							String.format("class [%s] is not supported", fi.fieldClass));
+							String.format("class [%s] is not supported", fi.getFieldType()));
 				}else {
 					try {
 						cv.serialize(fi.get(this), dest, fi,this);
@@ -247,14 +247,14 @@ public abstract class DataPacket {
 				DataPacket object = ((DataPacket)fi.get(this));
 				if(object==null) {
 					try {
-						object = (DataPacket) fi.fieldClass.newInstance();
+						object = (DataPacket) fi.getFieldType().newInstance();
 					} catch (InstantiationException | IllegalAccessException e) {
 						throw new ConversionException(
 								this.getClass(),fi.name,
 								String.format("field value is null and"
 										+ " instance of the entity class [%s] cannot be created by"
 										+ " calling no-arg constructor"
-										, fi.name, fi.fieldClass),e);
+										, fi.name, fi.getFieldType()),e);
 					}
 				}
 				object.deserialize(_src);
@@ -318,9 +318,9 @@ public abstract class DataPacket {
 				
 			//a plain field
 			}else {
-				Converter<Object> cv = (Converter<Object>) converters.get(fi.fieldClass);
+				Converter<Object> cv = (Converter<Object>) converters.get(fi.getFieldType());
 				if(cv==null) {
-					throw new RuntimeException(fi.fieldClass+" not supported");
+					throw new RuntimeException(fi.getFieldType()+" not supported");
 				}else {
 					try {
 						value = cv.deserialize(_src, fi,this);

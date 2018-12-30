@@ -2,6 +2,8 @@ package test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.IOException;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
@@ -43,7 +45,7 @@ public class TestEnum {
 		FLAG1 {
 			@Override
 			public long getValue() {
-				return 60000;
+				return (long)Integer.MAX_VALUE*2+1;
 			}
 		},
 		FLAG2 {
@@ -120,7 +122,7 @@ public class TestEnum {
 	}
 	
 	@Test
-	public void test() throws ConversionException {
+	public void test() throws ConversionException, IOException {
 		Test1 src = new Test1();
 		Test1 dest = new Test1();
 		{
@@ -135,6 +137,16 @@ public class TestEnum {
 			Assert.assertEquals(src.nenum2, dest.nenum2);
 			Assert.assertEquals(src.senum1, dest.senum1);
 			Assert.assertEquals(src.senum2, dest.senum2);
+			
+			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+			Assert.assertEquals(dis.readInt(), (int)NEnum1.FLAG1.getValue());
+			Assert.assertEquals(dis.readByte(), (byte)Long.parseLong(NEnum2.FLAG2.toString()));
+			byte[] s7 = new byte[7];
+			dis.readFully(s7);
+			Assert.assertEquals(new String(s7,"UTF-8"),SEnum1.FLAG1.getValue());
+			byte[] s6 = new byte[6];
+			dis.readFully(s6);
+			Assert.assertEquals(new String(s6,"UTF-8"),SEnum2.FLAG2.toString());
 		}
 		{
 			src.nenum1 = NEnum1.FLAG2;
@@ -148,10 +160,20 @@ public class TestEnum {
 			Assert.assertEquals(src.nenum2, dest.nenum2);
 			Assert.assertEquals(src.senum1, dest.senum1);
 			Assert.assertEquals(src.senum2, dest.senum2);
+			
+			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(baos.toByteArray()));
+			Assert.assertEquals(dis.readInt(), (int)NEnum1.FLAG2.getValue());
+			Assert.assertEquals(dis.readByte(), (byte)Long.parseLong(NEnum2.FLAG1.toString()));
+			byte[] s7 = new byte[7];
+			dis.readFully(s7);
+			Assert.assertEquals(new String(s7,"UTF-8"),SEnum1.FLAG2.getValue());
+			byte[] s6 = new byte[6];
+			dis.readFully(s6);
+			Assert.assertEquals(new String(s6,"UTF-8"),SEnum2.FLAG1.toString());
 		}
 	}
 	
-	public static void main(String[] args) throws IllegalArgumentException, ConversionException {
+	public static void main(String[] args) throws Exception {
 		new TestEnum().test();
 	}
 }
