@@ -18,6 +18,6 @@ public class EntityHandler1 extends EntityHandler{
 		}else if(b==2) {
 			return new Sub2();
 		}
-		return null;
+		throw new Error("unknown b value:"+b);
 	}
 }

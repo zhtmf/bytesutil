@@ -2,6 +2,8 @@ package org.dzh.bytesutil.converters.auxiliary;
 
 import static org.dzh.bytesutil.converters.auxiliary.Utils.forContext;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
@@ -40,7 +42,7 @@ public class FieldInfo{
 	public final boolean isEntityList;
 	public final Class<?> listComponentClass;
 	
-	public final ModifierHandler<DataPacket> variantEntityHandler;
+	public final EntityHandler entityCreator;
 	
 	/**
 	 * Entity class that declares this field
@@ -107,7 +109,7 @@ public class FieldInfo{
 		this.base = base;
 		this.field = field;
 		this.name = field.getName();
-		Class<?> fieldClass = field.getType();
+		final Class<?> fieldClass = field.getType();
 		this.fieldClass = fieldClass;
 		this.type = type;
 		this.enclosingEntityClass = field.getDeclaringClass();
@@ -132,11 +134,30 @@ public class FieldInfo{
 		}
 		this.annotations = Collections.unmodifiableMap(_annotations);
 		
-		Variant cond = localAnnotation(Variant.class);
-		try {
-			this.variantEntityHandler = cond != null ? cond.value().newInstance() : null;
-		} catch (InstantiationException | IllegalAccessException e) {
-			throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor");
+		if(isEntity) {
+			Variant cond = localAnnotation(Variant.class);
+			if(cond==null) {
+				this.entityCreator = new EntityHandler() {
+					
+					@Override
+					public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+						try {
+							return (DataPacket) fieldClass.newInstance();
+						} catch (InstantiationException | IllegalAccessException e) {
+							throw new RuntimeException(e);
+						}
+					}
+				};
+			}else {
+				try {
+					this.entityCreator = cond.value().newInstance();
+				} catch (InstantiationException | IllegalAccessException e) {
+					throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor");
+				}
+				
+			}
+		}else{
+			this.entityCreator = null;
 		}
 		
 		{

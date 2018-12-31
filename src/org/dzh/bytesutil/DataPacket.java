@@ -235,25 +235,17 @@ public abstract class DataPacket {
 		ClassInfo ci = getClassInfo();
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			Object value = null;
-			//this field is defined as a Data and it is a base class,
-			//the actual object should be obtained from a custom handler
-			if(fi.variantEntityHandler!=null) {
-				DataPacket conditionalObject =
-						(DataPacket) fi.variantEntityHandler.handleDeserialize(fi.name,this,_src);
-				conditionalObject.deserialize(_src);
-				value = conditionalObject;
-			//this field is defined as a Data
-			}else if(fi.isEntity) {
+			//this field is defined as a DataPacket
+			if(fi.isEntity) {
 				DataPacket object = ((DataPacket)fi.get(this));
 				if(object==null) {
 					try {
-						object = (DataPacket) fi.getFieldType().newInstance();
-					} catch (InstantiationException | IllegalAccessException e) {
+						object = fi.entityCreator.handleDeserialize(fi.name, this, _src);
+					} catch (Exception e) {
 						throw new ConversionException(
 								this.getClass(),fi.name,
 								String.format("field value is null and"
-										+ " instance of the entity class [%s] cannot be created by"
-										+ " calling no-arg constructor"
+										+ " instance of the entity class [%s] cannot be created"
 										, fi.name, fi.getFieldType()),e);
 					}
 				}
