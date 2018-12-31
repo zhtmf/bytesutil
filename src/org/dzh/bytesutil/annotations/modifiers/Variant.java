@@ -9,13 +9,13 @@ import java.lang.annotation.Target;
 import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 
 /**
- * Used to specify the field should be initiated to another sub-class as returned
- * by its {@link EntityHandler}.
+ * Used to indicate instantiation of the class of a field needs a custom handler
+ * rather than using plain reflection.
  * <p>
- * Typically data packets have a "message body" part which has many different
- * types and formats, so the corresponding field can be declared as an abstract
- * super class which holds common properties, then during serialization it is
- * initiated to a concrete subclass for that type of message body.
+ * Typical uses of this annotation are when the object being constructed need to
+ * carry over some properties from its "parent" or when the declaring type of a
+ * field is an interface/abstract class and it needs to be instantiated to be
+ * one of its implementations.
  * 
  * @author dzh
  *
