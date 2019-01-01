@@ -1,5 +1,7 @@
 package test.entity;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
@@ -19,6 +21,7 @@ import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
+import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 
 import test.hierarchy.Base;
 import test.hierarchy.EntityHandler1;
@@ -83,6 +86,7 @@ public class MyEntity extends DataPacket{
 	public Character status2;
 	
 	@Order(11)
+	@Variant(SubEntityHandler.class)
 	public SubEntity sub;
 	
 	@Order(12)
@@ -101,7 +105,19 @@ public class MyEntity extends DataPacket{
 	
 	@Order(15)
 	@Length
+	@Variant(SubEntityHandler.class)
 	public List<SubEntity> subEntityList;
+	
+	public static final class SubEntityHandler extends EntityHandler{
+
+		@Override
+		public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+			SubEntity ret = new SubEntity(3, 4.0f);
+			ret.carryOver = ((MyEntity)entity).a;
+			return ret;
+		}
+		
+	}
 	
 	@Order(16)
 	@CHAR(4)

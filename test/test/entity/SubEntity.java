@@ -9,6 +9,8 @@ import org.dzh.bytesutil.annotations.types.INT;
 
 public class SubEntity extends DataPacket{
 	
+	public byte carryOver;
+	
 	@Order(0)
 	@INT
 	@Signed
@@ -19,12 +21,11 @@ public class SubEntity extends DataPacket{
 	@CHARSET("GBK")
 	public String strB;
 	
-	public SubEntity() {
-		
+	public SubEntity(int i, float j) {
+		//no-op
 	}
 
 	public SubEntity(int integerA, String strB) {
-		super();
 		this.integerA = integerA;
 		this.strB = strB;
 	}

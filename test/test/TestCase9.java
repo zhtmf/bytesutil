@@ -70,17 +70,17 @@ public class TestCase9{
 			{
 				Entity e2 = new Entity();
 				e2.deserialize(bais);
-				Assert.assertTrue(Utils.equals(entity, e2));
+				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
 			}
 			{
 				Entity e2 = new Entity();
 				e2.deserialize(bais);
-				Assert.assertTrue(Utils.equals(entity, e2));
+				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
 			}
 			{
 				Entity e2 = new Entity();
 				e2.deserialize(bais);
-				Assert.assertTrue(Utils.equals(entity, e2));
+				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
 			}
 		}
 	}

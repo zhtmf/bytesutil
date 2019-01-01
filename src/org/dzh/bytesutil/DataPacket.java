@@ -288,11 +288,11 @@ public abstract class DataPacket {
 					try {
 						tmp = new ArrayList<>(length);
 						while(length-->0) {
-							DataPacket object = (DataPacket) fi.listComponentClass.newInstance();
+							DataPacket object = (DataPacket) fi.entityCreator.handleDeserialize(fi.name, this, _src);
 							object.deserialize(_src);
 							tmp.add(object);
 						}
-					} catch (InstantiationException | IllegalAccessException e) {
+					} catch (Exception e) {
 						throw new ConversionException(
 								this.getClass(),fi.name,
 								String.format(

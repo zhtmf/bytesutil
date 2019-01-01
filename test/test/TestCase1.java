@@ -104,7 +104,7 @@ public class TestCase1 {
 			}
 			long elapsed = System.currentTimeMillis() - st;
 			System.out.println("time elapsed:"+elapsed);
-			Assert.assertTrue(Utils.equals(entity, entity2));
+			Assert.assertTrue(Utils.equalsOrderFields(entity, entity2));
 			Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
 		}
 		
@@ -118,7 +118,7 @@ public class TestCase1 {
 			for(int i=0;i<100000;++i) {
 				MyEntity entity2 = new MyEntity();
 				entity2.deserialize(bais);
-				Assert.assertTrue(Utils.equals(entity, entity2));
+				Assert.assertTrue(Utils.equalsOrderFields(entity, entity2));
 			}
 		}
 	}
@@ -130,7 +130,8 @@ public class TestCase1 {
 		MyEntity entity2 = new MyEntity();
 		final byte[] bts = baos.toByteArray();
 		entity2.deserialize(new ByteArrayInputStream(bts));
-		Assert.assertTrue(Utils.equals(entity,entity2));
+		Assert.assertTrue(Utils.equalsOrderFields(entity,entity2));
+		Assert.assertEquals(entity2.subEntityList.get(0).carryOver, entity2.a);
 	}
 	
 	public static void main(String[] args) throws ConversionException {

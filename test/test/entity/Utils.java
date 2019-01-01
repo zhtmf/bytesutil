@@ -8,8 +8,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.dzh.bytesutil.annotations.modifiers.Order;
+
 public class Utils {
-	public static boolean equals(Object o1, Object o2) {
+	public static boolean equalsOrderFields(Object o1, Object o2) {
 		if(o1==o2) {
 			return true;
 		}
@@ -31,7 +33,7 @@ public class Utils {
 			while(iter.hasNext()) {
 				Object elem1 = iter.next();
 				Object elem2 = iter2.next();
-				if( ! equals(elem1,elem2)) {
+				if( ! equalsOrderFields(elem1,elem2)) {
 					return false;
 				}
 			}
@@ -48,7 +50,7 @@ public class Utils {
 			for(Object obj:keySet) {
 				Object elem1 = map1.get(obj);
 				Object elem2 = map2.get(obj);
-				if( ! equals(elem1,elem2)) {
+				if( ! equalsOrderFields(elem1,elem2)) {
 					return false;
 				}
 			}
@@ -82,7 +84,7 @@ public class Utils {
 			for(int i=0;i<len1;++i) {
 				Object elem1 = Array.get(o1,i);
 				Object elem2 = Array.get(o2, i);
-				if( ! equals(elem1,elem2)) {
+				if( ! equalsOrderFields(elem1,elem2)) {
 					return false;
 				}
 			}
@@ -94,11 +96,14 @@ public class Utils {
 				if((f.getModifiers() & Modifier.STATIC)!=0) {
 					continue;
 				}
+				if(f.getAnnotation(Order.class)==null) {
+					continue;
+				}
 				f.setAccessible(true);
 				try {
 					Object val1 = f.get(o1);
 					Object val2 = f.get(o2);
-					if( ! equals(val1,val2)) {
+					if( ! equalsOrderFields(val1,val2)) {
 						return false;
 					}
 				} catch (IllegalArgumentException | IllegalAccessException e) {
@@ -109,5 +114,4 @@ public class Utils {
 		}
 		return true;
 	}
-	
 }

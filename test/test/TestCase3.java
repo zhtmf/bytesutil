@@ -199,7 +199,7 @@ public class TestCase3{
 		
 		Entity2 e2 = new Entity2();
 		e2.deserialize(new ByteArrayInputStream(arr));
-		Assert.assertTrue(Utils.equals(entity, e2));
+		Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
 	}
 	
 	public static void main(String[] args) throws ConversionException {

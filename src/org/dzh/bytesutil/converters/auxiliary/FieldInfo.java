@@ -134,30 +134,15 @@ public class FieldInfo{
 		}
 		this.annotations = Collections.unmodifiableMap(_annotations);
 		
-		if(isEntity) {
-			Variant cond = localAnnotation(Variant.class);
-			if(cond==null) {
-				this.entityCreator = new EntityHandler() {
-					
-					@Override
-					public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-						try {
-							return (DataPacket) fieldClass.newInstance();
-						} catch (InstantiationException | IllegalAccessException e) {
-							throw new RuntimeException(e);
-						}
-					}
-				};
-			}else {
-				try {
-					this.entityCreator = cond.value().newInstance();
-				} catch (InstantiationException | IllegalAccessException e) {
-					throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor");
-				}
-				
+		Variant cond = localAnnotation(Variant.class);
+		if(cond==null) {
+			this.entityCreator = new PlainReflectionEntityHandler(isEntityList ? listComponentClass : fieldClass);
+		}else {
+			try {
+				this.entityCreator = cond.value().newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor");
 			}
-		}else{
-			this.entityCreator = null;
 		}
 		
 		{
@@ -365,6 +350,24 @@ public class FieldInfo{
 			return global2;
 		}
 		return null;
+	}
+	
+	private static final class PlainReflectionEntityHandler extends EntityHandler{
+		
+		private Class<?> classToCreate;
+		
+		public PlainReflectionEntityHandler(Class<?> classToCreate) {
+			this.classToCreate = classToCreate;
+		}
+
+		@Override
+		public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+			try {
+				return (DataPacket) classToCreate.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
 	}
 	
 	@Override
