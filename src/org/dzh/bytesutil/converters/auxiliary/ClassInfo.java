@@ -59,8 +59,9 @@ public class ClassInfo {
 		 * fields in subclasses always appears later in the list than those from super
 		 * class.
 		 */
-		while(cls!=null){
-			List<Field> tmpList = new ArrayList<>(Arrays.asList(cls.getDeclaredFields()));
+		Class<?> tmp = cls;
+		while(tmp!=null){
+			List<Field> tmpList = new ArrayList<>(Arrays.asList(tmp.getDeclaredFields()));
 			for(int i=0;i<tmpList.size();++i) {
 				Field f = tmpList.get(i);
 				/*
@@ -77,15 +78,15 @@ public class ClassInfo {
 				try {
 					f.setAccessible(true);
 				} catch (SecurityException e) {
-					throw forContext(cls, f.getName(), "field cannot be made accessible.");
+					throw forContext(tmp, f.getName(), "field cannot be made accessible.");
 				}
 			}
 			
 			Collections.sort(tmpList, reverseFieldComparator);
 			fieldList.addAll(tmpList);
-			cls = cls.getSuperclass();
+			tmp = tmp.getSuperclass();
 			//theoretically Object.class cannot be reached
-			if(cls == DataPacket.class || cls==Object.class) {
+			if(tmp == DataPacket.class || tmp==Object.class) {
 				break;
 			}
 		}
