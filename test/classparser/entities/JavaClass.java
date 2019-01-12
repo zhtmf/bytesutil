@@ -20,6 +20,8 @@ import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
 
 import classparser.entities.attributeinfo.AttributeInfo;
 import classparser.entities.cpinfo.CpInfo;
+import classparser.entities.cpinfo.info.CONSTANT_Class_info;
+import classparser.entities.cpinfo.info.CONSTANT_Utf8_info;
 
 @Unsigned
 @CHARSET("UTF-8")
@@ -112,15 +114,64 @@ public class JavaClass extends DataPacket{
 	
 	@Override
 	public String toString() {
-		return "JavaClass [magic=" + magic + ", minorVersion=" + minorVersion + ", majorVersion=" + majorVersion
-				+ ", constantPool=" + printConstantPool() + ", accessFlags=" + accessFlags + ", thisClass=" + thisClass
-				+ ", superClass=" + superClass + ", interfaces=" + interfaces + ", fields=" + fields + ", methods="
-				+ methods + ", attributes=" + attributes + "]";
+		StringBuilder sb = new StringBuilder();
+		CONSTANT_Class_info classInfo = (CONSTANT_Class_info)constantPool.get(thisClass-1).info;
+		CONSTANT_Utf8_info utf8 = (CONSTANT_Utf8_info) constantPool.get(classInfo.nameIndex-1).info;
+		String className = utf8.bytes.replace('/', '.');
+		sb.append("JavaClass:"+className+"\n");
+		sb.append("magic:"+Long.toHexString(magic));sb.append("\n");
+		sb.append("minorVersion:"+minorVersion);sb.append("\n");
+		sb.append("majorVersion:"+majorVersion);sb.append("\n");
+		sb.append("===CONSTANTPOOL=====");sb.append("\n");
+		sb.append(printConstantPool());
+		sb.append("accessFlags:"+Long.toBinaryString(accessFlags));sb.append("\n");
+		sb.append("thisClass:"+thisClass);sb.append("\n");
+		sb.append("superClass:"+superClass);sb.append("\n");
+		sb.append("===INTERFACES===");sb.append("\n");
+		sb.append(printInterfaces());
+		sb.append("===FIELDS===");sb.append("\n");
+		sb.append(printFields());
+		sb.append("===METHODS===");sb.append("\n");
+		sb.append(printMethods());
+		sb.append("===ATTRIBUTES===");sb.append("\n");
+		sb.append(printAttributes());
+		return sb.toString();
+	}
+	
+	private String printAttributes() {
+		StringBuilder sb = new StringBuilder();
+		for(AttributeInfo info:attributes) {
+			sb.append(info).append("\n");
+		}
+		return sb.toString();
+	}
+	
+	private String printMethods() {
+		StringBuilder sb = new StringBuilder();
+		for(MethodInfo info:methods) {
+			sb.append(info).append("\n");
+		}
+		return sb.toString();
+	}
+	
+	private String printFields() {
+		StringBuilder sb = new StringBuilder();
+		for(FieldInfo info:fields) {
+			sb.append(info).append("\n");
+		}
+		return sb.toString();
+	}
+	
+	private String printInterfaces() {
+		StringBuilder sb = new StringBuilder();
+		for(Integer index:interfaces) {
+			sb.append("#").append(index).append("\n");
+		}
+		return sb.toString();
 	}
 	
 	private String printConstantPool() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("\n");
 		int counter = 1;
 		for(CpInfo info:constantPool) {
 			sb.append(counter+++" "+info.toString()).append("\n");
