@@ -110,4 +110,13 @@ public class AttributeInfo extends DataPacket{
 			}
 		}	
 	}
+	
+	@Override
+	public String toString() {
+		int index = (int)this.attributeNameIndex;
+		//The constant_pool table is indexed from 1 to constant_pool_count-1.
+		CpInfo relatedConstantInfo = this.constantPool.get(index-1);
+		String name = ((CONSTANT_Utf8_info)relatedConstantInfo.info).bytes;
+		return "Attribute "+name+": \n"+info;
+	}
 }

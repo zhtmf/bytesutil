@@ -16,6 +16,7 @@ import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 
 import classparser.entities.attributeinfo.AttributeInfo;
 import classparser.entities.cpinfo.CpInfo;
+import classparser.entities.cpinfo.info.CONSTANT_Utf8_info;
 
 @Unsigned
 public class MethodInfo extends DataPacket{
@@ -47,5 +48,21 @@ public class MethodInfo extends DataPacket{
 		
 	}
 	
+	@Override
+	public String toString() {
+		int index = (int)this.nameIndex;
+		CpInfo relatedConstantInfo = this.constantPool.get(index-1);
+		String name = ((CONSTANT_Utf8_info)relatedConstantInfo.info).bytes;
+		return "Method "+name+":\n"+printAttributes();
+	}
 	
+	private String printAttributes() {
+		StringBuilder sb = new StringBuilder();
+		if(attributes!=null) {
+			for(AttributeInfo info:attributes) {
+				sb.append(info).append("\n");
+			}
+		}
+		return sb.toString();
+	}
 }

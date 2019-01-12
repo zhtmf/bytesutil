@@ -1,10 +1,13 @@
 package classparser.entities.attributeinfo.info;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
@@ -16,6 +19,7 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 
 import classparser.entities.attributeinfo.AttributeInfo;
+import classparser.entities.bytecodes.Instruction;
 import classparser.entities.cpinfo.CpInfo;
 
 @Unsigned
@@ -30,6 +34,7 @@ public class Code extends DataPacket{
 	@RAW
 	@Length(type=DataType.INT)
 	public byte[] code;
+	private List<Instruction> instructions;
 	@Order(3)
 	@Length(type=DataType.SHORT)
 	public List<ExceptionTable> exceptionTable;
@@ -50,5 +55,41 @@ public class Code extends DataPacket{
 			return new AttributeInfo(Collections.unmodifiableList(info.constantPool));
 		}
 		
+	}
+	/*
+	 * deserialize list of jvm instructions manually,
+	 * as the length contained in class file is length of raw code bytes,
+	 *  not count of instructions.
+	 */
+	public List<Instruction> getInstructions() {
+		if(instructions==null) {
+			int offset = 0;
+			List<Instruction> ret = new ArrayList<>();
+			ByteArrayInputStream bais = new ByteArrayInputStream(code);
+			int pos = bais.available();
+			while(pos>0) {
+				Instruction instruction = new Instruction(offset);
+				try {
+					instruction.deserialize(bais);
+				} catch (IllegalArgumentException | ConversionException e) {
+					throw new Error(e);
+				}
+				offset += instruction.length();
+				ret.add(instruction);
+				pos = bais.available();
+			}
+			instructions = ret;
+		}
+		return instructions;
+	}
+	
+	@Override
+	public String toString() {
+		StringBuilder ret = new StringBuilder();
+		ret.append("Code: ");ret.append("\n");
+		for(Instruction instruction:getInstructions()) {
+			ret.append("    ").append(instruction);ret.append("\n");
+		}
+		return ret.toString();
 	}
 }

@@ -140,32 +140,40 @@ public class JavaClass extends DataPacket{
 	
 	private String printAttributes() {
 		StringBuilder sb = new StringBuilder();
-		for(AttributeInfo info:attributes) {
-			sb.append(info).append("\n");
+		if(attributes!=null) {
+			for(AttributeInfo info:attributes) {
+				sb.append(info).append("\n");
+			}
 		}
 		return sb.toString();
 	}
 	
 	private String printMethods() {
 		StringBuilder sb = new StringBuilder();
-		for(MethodInfo info:methods) {
-			sb.append(info).append("\n");
+		if(methods!=null) {
+			for(MethodInfo info:methods) {
+				sb.append(info).append("\n");
+			}
 		}
 		return sb.toString();
 	}
 	
 	private String printFields() {
 		StringBuilder sb = new StringBuilder();
-		for(FieldInfo info:fields) {
-			sb.append(info).append("\n");
+		if(fields!=null) {
+			for(FieldInfo info:fields) {
+				sb.append(info).append("\n");
+			}
 		}
 		return sb.toString();
 	}
 	
 	private String printInterfaces() {
 		StringBuilder sb = new StringBuilder();
-		for(Integer index:interfaces) {
-			sb.append("#").append(index).append("\n");
+		if(interfaces!=null) {
+			for(Integer index:interfaces) {
+				sb.append("#").append(index).append("\n");
+			}
 		}
 		return sb.toString();
 	}
@@ -173,8 +181,10 @@ public class JavaClass extends DataPacket{
 	private String printConstantPool() {
 		StringBuilder sb = new StringBuilder();
 		int counter = 1;
-		for(CpInfo info:constantPool) {
-			sb.append(counter+++" "+info.toString()).append("\n");
+		if(constantPool!=null) {
+			for(CpInfo info:constantPool) {
+				sb.append(counter+++" "+info.toString()).append("\n");
+			}
 		}
 		return sb.toString();
 	}
