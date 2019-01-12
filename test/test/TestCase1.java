@@ -110,12 +110,12 @@ public class TestCase1 {
 		
 		{
 			baos = new ByteArrayOutputStream();
-			for(int i=0;i<100000;++i) {
+			for(int i=0;i<1500;++i) {
 				entity.serialize(baos);
 			}
 			byte[] bts = baos.toByteArray();
 			ByteArrayInputStream bais = new ByteArrayInputStream(bts);
-			for(int i=0;i<100000;++i) {
+			for(int i=0;i<1500;++i) {
 				MyEntity entity2 = new MyEntity();
 				entity2.deserialize(bais);
 				Assert.assertTrue(Utils.equalsOrderFields(entity, entity2));

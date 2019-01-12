@@ -14,7 +14,7 @@ public class TestClassParsing {
 	public void testParsing() throws Exception {
 		byte[] original = null;
 		{
-			InputStream inputStream = TestClassParsing.class.getResourceAsStream("DataPacket.classfile");
+			InputStream inputStream = getInputStream();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			byte[] buffer = new byte[1024];
 			int read = -1;
@@ -25,7 +25,7 @@ public class TestClassParsing {
 		}
 		byte[] deserialized = null;
 		{
-			InputStream inputStream = TestClassParsing.class.getResourceAsStream("DataPacket.classfile");
+			InputStream inputStream = getInputStream();
 			JavaClass clazz = new JavaClass();
 			try {
 				clazz.deserialize(inputStream);
@@ -39,5 +39,13 @@ public class TestClassParsing {
 			deserialized = baos.toByteArray();
 		}
 		Assert.assertArrayEquals(original, deserialized);
+	}
+	
+	private InputStream getInputStream() {
+		InputStream inputStream = TestClassParsing.class.getResourceAsStream("DataPacket.classfile");
+		if(inputStream==null) {
+			inputStream = TestClassParsing.class.getClassLoader().getResourceAsStream("test/classparser/DataPacket.classfile");
+		}
+		return inputStream;
 	}
 }
