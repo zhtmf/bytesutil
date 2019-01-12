@@ -33,11 +33,12 @@ public abstract class ModifierHandler<E> {
 	
 	public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is){
 		is.mark(HANDLER_READ_BUFFER_SIZE);
-		E ret = handleDeserialize0(fieldName, entity, is);
-		if(ret==null) {
-			throw new NullPointerException("should return non-null value from handler");
-		}
+		E ret = null;
 		try {
+			ret = handleDeserialize0(fieldName, entity, is);
+			if(ret==null) {
+				throw new NullPointerException("should return non-null value from handler");
+			}
 			is.reset();
 		} catch (IOException e) {
 			throw new Error(e);
@@ -53,6 +54,6 @@ public abstract class ModifierHandler<E> {
 		return ret;
 	}
 	
-	public abstract E handleDeserialize0(String fieldName, Object entity, InputStream is);
+	public abstract E handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException;
 	public abstract E handleSerialize0(String fieldName, Object entity);
 }
