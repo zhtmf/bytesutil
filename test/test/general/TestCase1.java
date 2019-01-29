@@ -1,4 +1,4 @@
-package test;
+package test.general;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -11,12 +11,11 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import test.entity.MyEntity;
-import test.entity.SubEntity;
-import test.entity.Utils;
-import test.entity.WeirdEntity;
-import test.hierarchy.Sub1;
-import test.hierarchy.Sub2;
+import test.general.entities.MyEntity;
+import test.general.entities.Sub1;
+import test.general.entities.Sub2;
+import test.general.entities.SubEntity;
+import test.general.entities.WeirdEntity;
 
 public class TestCase1 {
 	
@@ -128,6 +127,8 @@ public class TestCase1 {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		entity.serialize(baos);
 		MyEntity entity2 = new MyEntity();
+		//for testing of a rare case
+		entity2.sub = new SubEntity(3,4.0f);
 		final byte[] bts = baos.toByteArray();
 		entity2.deserialize(new ByteArrayInputStream(bts));
 		Assert.assertTrue(Utils.equalsOrderFields(entity,entity2));

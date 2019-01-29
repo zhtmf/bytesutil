@@ -18,8 +18,8 @@ public class Instruction extends DataPacket{
 	@BYTE
 	private OpCode opcode;
 	@Order(1)
-	@Length(handler=BytesLengthHandler.class)
 	@RAW
+	@Length(handler=BytesLengthHandler.class)
 	private byte[] otherBytes;
 	
 	//address offset in the bytes of the same method

@@ -37,6 +37,7 @@ public class FieldInfo{
 	private final Class<?> fieldClass;
 	
 	public final String name;
+	//TODO: change name of this field to eliminate ambiguity
 	public final DataType type;
 	public final boolean isEntity;
 	public final boolean isEntityList;

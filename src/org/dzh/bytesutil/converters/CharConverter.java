@@ -15,10 +15,7 @@ public class CharConverter implements Converter<Character> {
 	public void serialize(Character value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
 		value = value == null ? 0 : value;
-		Charset cs = ctx.charset;
-		if(cs==null) {
-			cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name, self);
-		}
+		Charset cs = Utils.charsetForSerializingCHAR(ctx, self);
 		byte[] bytes = value.toString().getBytes(cs);
 		switch(ctx.type) {
 		case CHAR:{
@@ -46,10 +43,7 @@ public class CharConverter implements Converter<Character> {
 	@Override
 	public Character deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException {
-		Charset cs = ctx.charset;
-		if(cs==null) {
-			cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name, self);
-		}
+		Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);
 		switch(ctx.type) {
 		case CHAR:{
 			

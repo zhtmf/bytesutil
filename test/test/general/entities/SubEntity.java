@@ -1,4 +1,4 @@
-package test.entity;
+package test.general.entities;
 
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;

@@ -1,4 +1,4 @@
-package test.entity;
+package test.general.entities;
 
 import java.io.InputStream;
 

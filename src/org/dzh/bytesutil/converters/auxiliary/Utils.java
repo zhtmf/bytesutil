@@ -1,9 +1,27 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
+import java.nio.charset.Charset;
+
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
 
 public class Utils {
+	
+	public static Charset charsetForSerializingCHAR(FieldInfo ctx,Object self) {
+		Charset cs = ctx.charset;
+		if(cs==null) {
+			cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name,self);
+		}
+		return cs;
+	}
+	
+	public static Charset charsetForDeserializingCHAR(FieldInfo ctx,Object self, MarkableInputStream is) {
+		Charset cs = ctx.charset;
+		if(cs==null) {
+			cs = ctx.charsetHandler.handleDeserialize(ctx.name,self,is);
+		}
+		return cs;
+	}
 	
 	public static int lengthForSerializingCHAR(FieldInfo ctx,Object self) {
 		int length = ctx.annotation(CHAR.class).value();

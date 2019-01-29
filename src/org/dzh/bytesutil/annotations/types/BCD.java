@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 @Target(FIELD)
 public @interface BCD {
 	/**
-	 * Specifies how many <b>bytes<b> that make up of this BCD data, which is half of the
+	 * Specifies how many <b>bytes</b> that make up of this BCD data, which is half of the
 	 * digits of the number it represents.
 	 * 
 	 * @return number of bytes

@@ -1,4 +1,4 @@
-package test.hierarchy;
+package test.general.entities;
 
 import java.io.IOException;
 import java.io.InputStream;

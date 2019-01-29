@@ -18,11 +18,7 @@ public class StringConverter implements Converter<String> {
 		value = value == null ? "" : value;
 		switch(ctx.type) {
 		case CHAR:{
-			
-			Charset cs = ctx.charset;
-			if(cs==null) {
-				cs = (Charset) ctx.charsetHandler.handleSerialize(ctx.name,self);
-			}
+			Charset cs = Utils.charsetForSerializingCHAR(ctx, self);
 			byte[] bytes = null;
 			
 			int length = Utils.lengthForSerializingCHAR(ctx, self);
@@ -64,10 +60,7 @@ public class StringConverter implements Converter<String> {
 			throws IOException, UnsupportedOperationException {
 		switch(ctx.type) {
 		case CHAR:{
-			Charset cs = ctx.charset;
-			if(cs==null) {
-				cs = ctx.charsetHandler.handleDeserialize(ctx.name,self,is);
-			}
+			Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 			if(length<0) {
 				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);

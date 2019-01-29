@@ -1,4 +1,4 @@
-package test;
+package test.general;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,8 +17,6 @@ import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import test.entity.Utils;
 
 /*
  * test nested marking for MarkableInputStream

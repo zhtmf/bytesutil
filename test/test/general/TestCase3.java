@@ -1,4 +1,4 @@
-package test;
+package test.general;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,8 +23,6 @@ import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import test.entity.Utils;
 
 public class TestCase3{
 	

@@ -1,4 +1,4 @@
-package test.entity;
+package test.general;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;

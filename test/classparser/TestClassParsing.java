@@ -1,6 +1,9 @@
 package classparser;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import org.junit.Assert;
@@ -41,11 +44,11 @@ public class TestClassParsing {
 		Assert.assertArrayEquals(original, deserialized);
 	}
 	
-	private InputStream getInputStream() {
-		InputStream inputStream = TestClassParsing.class.getResourceAsStream("DataPacket.classfile");
-		if(inputStream==null) {
-			inputStream = TestClassParsing.class.getClassLoader().getResourceAsStream("test/classparser/DataPacket.classfile");
+	private InputStream getInputStream() throws FileNotFoundException {
+		File f = new File("DataPacket.classfile");
+		if( ! f.exists()) {
+			f = new File("test/classparser/DataPacket.classfile");
 		}
-		return inputStream;
+		return new FileInputStream(f);
 	}
 }

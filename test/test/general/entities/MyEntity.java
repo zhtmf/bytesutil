@@ -1,4 +1,4 @@
-package test.entity;
+package test.general.entities;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,11 +22,6 @@ import org.dzh.bytesutil.annotations.types.INT;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
 import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
-
-import test.hierarchy.Base;
-import test.hierarchy.EntityHandler1;
-import test.hierarchy.LengthHandler;
-import test.hierarchy.PropertyHandler2;
 
 @LittleEndian
 @Unsigned

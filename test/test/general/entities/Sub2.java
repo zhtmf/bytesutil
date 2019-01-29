@@ -1,4 +1,4 @@
-package test.hierarchy;
+package test.general.entities;
 
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.Order;

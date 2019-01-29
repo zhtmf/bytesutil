@@ -1,4 +1,4 @@
-package test;
+package test.general;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -15,7 +15,7 @@ import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
-import test.entity.ListEntity;
+import test.general.entities.ListEntity;
 
 public class TestVariantForList {
 

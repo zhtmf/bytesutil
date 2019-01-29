@@ -1,10 +1,8 @@
-package test.hierarchy;
+package test.general.entities;
 
 import java.io.InputStream;
 
 import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
-
-import test.entity.MyEntity;
 
 public class LengthHandler extends ModifierHandler<Integer> {
 

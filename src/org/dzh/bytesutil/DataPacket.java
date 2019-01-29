@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,6 +31,8 @@ import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
+import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
+import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
 /**
  * <p>
@@ -121,7 +124,14 @@ public abstract class DataPacket {
 			if(fi.isEntity) {
 				Object obj = fi.get(this);
 				if(obj==null) {
-					continue;
+					/*
+					 * null values shall not be permitted as it will be impossible 
+					 * to deserialize the byte sequence generated using the same scheme
+					 * Note: this modification causes incompatibility with former versions
+					 */
+					throw new ExtendedConversionException(this.getClass(),fi.name,
+							"this field is intended to be processed but its value is null")
+							.withSiteAndOrdinal(DataPacket.class, 0);
 				}
 				((DataPacket)obj).serialize(dest);
 			//this field is a list
@@ -138,18 +148,20 @@ public abstract class DataPacket {
 					try {
 						StreamUtils.writeIntegerOfType(dest, fi.lengthType(), value.size(), fi.bigEndian);
 					} catch (IOException e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+						throw new ExtendedConversionException(this.getClass(),fi.name,e)
+							.withSiteAndOrdinal(DataPacket.class, 1);
 					}
 				}
 				
 				//serialize objects in the list
 				//do not use the actual length of the list but the length obtained above
 				if(length!=value.size()) {
-					throw new ConversionException(
+					throw new ExtendedConversionException(
 							this.getClass(),fi.name,
 							String.format(
 									"defined list length [%d] is not the same as length [%d] of list value"
-									,length,value.size()));
+									,length,value.size()))
+								.withSiteAndOrdinal(DataPacket.class, 2);
 				}
 				@SuppressWarnings("unchecked")
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
@@ -160,11 +172,13 @@ public abstract class DataPacket {
 							cv.serialize(value.get(i), dest, fi, this);
 						}
 					} catch (UnsupportedOperationException e) {
-						throw new ConversionException(
+						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type);
+								"Unsupported conversion to "+fi.type)
+							.withSiteAndOrdinal(DataPacket.class, 3);
 					} catch (Exception e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+						throw new ExtendedConversionException(this.getClass(),fi.name,e)
+						.withSiteAndOrdinal(DataPacket.class, 4);
 					}
 				}else if(DataPacket.class.isAssignableFrom(fi.listComponentClass)){
 					//class of list elements is another Data
@@ -172,28 +186,32 @@ public abstract class DataPacket {
 						((DataPacket)value.get(i)).serialize(dest);
 					}
 				}else {
-					throw new ConversionException(
+					throw new ExtendedConversionException(
 								this.getClass(),fi.name,
 								String.format("component class [%s] is not supported"
-										, fi.listComponentClass));
+										, fi.listComponentClass))
+							.withSiteAndOrdinal(DataPacket.class, 5);
 				}
 			//a plain field
 			}else {
 				@SuppressWarnings("unchecked")
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.getFieldType());
 				if(cv==null) {
-					throw new ConversionException(
+					throw new ExtendedConversionException(
 							this.getClass(),fi.name,
-							String.format("class [%s] is not supported", fi.getFieldType()));
+							String.format("class [%s] is not supported", fi.getFieldType()))
+								.withSiteAndOrdinal(DataPacket.class, 7);
 				}else {
 					try {
 						cv.serialize(fi.get(this), dest, fi,this);
 					} catch (UnsupportedOperationException e) {
-						throw new ConversionException(
+						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type,e);
+								"Unsupported conversion to "+fi.type,e)
+								.withSiteAndOrdinal(DataPacket.class, 8);
 					} catch (Exception e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+						throw new ExtendedConversionException(this.getClass(),fi.name,e)
+								.withSiteAndOrdinal(DataPacket.class, 9);
 					}
 				}
 			}
@@ -242,11 +260,12 @@ public abstract class DataPacket {
 					try {
 						object = fi.entityCreator.handleDeserialize(fi.name, this, _src);
 					} catch (Exception e) {
-						throw new ConversionException(
+						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
 								String.format("field value is null and"
 										+ " instance of the entity class [%s] cannot be created"
-										, fi.name, fi.getFieldType()),e);
+										, fi.name, fi.getFieldType()),e)
+								.withSiteAndOrdinal(DataPacket.class, 11);
 					}
 				}
 				object.deserialize(_src);
@@ -262,7 +281,8 @@ public abstract class DataPacket {
 					try {
 						length = StreamUtils.readIntegerOfType(_src, fi.lengthType(), fi.bigEndian);
 					} catch (IOException e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+						throw new ExtendedConversionException(this.getClass(),fi.name,e)
+								.withSiteAndOrdinal(DataPacket.class, 12);
 					}
 				}
 				
@@ -276,14 +296,16 @@ public abstract class DataPacket {
 							tmp.add(cv.deserialize(_src, fi, this));
 						}
 					} catch (UnsupportedOperationException e) {
-						throw new ConversionException(
+						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type,e);
+								"Unsupported conversion to "+fi.type,e)
+								.withSiteAndOrdinal(DataPacket.class, 13);
 					} catch (Exception e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+						throw new ExtendedConversionException(this.getClass(),fi.name,e)
+								.withSiteAndOrdinal(DataPacket.class, 14);
 					}
 					value = tmp;
-				//component class is a Data
+				//component class is subclass of DataPacket
 				}else if(fi.isEntityList){
 					try {
 						tmp = new ArrayList<>(length);
@@ -293,35 +315,40 @@ public abstract class DataPacket {
 							tmp.add(object);
 						}
 					} catch (Exception e) {
-						throw new ConversionException(
+						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
 								String.format(
 								"instance of component class [%s] cannot be created by calling no-arg constructor"
-								, fi.listComponentClass),e);
+								, fi.listComponentClass),e)
+							.withSiteAndOrdinal(DataPacket.class, 15);
 					}
 					value = tmp;
 				}else {
-					throw new ConversionException(
+					throw new ExtendedConversionException(
 							this.getClass(),fi.name,
 							String.format(
 							"component class [%s] is not supported"
-							, fi.listComponentClass));
+							, fi.listComponentClass))
+							.withSiteAndOrdinal(DataPacket.class, 16);
 				}
 				
 			//a plain field
 			}else {
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.getFieldType());
 				if(cv==null) {
-					throw new RuntimeException(fi.getFieldType()+" not supported");
+					throw new ExtendedConversionException(this.getClass(),fi.name,fi.getFieldType()+" not supported")
+					.withSiteAndOrdinal(DataPacket.class, 17);
 				}else {
 					try {
 						value = cv.deserialize(_src, fi,this);
 					} catch (UnsupportedOperationException e) {
-						throw new ConversionException(
+						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type);
+								"Unsupported conversion to "+fi.type)
+						.withSiteAndOrdinal(DataPacket.class, 18);
 					} catch (Exception e) {
-						throw new ConversionException(this.getClass(),fi.name,e);
+						throw new ExtendedConversionException(this.getClass(),fi.name,e)
+						.withSiteAndOrdinal(DataPacket.class, 19);
 					}
 				}
 			}
@@ -337,18 +364,29 @@ public abstract class DataPacket {
 	 * This is <b>NOT</b> a constant time operation as the actual length should and
 	 * can only be calculated at runtime.
 	 * 
+	 * @throws IllegalArgumentException
+	 *             If initial parsing failed or other preliminaries not satisfied.
+	 *             Some errors may be better expressed by a
+	 *             {@link ConversionException} but we use an
+	 *             {@link IllegalArgumentException} to keep compatible with old
+	 *             versions;
+	 * 
 	 * @return length in bytes
 	 */
-	public int length(){
+	public int length() throws IllegalArgumentException{
 		ClassInfo ci = getClassInfo();
 		int ret = 0;
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			if(fi.isEntity) {
 				DataPacket dp = (DataPacket)fi.get(this);
-				if(dp!=null) {
-					ret += dp.length();
+				if(dp==null) {
+					throw new UnsatisfiedConstraintException(
+							fi.name + " is intended to be processed but its value is null"
+							, DataPacket.class, 20);
 				}
+				ret += dp.length();
 				continue;
+				
 			}
 			int length = 0;
 			if(fi.listComponentClass!=null) {
@@ -372,50 +410,76 @@ public abstract class DataPacket {
 						}
 						continue;
 					}
-				}else {
-					continue;
 				}
 			}else {
 				length = 1;
 			}
-			DataType type = fi.type;
-			switch(type) {
-			case BCD:
-				ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
-				break;
-			case BYTE:
-			case SHORT:
-			case INT:
-				ret += type.size() * length;
-				break;
-			case CHAR:{
-				int size = Utils.lengthForSerializingCHAR(fi, this);
-				if(size<0) {
-					Object val = fi.get(this);
-					size = val == null ? 0 : val.toString().length();
-					//dynamic length that is written to stream prior to serializing value
-					//get the actual value and calculate its length
-					//other types have been checked by FieldInfo class
-					ret += fi.annotation(Length.class).type().size();
+			if(length>0) {
+				DataType type = fi.type;
+				switch(type) {
+				case BCD:
+					ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
+					break;
+				case BYTE:
+				case SHORT:
+				case INT:
+					ret += type.size() * length;
+					break;
+				case CHAR:{
+					int size = Utils.lengthForSerializingCHAR(fi, this);
+					if(size>=0) {
+						//explicitly declared size
+						ret += size * length;
+					}else {
+						//dynamic length that is written to stream prior to serializing value
+						//size should be retrieved inspecting the value itself
+						//or in case of a list, inspecting values for EACH element
+						size = 0;
+						Object val = fi.get(this);
+						DataType lengthType = fi.annotation(Length.class).type();
+						Charset cs = Utils.charsetForSerializingCHAR(fi, this);
+						if(val instanceof List) {
+							@SuppressWarnings("rawtypes")
+							List lst = (List)val;
+							for(int i=0;i<lst.size();++i) {
+								val = lst.get(i);
+								size += lengthType.size();
+								size += val == null ? 0 : val.toString().getBytes(cs).length;
+							}
+						}else {
+							size += lengthType.size();
+							//TODO:char encoding?
+							size += val == null ? 0 : val.toString().getBytes(cs).length;
+						}
+						ret += size;
+					}
+					break;
 				}
-				//length of individual CHAR * size of (maybe) list
-				ret += size * length;
-				break;
-			}
-			case RAW:{
-				int size = Utils.lengthForSerializingRAW(fi, this);
-				if(size<0) {
-					Object val = fi.get(this);
-					size = val==null ? 0 : Array.getLength(val);
-					//other types have been checked by FieldInfo class
-					ret += fi.annotation(Length.class).type().size();
+				case RAW:{
+					int size = Utils.lengthForSerializingRAW(fi, this);
+					if(size>=0) {
+						ret += size * length;
+					}else {
+						size = 0;
+						Object val = fi.get(this);
+						DataType lengthType = fi.annotation(Length.class).type();
+						if(val instanceof List) {
+							@SuppressWarnings("rawtypes")
+							List lst = (List)val;
+							for(int i=0;i<lst.size();++i) {
+								val = lst.get(i);
+								size += lengthType.size();
+								size += val == null ? 0 : Array.getLength(val);
+							}
+						}else {
+							size += lengthType.size();
+							size += val == null ? 0 : Array.getLength(val);
+						}
+						ret += size;
+					}
+					break;
 				}
-				//length of individual byte array * size of (maybe) list
-				ret += size * length;
-				break;
-			}
-			default:
-				throw new UnsupportedOperationException();
+				}
 			}
 		}
 		return ret;
