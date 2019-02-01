@@ -13,8 +13,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExactException;
+import org.junit.Assert;
 
 public class TestUtils {
 	public static boolean assertException(Throwable leaf, Class<? extends Throwable> expected) {
@@ -52,6 +54,14 @@ public class TestUtils {
 	}
 	public static InputStream newInputStream(byte[] arr) {
 		return new ByteArrayInputStream(arr);
+	}
+	public static void serializeAndRestore(DataPacket entity) throws Exception {
+		ByteArrayOutputStream os = newByteArrayOutputStream();
+		entity.serialize(os);
+		byte[] data = os.toByteArray();
+		DataPacket restored = entity.getClass().newInstance();
+		restored.deserialize(newInputStream(data));
+		Assert.assertTrue(equalsOrderFields(entity, restored));
 	}
 	public static boolean equalsOrderFields(Object o1, Object o2) {
 		if(o1==o2) {

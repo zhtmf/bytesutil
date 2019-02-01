@@ -1,6 +1,7 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
 import java.nio.charset.Charset;
+import java.util.Arrays;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.CHAR;
@@ -145,6 +146,30 @@ public class Utils {
 			throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, error)
 						.withSiteAndOrdinal(Utils.class, 1);
 		}
+	}
+	
+	public static final int numericCharsToNumber(byte[] numChars) throws IllegalArgumentException {
+		/*
+		 * such strings causes asymmetry between serialization and deserialization. it
+		 * is possible to avoid this problem by using written-ahead length, however such
+		 * use case is rare so it is better prevent deserialization from such strings to
+		 * a numeric type explicitly rather than later cause errors that are hard to
+		 * detect.
+		 */
+		if(numChars.length>1 && numChars[0]=='0') {
+			throw new IllegalArgumentException("streams contains numeric string that contains leading zero");
+		}
+		int ret = 0;
+		for(byte b:numChars) {
+			if(!(b>='0' && b<='9')) {
+				throw new IllegalArgumentException("streams contains non-numeric character");
+			}
+			ret = ret*10 + (b-'0');
+			if(ret<0) {
+				throw new IllegalArgumentException("numeric string overflows:"+Arrays.toString(numChars));
+			}
+		}
+		return ret;
 	}
 		
 	static IllegalArgumentException forContext(Class<?> entity, String field, String error) {

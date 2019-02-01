@@ -10,6 +10,7 @@ import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
+import org.dzh.bytesutil.annotations.types.SHORT;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -124,6 +125,73 @@ public class TestIntegerRange {
 			} catch (Exception e) {
 				TestUtils.assertExactException(e, Utils.class, 1);
 			}
+		}
+	}
+	
+	@Signed
+	public static class EntityByte4 extends DataPacket{
+		@Order(0)
+		@BYTE
+		public short b;
+	}
+	
+	@Test
+	public void testByte4() throws ConversionException {
+		EntityByte4 entity = new EntityByte4();
+		entity.b = 130;
+		try {
+			entity.serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, Utils.class, 1);
+		}
+		entity.b = 120;
+		try {
+			entity.serialize(TestUtils.newByteArrayOutputStream());
+		} catch (Exception e) {
+			throw e;
+		}
+	}
+	
+	@Unsigned
+	public static class EntityByte5 extends DataPacket{
+		@Order(0)
+		@SHORT
+		public short b;
+	}
+	
+	@Test
+	public void testByte5() throws ConversionException {
+		EntityByte5 entity = new EntityByte5();
+		entity.b = -1;
+		try {
+			entity.serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, Utils.class, 1);
+		}
+	}
+	
+	@Signed
+	public static class EntityByte6 extends DataPacket{
+		@Order(0)
+		@SHORT
+		public short b;
+		@Order(1)
+		@SHORT
+		@Unsigned
+		public short c;
+	}
+	
+	@Test
+	public void testByte6() throws Exception {
+		EntityByte6 entity = new EntityByte6();
+		entity.b = -1;
+		entity.c = 23234;
+		try {
+			TestUtils.serializeAndRestore(entity);
+		} catch (Exception e) {
+			throw e;
 		}
 	}
 }

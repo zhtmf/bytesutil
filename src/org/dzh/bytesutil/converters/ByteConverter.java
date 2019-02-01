@@ -69,27 +69,14 @@ public class ByteConverter implements Converter<Byte> {
 			if(length<0) {
 				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 			}
-			byte[] numChars = StreamUtils.readBytes(is, length);
-			/*
-			 * such strings causes asymmetry between serialization and deserialization. it
-			 * is possible to avoid this problem by using written-ahead length, however such
-			 * use case is rare so it is better prevent deserialization from such strings to
-			 * a numeric type explicitly rather than later cause errors that are hard to
-			 * detect.
-			 */
-			if(numChars[0]=='0') {
-				throw new ExtendedConversionException(ctx, "streams contains numeric string that contains leading zero")
+			int ret;
+			try {
+				ret = Utils.numericCharsToNumber(StreamUtils.readBytes(is, length));
+			} catch (IllegalArgumentException e) {
+				throw new ExtendedConversionException(ctx, e.getMessage())
 						.withSiteAndOrdinal(ByteConverter.class, 2);
 			}
-			int ret = 0;
-			for(byte b:numChars) {
-				if(!(b>='0' && b<='9')) {
-					throw new ExtendedConversionException(ctx, "streams contains non-numeric character")
-						.withSiteAndOrdinal(ByteConverter.class, 3);
-				}
-				ret = ret*10 + (b-'0');
-				Utils.checkRangeInContext(DataType.BYTE, ret, ctx);
-			}
+			Utils.checkRangeInContext(DataType.BYTE, ret, ctx);
 			return (byte)ret;
 		}
 		case BCD:{

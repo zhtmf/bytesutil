@@ -70,6 +70,25 @@ public class TestCase91{
 		@BYTE
 		@Unsigned
 		public byte byteUnsigned;
+		@Order(11)
+		@CHAR
+		@Length
+		public short short1;
+		@Order(12)
+		@CHAR
+		@Length
+		public Short short2;
+		@Order(13)
+		@BCD(2)
+		public short short3;
+		@Order(14)
+		@BYTE
+		@Signed
+		public short short4;
+		@Order(15)
+		@BYTE
+		@Unsigned
+		public short short5;
 	}
 	
 	
@@ -86,6 +105,8 @@ public class TestCase91{
 		entity.bcd = 100;
 		entity.byteSigned = 120;
 		entity.byteUnsigned = 119;
+		entity.short2 = 32344;
+		entity.short3 = 1919;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		entity.serialize(baos);
 		Assert.assertEquals(baos.size(), entity.length());

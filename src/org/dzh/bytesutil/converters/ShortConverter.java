@@ -10,13 +10,14 @@ import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
+import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
 public class ShortConverter implements Converter<Short> {
 
 	@Override
 	public void serialize(Short value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,UnsupportedOperationException, ConversionException {
-		short val = value==null ? 0 : (short)value;
+		short val = (short)value;
 		switch(ctx.type) {
 		case BYTE:{
 			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
@@ -30,7 +31,9 @@ public class ShortConverter implements Converter<Short> {
 		}
 		case CHAR:
 			if(val<0) {
-				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
+				//implementation choice
+				throw new ExtendedConversionException(ctx,"negative number cannot be converted to CHAR")
+							.withSiteAndOrdinal(ShortConverter.class, 0);
 			}
 			String str = Long.toString(val);
 			int length = Utils.lengthForSerializingCHAR(ctx, self);
@@ -38,9 +41,10 @@ public class ShortConverter implements Converter<Short> {
 				length = str.length();
 				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
 			}else if(length!=str.length()) {
-				throw new IllegalArgumentException(
+				throw new ExtendedConversionException(ctx,
 						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
-									,str, val,length));
+									,str, val,length))
+							.withSiteAndOrdinal(ShortConverter.class, 1);
 			}
 			StreamUtils.writeBytes(dest, str.getBytes());
 			return;
@@ -58,8 +62,7 @@ public class ShortConverter implements Converter<Short> {
 			throws IOException,UnsupportedOperationException, ConversionException {
 		switch(ctx.type) {
 		case BYTE:{
-			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
-			return (short)value;
+			return (short)(ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
 		}
 		case SHORT:{
 			int val = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
@@ -71,15 +74,14 @@ public class ShortConverter implements Converter<Short> {
 			if(length<0) {
 				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 			}
-			byte[] numChars = StreamUtils.readBytes(is, length);
-			int ret = 0;
-			for(byte b:numChars) {
-				if(!(b>='0' && b<='9')) {
-					throw new IllegalArgumentException("streams contains non-numeric character");
-				}
-				ret = ret*10 + (b-'0');
-				Utils.checkRangeInContext(DataType.SHORT, ret, ctx);
+			int ret;
+			try {
+				ret = Utils.numericCharsToNumber(StreamUtils.readBytes(is, length));
+			} catch (IllegalArgumentException e) {
+				throw new ExtendedConversionException(ctx, e.getMessage())
+						.withSiteAndOrdinal(ShortConverter.class, 2);
 			}
+			Utils.checkRangeInContext(DataType.SHORT, ret, ctx);
 			return (short)ret;
 		}
 		case BCD:{
