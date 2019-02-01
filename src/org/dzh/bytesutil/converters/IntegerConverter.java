@@ -3,7 +3,9 @@ package org.dzh.bytesutil.converters;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.BCD;
+import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
@@ -13,16 +15,16 @@ public class IntegerConverter implements Converter<Integer> {
 
 	@Override
 	public void serialize(Integer value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException {
+			throws IOException,UnsupportedOperationException,ConversionException {
 		int val = value==null ? 0 : (int)value;
 		switch(ctx.type) {
 		case BYTE:{
-			Utils.checkRange(val, Byte.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
 			StreamUtils.writeBYTE(dest, (byte)val);
 			return;
 		}
 		case SHORT:{
-			Utils.checkRange(val, Short.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
 			StreamUtils.writeSHORT(dest, (short) val, ctx.bigEndian);
 			return;
 		}
@@ -43,7 +45,7 @@ public class IntegerConverter implements Converter<Integer> {
 			StreamUtils.writeBytes(dest, str.getBytes());
 			return;
 		case INT:{
-			Utils.checkRange(val, Integer.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.INT, val, ctx);
 			StreamUtils.writeInt(dest, val, ctx.bigEndian);
 			return;
 		}
@@ -58,20 +60,18 @@ public class IntegerConverter implements Converter<Integer> {
 
 	@Override
 	public Integer deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException {
+			throws IOException,UnsupportedOperationException, ConversionException {
 		switch(ctx.type) {
 		case BYTE:{
-			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
-			return value;
+			return ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
 		}
 		case SHORT:{
-			int value = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
-			return value;
+			return ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
 		}
 		case INT:{
-			long value = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
-			Utils.checkRange(value, Integer.class, false);
-			return (int)value;
+			long val = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
+			Utils.checkRangeInContext(DataType.INT, val, ctx);
+			return (int)val;
 		}
 		case CHAR:{
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
@@ -85,14 +85,14 @@ public class IntegerConverter implements Converter<Integer> {
 					throw new IllegalArgumentException("streams contains non-numeric character");
 				}
 				ret = ret*10 + (b-'0');
-				Utils.checkRange(ret, Integer.class, false);
+				Utils.checkRangeInContext(DataType.INT, ret, ctx);
 			}
 			return (int)ret;
 		}
 		case BCD:{
-			long value = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
-			Utils.checkRange(value, Integer.class, false);
-			return (int) value;
+			long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+			Utils.checkRangeInContext(DataType.INT, val, ctx);
+			return (int) val;
 		}
 		default:
 			throw new UnsupportedOperationException();

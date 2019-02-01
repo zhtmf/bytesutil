@@ -11,6 +11,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.TestUtils;
 import test.general.entities.MyEntity;
 import test.general.entities.Sub1;
 import test.general.entities.Sub2;
@@ -103,7 +104,7 @@ public class TestCase1 {
 			}
 			long elapsed = System.currentTimeMillis() - st;
 			System.out.println("time elapsed:"+elapsed);
-			Assert.assertTrue(Utils.equalsOrderFields(entity, entity2));
+			Assert.assertTrue(TestUtils.equalsOrderFields(entity, entity2));
 			Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
 		}
 		
@@ -117,7 +118,7 @@ public class TestCase1 {
 			for(int i=0;i<1500;++i) {
 				MyEntity entity2 = new MyEntity();
 				entity2.deserialize(bais);
-				Assert.assertTrue(Utils.equalsOrderFields(entity, entity2));
+				Assert.assertTrue(TestUtils.equalsOrderFields(entity, entity2));
 			}
 		}
 	}
@@ -131,7 +132,7 @@ public class TestCase1 {
 		entity2.sub = new SubEntity(3,4.0f);
 		final byte[] bts = baos.toByteArray();
 		entity2.deserialize(new ByteArrayInputStream(bts));
-		Assert.assertTrue(Utils.equalsOrderFields(entity,entity2));
+		Assert.assertTrue(TestUtils.equalsOrderFields(entity,entity2));
 		Assert.assertEquals(entity2.subEntityList.get(0).carryOver, entity2.a);
 	}
 	

@@ -2,8 +2,10 @@ package org.dzh.bytesutil.converters.auxiliary;
 
 import java.nio.charset.Charset;
 
+import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
+import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
 public class Utils {
 	
@@ -137,50 +139,14 @@ public class Utils {
 		}
 	}
 	
-	/**
-	 * @param val
-	 * @param sizeClass	not data type but rather use number classes in Java to denote size of a number in bytes.
-	 * @param unsigned
-	 */
-	public static void checkRange(long val, Class<? extends Number> sizeClass, boolean unsigned) {
-		if(sizeClass == Byte.class) {
-			if(unsigned) {
-				if(val<0 || val>((long)Byte.MAX_VALUE*2+1)) {
-					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 1-byte integer value",val));
-				}
-			}else {
-				if(val<Byte.MIN_VALUE || val>Byte.MAX_VALUE) {
-					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as signed 1-byte integer value",val));
-				}
-			}
-		}else if(sizeClass == Short.class) {
-			if(unsigned) {
-				if(val<0 || val>((long)Short.MAX_VALUE*2+1)) {
-					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 2-byte integer value",val));
-				}
-			}else {
-				if(val<Short.MIN_VALUE || val>Short.MAX_VALUE) {
-					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as signed 2-byte integer value",val));
-				}
-			}
-		}else if(sizeClass == Integer.class) {
-			if(unsigned) {
-				if(val<0 || val>((long)Integer.MAX_VALUE*2+1)) {
-					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 4-byte integer value",val));
-				}
-			}else {
-				if(val<Integer.MIN_VALUE || val>Integer.MAX_VALUE) {
-					throw new IllegalArgumentException(String.format("val [%d] cannot be stored as signed 4-byte integer value",val));
-				}
-			}
-		}else if(sizeClass == Long.class) {
-			if(unsigned && val<0) {
-				throw new IllegalArgumentException(String.format("val [%d] cannot be stored as unsigned 8-byte integer value",val));
-			}
-			return;
+	public static final void checkRangeInContext(DataType type,long val,FieldInfo ctx) throws ConversionException {
+		String error;
+		if((error = type.checkRange(val, ctx.unsigned))!=null) {
+			throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, error)
+						.withSiteAndOrdinal(Utils.class, 1);
 		}
 	}
-	
+		
 	static IllegalArgumentException forContext(Class<?> entity, String field, String error) {
 		StringBuilder ret = new StringBuilder();
 		if(entity!=null) {

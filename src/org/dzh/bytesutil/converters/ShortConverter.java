@@ -3,7 +3,9 @@ package org.dzh.bytesutil.converters;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.BCD;
+import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
@@ -13,16 +15,16 @@ public class ShortConverter implements Converter<Short> {
 
 	@Override
 	public void serialize(Short value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException {
+			throws IOException,UnsupportedOperationException, ConversionException {
 		short val = value==null ? 0 : (short)value;
 		switch(ctx.type) {
 		case BYTE:{
-			Utils.checkRange(val, Byte.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
 			StreamUtils.writeBYTE(dest, (byte)val);
 			return;
 		}
 		case SHORT:{
-			Utils.checkRange(val, Short.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
 			StreamUtils.writeSHORT(dest, val, ctx.bigEndian);
 			return;
 		}
@@ -53,16 +55,16 @@ public class ShortConverter implements Converter<Short> {
 
 	@Override
 	public Short deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException {
+			throws IOException,UnsupportedOperationException, ConversionException {
 		switch(ctx.type) {
 		case BYTE:{
 			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
 			return (short)value;
 		}
 		case SHORT:{
-			int value = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
-			Utils.checkRange(value, Short.class, false);
-			return (short)value;
+			int val = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
+			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
+			return (short)val;
 		}
 		case CHAR:{
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
@@ -76,14 +78,14 @@ public class ShortConverter implements Converter<Short> {
 					throw new IllegalArgumentException("streams contains non-numeric character");
 				}
 				ret = ret*10 + (b-'0');
-				Utils.checkRange(ret, Short.class, false);
+				Utils.checkRangeInContext(DataType.SHORT, ret, ctx);
 			}
 			return (short)ret;
 		}
 		case BCD:{
-			long value = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
-			Utils.checkRange(value, Short.class, false);
-			return (short)value;
+			long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
+			return (short)val;
 		}
 		default:
 			throw new UnsupportedOperationException();

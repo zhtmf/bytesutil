@@ -34,11 +34,6 @@ public class TestCaseR2 {
 		@Length(3)
 		@CHAR(1)
 		public List<String> str2;
-		//list with write-ahead length, but null
-		@Order(3)
-		@Length
-		@CHAR(1)
-		public List<String> nullList;
 		//list with handler
 		@Order(4)
 		@Length(handler=Handler1.class)
@@ -57,11 +52,6 @@ public class TestCaseR2 {
 		@ListLength(3)
 		@INT
 		public List<Integer> integer2;
-		//list with write-ahead length, but null
-		@Order(7)
-		@ListLength
-		@INT
-		public List<Integer> nullList2;
 		//list with handler
 		@Order(8)
 		@ListLength(handler=Handler1.class)

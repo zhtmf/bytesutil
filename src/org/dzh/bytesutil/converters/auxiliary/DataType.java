@@ -15,8 +15,17 @@ public enum DataType{
 		}
 
 		@Override
-		Class<?> correspondingJavaClass() {
-			return Byte.class;
+		public String checkRange(long val, boolean unsigned) {
+			if(unsigned) {
+				if(val<0 || val>((long)Byte.MAX_VALUE*2+1)) {
+					return "val " + val +" cannot be stored as unsigned 1-byte integer value";
+				}
+			}else {
+				if(val<Byte.MIN_VALUE || val>Byte.MAX_VALUE) {
+					return "val " + val + " cannot be stored as signed 1-byte integer value";
+				}
+			}
+			return null;
 		}
 	},
 	SHORT {
@@ -31,8 +40,17 @@ public enum DataType{
 		}
 
 		@Override
-		Class<?> correspondingJavaClass() {
-			return Short.class;
+		public String checkRange(long val, boolean unsigned) {
+			if(unsigned) {
+				if(val<0 || val>((long)Short.MAX_VALUE*2+1)) {
+					return String.format("val [%d] cannot be stored as unsigned 2-byte integer value",val);
+				}
+			}else {
+				if(val<Short.MIN_VALUE || val>Short.MAX_VALUE) {
+					return String.format("val [%d] cannot be stored as signed 2-byte integer value",val);
+				}
+			}
+			return null;
 		}
 	},
 	INT {
@@ -47,8 +65,17 @@ public enum DataType{
 		}
 
 		@Override
-		Class<?> correspondingJavaClass() {
-			return Integer.class;
+		public String checkRange(long val, boolean unsigned) {
+			if(unsigned) {
+				if(val<0 || val>((long)Integer.MAX_VALUE*2+1)) {
+					return String.format("val [%d] cannot be stored as unsigned 4-byte integer value",val);
+				}
+			}else {
+				if(val<Integer.MIN_VALUE || val>Integer.MAX_VALUE) {
+					return String.format("val [%d] cannot be stored as signed 4-byte integer value",val);
+				}
+			}
+			return null;
 		}
 	},
 	BCD {
@@ -63,8 +90,8 @@ public enum DataType{
 		}
 
 		@Override
-		Class<?> correspondingJavaClass() {
-			throw new UnsupportedOperationException();
+		public String checkRange(long val, boolean unsigned) {
+			return null;
 		}
 	},
 	RAW{
@@ -80,8 +107,8 @@ public enum DataType{
 		}
 
 		@Override
-		Class<?> correspondingJavaClass() {
-			throw new UnsupportedOperationException();
+		public String checkRange(long val, boolean unsigned) {
+			return null;
 		}
 	},
 	CHAR{
@@ -97,11 +124,11 @@ public enum DataType{
 		}
 
 		@Override
-		Class<?> correspondingJavaClass() {
-			throw new UnsupportedOperationException();
+		public String checkRange(long val, boolean unsigned) {
+			return null;
 		}
 	};
 	abstract public Class<? extends Annotation> annotationClassOfThisType();
 	abstract public int size();
-	abstract Class<?> correspondingJavaClass();
+	abstract public String checkRange(long val, boolean unsigned);
 }

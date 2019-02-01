@@ -18,6 +18,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.TestUtils;
+
 /*
  * test nested marking for MarkableInputStream
  */
@@ -124,7 +126,7 @@ public class TestCaseR {
 			byte[] arr = baos.toByteArray();
 			Entity2 e2 = new Entity2();
 			e2.deserialize(new ByteArrayInputStream(arr));
-			Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
+			Assert.assertTrue(TestUtils.equalsOrderFields(entity, e2));
 		}
 		{
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -138,13 +140,13 @@ public class TestCaseR {
 				Entity2 e2 = new Entity2();
 				e2.deserialize(bais);
 				entity.body = inner;
-				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
+				Assert.assertTrue(TestUtils.equalsOrderFields(entity, e2));
 			}
 			{
 				Entity2 e2 = new Entity2();
 				e2.deserialize(bais);
 				entity.body = inner2;
-				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
+				Assert.assertTrue(TestUtils.equalsOrderFields(entity, e2));
 			}
 		}
 	}

@@ -72,17 +72,18 @@ public class StreamUtils {
 	}
 	
 	public static void writeIntegerOfType(OutputStream os, DataType type, int val, boolean bigEndian) throws IOException{
+		String error;
+		if((error = type.checkRange(val, true))!=null) {
+			throw new IOException(error);
+		}
 		switch(type) {
 		case BYTE:
-			Utils.checkRange(val, Byte.class, true);
 			StreamUtils.writeBYTE(os, (byte)val);
 			break;
 		case SHORT:
-			Utils.checkRange(val, Short.class, true);
 			StreamUtils.writeSHORT(os, (short)val, bigEndian);
 			break;
 		case INT:
-			Utils.checkRange(val, Integer.class, true);
 			StreamUtils.writeInt(os, val, bigEndian);
 			break;
 		default:
@@ -169,7 +170,10 @@ public class StreamUtils {
 			break;
 		case INT:
 			long _length = StreamUtils.readUnsignedInt(src, bigEndian);
-			Utils.checkRange(_length, Integer.class, false);
+			String error;
+			if((error = DataType.INT.checkRange(_length, true))!=null) {
+				throw new IOException(error);
+			}
 			length = (int)_length;
 			break;
 		default:

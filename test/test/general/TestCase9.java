@@ -19,6 +19,8 @@ import org.dzh.bytesutil.annotations.types.RAW;
 import org.junit.Assert;
 import org.junit.Test;
 
+import test.TestUtils;
+
 public class TestCase9{
 	
 	private Entity entity = new Entity();
@@ -68,17 +70,17 @@ public class TestCase9{
 			{
 				Entity e2 = new Entity();
 				e2.deserialize(bais);
-				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
+				Assert.assertTrue(TestUtils.equalsOrderFields(entity, e2));
 			}
 			{
 				Entity e2 = new Entity();
 				e2.deserialize(bais);
-				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
+				Assert.assertTrue(TestUtils.equalsOrderFields(entity, e2));
 			}
 			{
 				Entity e2 = new Entity();
 				e2.deserialize(bais);
-				Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
+				Assert.assertTrue(TestUtils.equalsOrderFields(entity, e2));
 			}
 		}
 	}

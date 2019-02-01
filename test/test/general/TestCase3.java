@@ -24,6 +24,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import test.TestUtils;
+
 public class TestCase3{
 	
 	private Entity2 entity = new Entity2();
@@ -197,7 +199,7 @@ public class TestCase3{
 		
 		Entity2 e2 = new Entity2();
 		e2.deserialize(new ByteArrayInputStream(arr));
-		Assert.assertTrue(Utils.equalsOrderFields(entity, e2));
+		Assert.assertTrue(TestUtils.equalsOrderFields(entity, e2));
 	}
 	
 	public static void main(String[] args) throws ConversionException {

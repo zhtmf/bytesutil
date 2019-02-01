@@ -44,8 +44,6 @@ class EnumFieldInfo extends FieldInfo {
 		case BYTE:
 		case SHORT:
 		case INT:
-			@SuppressWarnings("unchecked")
-			Class<? extends Number> numberClass = (Class<? extends Number>) type.correspondingJavaClass();
 			if(StringEnum.class.isAssignableFrom(fieldClass)) {
 				throw forContext(base.entityClass, name, "numeric enum type should implement NumericEnum, not StringEnum");
 			}
@@ -56,7 +54,10 @@ class EnumFieldInfo extends FieldInfo {
 				}else {
 					val = Long.parseLong(constant.toString());
 				}
-				Utils.checkRange(val, numberClass, unsigned);
+				String error;
+				if((error = type.checkRange(val, true))!=null) {
+					throw forContext(base.entityClass, name, error);
+				}
 				Long key = Long.valueOf(val);
 				if(mapEnumMemberByValue.containsKey(key)) {
 					throw forContext(base.entityClass, name, "multiple enum members should have distinct values");

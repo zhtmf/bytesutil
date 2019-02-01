@@ -3,7 +3,9 @@ package org.dzh.bytesutil.converters;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.BCD;
+import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
@@ -13,16 +15,16 @@ public class LongConverter implements Converter<Long> {
 
 	@Override
 	public void serialize(Long value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException {
+			throws IOException,UnsupportedOperationException, ConversionException {
 		long val = value==null ? 0 : value;
 		switch(ctx.type) {
 		case BYTE:{
-			Utils.checkRange(val, Byte.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
 			StreamUtils.writeBYTE(dest, (byte)val);
 			return;
 		}
 		case SHORT:{
-			Utils.checkRange(val, Short.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
 			StreamUtils.writeSHORT(dest, (short) val, ctx.bigEndian);
 			return;
 		}
@@ -43,7 +45,7 @@ public class LongConverter implements Converter<Long> {
 			StreamUtils.writeBytes(dest, str.getBytes());
 			return;
 		case INT:{
-			Utils.checkRange(val, Integer.class, ctx.unsigned);
+			Utils.checkRangeInContext(DataType.INT, val, ctx);
 			StreamUtils.writeInt(dest, (int) val, ctx.bigEndian);
 			return;
 		}
@@ -61,16 +63,13 @@ public class LongConverter implements Converter<Long> {
 			throws IOException,UnsupportedOperationException {
 		switch(ctx.type) {
 		case BYTE:{
-			int value = ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
-			return (long) value;
+			return (long) (ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
 		}
 		case SHORT:{
-			int value = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
-			return (long) value;
+			return (long) (ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian));
 		}
 		case INT:{
-			long value = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
-			return value;
+			return ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
 		}
 		case CHAR:{
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);

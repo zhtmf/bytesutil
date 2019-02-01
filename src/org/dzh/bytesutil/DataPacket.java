@@ -87,18 +87,6 @@ public abstract class DataPacket {
 	 * Non-final, non-static fields annotated with {@link Order} are processed while
 	 * other fields are effectively ignored. Fields are processed according to their
 	 * ascending order as specified by {@link Order#value()}.
-	 * <p>
-	 * <b>Null Handling</b><br/>
-	 * If a non-primitive field is null (not supplied by user with a value) when
-	 * this method is called, it is handled as follows:<br/>
-	 * <tt>string</tt> - treated as empty string. <br/>
-	 * <tt>integral type</tt> - treated as 0. <br/>
-	 * <tt>array</tt> - treated as empty arrays of that type. <br/>
-	 * <tt>List</tt> - treated as empty list.<br/>
-	 * <tt>Date</tt> - treated as empty string when serialized to BCD or CHAR,
-	 * otherwise ignored.<br/>
-	 * <tt>DataPacket</tt> (entity classes) - ignored (note that this may not be
-	 * compliant with the protocol you are implementing.<br/>
 	 * 
 	 * @param dest
 	 *            destination stream of serialization
@@ -120,33 +108,32 @@ public abstract class DataPacket {
 		ClassInfo ci = getClassInfo();
 		
 		for(FieldInfo fi:ci.fieldInfoList()) {
+			
+			Object value = fi.get(this);
+			if(value==null) {
+				/*
+				 * null values shall not be permitted as it may be impossible 
+				 * to deserialize the byte sequence generated using the same scheme
+				 * Note: this modification causes incompatibility with former versions
+				 */
+				throw new ExtendedConversionException(this.getClass(),fi.name,
+						"this field is intended to be processed but its value is null")
+						.withSiteAndOrdinal(DataPacket.class, 0);
+			}
+			
 			//this field is an entity
 			if(fi.isEntity) {
-				Object obj = fi.get(this);
-				if(obj==null) {
-					/*
-					 * null values shall not be permitted as it will be impossible 
-					 * to deserialize the byte sequence generated using the same scheme
-					 * Note: this modification causes incompatibility with former versions
-					 */
-					throw new ExtendedConversionException(this.getClass(),fi.name,
-							"this field is intended to be processed but its value is null")
-							.withSiteAndOrdinal(DataPacket.class, 0);
-				}
-				((DataPacket)obj).serialize(dest);
+				((DataPacket)value).serialize(dest);
 			//this field is a list
 			}else if(fi.listComponentClass!=null) {
 				@SuppressWarnings("unchecked")
-				List<Object> value = (List<Object>) fi.get(this);
-				value = value == null ? Collections.emptyList() : value;
-				/*
-				 * validity check is done in ClassInfo
-				 */
+				List<Object> listValue = (List<Object>)value;
+				//validity check is done in ClassInfo
 				int length = Utils.lengthForList(fi, this);
 				if(length<0) {
-					length = value.size();
+					length = listValue.size();
 					try {
-						StreamUtils.writeIntegerOfType(dest, fi.lengthType(), value.size(), fi.bigEndian);
+						StreamUtils.writeIntegerOfType(dest, fi.lengthType(), listValue.size(), fi.bigEndian);
 					} catch (IOException e) {
 						throw new ExtendedConversionException(this.getClass(),fi.name,e)
 							.withSiteAndOrdinal(DataPacket.class, 1);
@@ -155,12 +142,12 @@ public abstract class DataPacket {
 				
 				//serialize objects in the list
 				//do not use the actual length of the list but the length obtained above
-				if(length!=value.size()) {
+				if(length!=listValue.size()) {
 					throw new ExtendedConversionException(
 							this.getClass(),fi.name,
 							String.format(
 									"defined list length [%d] is not the same as length [%d] of list value"
-									,length,value.size()))
+									,length,listValue.size()))
 								.withSiteAndOrdinal(DataPacket.class, 2);
 				}
 				@SuppressWarnings("unchecked")
@@ -169,21 +156,37 @@ public abstract class DataPacket {
 					//class of list elements is pre-defined data types
 					try {
 						for(int i=0;i<length;++i) {
-							cv.serialize(value.get(i), dest, fi, this);
+							Object elem = listValue.get(i);
+							if(elem==null) {
+								throw new ExtendedConversionException(
+										this.getClass(),fi.name,
+										"list contains null value")
+										.withSiteAndOrdinal(DataPacket.class, -1);
+							}
+							cv.serialize(elem, dest, fi, this);
 						}
 					} catch (UnsupportedOperationException e) {
 						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
 								"Unsupported conversion to "+fi.type)
 							.withSiteAndOrdinal(DataPacket.class, 3);
+					} catch(ConversionException e) {
+						throw e;
 					} catch (Exception e) {
 						throw new ExtendedConversionException(this.getClass(),fi.name,e)
 						.withSiteAndOrdinal(DataPacket.class, 4);
 					}
-				}else if(DataPacket.class.isAssignableFrom(fi.listComponentClass)){
-					//class of list elements is another Data
+				}else if(fi.isEntityList){
+					//class of list elements is another DataPacket
 					for(int i=0;i<length;++i) {
-						((DataPacket)value.get(i)).serialize(dest);
+						Object elem = listValue.get(i);
+						if(elem==null) {
+							throw new ExtendedConversionException(
+									this.getClass(),fi.name,
+									"list contains null value")
+									.withSiteAndOrdinal(DataPacket.class, -2);
+						}
+						((DataPacket)elem).serialize(dest);
 					}
 				}else {
 					throw new ExtendedConversionException(
@@ -203,12 +206,14 @@ public abstract class DataPacket {
 								.withSiteAndOrdinal(DataPacket.class, 7);
 				}else {
 					try {
-						cv.serialize(fi.get(this), dest, fi,this);
+						cv.serialize(value, dest, fi,this);
 					} catch (UnsupportedOperationException e) {
 						throw new ExtendedConversionException(
 								this.getClass(),fi.name,
 								"Unsupported conversion to "+fi.type,e)
 								.withSiteAndOrdinal(DataPacket.class, 8);
+					} catch(ConversionException e) {
+						throw e;
 					} catch (Exception e) {
 						throw new ExtendedConversionException(this.getClass(),fi.name,e)
 								.withSiteAndOrdinal(DataPacket.class, 9);
@@ -300,6 +305,8 @@ public abstract class DataPacket {
 								this.getClass(),fi.name,
 								"Unsupported conversion to "+fi.type,e)
 								.withSiteAndOrdinal(DataPacket.class, 13);
+					} catch(ConversionException e) {
+						throw e;
 					} catch (Exception e) {
 						throw new ExtendedConversionException(this.getClass(),fi.name,e)
 								.withSiteAndOrdinal(DataPacket.class, 14);
@@ -346,6 +353,8 @@ public abstract class DataPacket {
 								this.getClass(),fi.name,
 								"Unsupported conversion to "+fi.type)
 						.withSiteAndOrdinal(DataPacket.class, 18);
+					} catch(ConversionException e) {
+						throw e;
 					} catch (Exception e) {
 						throw new ExtendedConversionException(this.getClass(),fi.name,e)
 						.withSiteAndOrdinal(DataPacket.class, 19);
@@ -377,13 +386,14 @@ public abstract class DataPacket {
 		ClassInfo ci = getClassInfo();
 		int ret = 0;
 		for(FieldInfo fi:ci.fieldInfoList()) {
+			Object value = fi.get(this);
+			if(value==null) {
+				throw new UnsatisfiedConstraintException(
+						fi.name + " is intended to be processed but its value is null"
+						, DataPacket.class, 20);
+			}
 			if(fi.isEntity) {
-				DataPacket dp = (DataPacket)fi.get(this);
-				if(dp==null) {
-					throw new UnsatisfiedConstraintException(
-							fi.name + " is intended to be processed but its value is null"
-							, DataPacket.class, 20);
-				}
+				DataPacket dp = (DataPacket)value;
 				ret += dp.length();
 				continue;
 				
@@ -391,95 +401,86 @@ public abstract class DataPacket {
 			int length = 0;
 			if(fi.listComponentClass!=null) {
 				length = Utils.lengthForList(fi, this);
+				@SuppressWarnings("rawtypes")
+				List lst = (List)value;
 				if(length<0) {
 					//write ahead
 					//size of the write-ahead length should be considered
 					//even the list itself is null or empty
 					ret += fi.lengthType().size();
+					//use the defined length rather than the actual list size
+					length = lst.size();
 				}
-				@SuppressWarnings("rawtypes")
-				List lst = (List)fi.get(this);
-				if(lst!=null) {
-					//use the defined length but not the actual list size
-					if(length<0) {
-						length = lst.size();
+				if(fi.isEntityList) {
+					for(int i=0;i<length;++i) {
+						ret += ((DataPacket)lst.get(i)).length();
 					}
-					if(fi.isEntityList) {
-						for(int i=0;i<length;++i) {
-							ret += ((DataPacket)lst.get(i)).length();
-						}
-						continue;
-					}
+					continue;
 				}
 			}else {
 				length = 1;
 			}
-			if(length>0) {
-				DataType type = fi.type;
-				switch(type) {
-				case BCD:
-					ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
-					break;
-				case BYTE:
-				case SHORT:
-				case INT:
-					ret += type.size() * length;
-					break;
-				case CHAR:{
-					int size = Utils.lengthForSerializingCHAR(fi, this);
-					if(size>=0) {
-						//explicitly declared size
-						ret += size * length;
-					}else {
-						//dynamic length that is written to stream prior to serializing value
-						//size should be retrieved inspecting the value itself
-						//or in case of a list, inspecting values for EACH element
-						size = 0;
-						Object val = fi.get(this);
-						DataType lengthType = fi.annotation(Length.class).type();
-						Charset cs = Utils.charsetForSerializingCHAR(fi, this);
-						if(val instanceof List) {
-							@SuppressWarnings("rawtypes")
-							List lst = (List)val;
-							for(int i=0;i<lst.size();++i) {
-								val = lst.get(i);
-								size += lengthType.size();
-								size += val == null ? 0 : val.toString().getBytes(cs).length;
-							}
-						}else {
+			DataType type = fi.type;
+			switch(type) {
+			case BCD:
+				ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
+				break;
+			case BYTE:
+			case SHORT:
+			case INT:
+				ret += type.size() * length;
+				break;
+			case CHAR:{
+				int size = Utils.lengthForSerializingCHAR(fi, this);
+				if(size>=0) {
+					//explicitly declared size
+					ret += size * length;
+				}else {
+					//dynamic length that is written to stream prior to serializing value
+					//size should be retrieved inspecting the value itself
+					//or in case of a list, inspecting values for EACH element
+					size = 0;
+					DataType lengthType = fi.annotation(Length.class).type();
+					Charset cs = Utils.charsetForSerializingCHAR(fi, this);
+					if(value instanceof List) {
+						@SuppressWarnings("rawtypes")
+						List lst = (List)value;
+						for(int i=0;i<lst.size();++i) {
+							value = lst.get(i);
 							size += lengthType.size();
-							//TODO:char encoding?
-							size += val == null ? 0 : val.toString().getBytes(cs).length;
+							size += value.toString().getBytes(cs).length;
 						}
-						ret += size;
-					}
-					break;
-				}
-				case RAW:{
-					int size = Utils.lengthForSerializingRAW(fi, this);
-					if(size>=0) {
-						ret += size * length;
 					}else {
-						size = 0;
-						Object val = fi.get(this);
-						DataType lengthType = fi.annotation(Length.class).type();
-						if(val instanceof List) {
-							@SuppressWarnings("rawtypes")
-							List lst = (List)val;
-							for(int i=0;i<lst.size();++i) {
-								val = lst.get(i);
-								size += lengthType.size();
-								size += val == null ? 0 : Array.getLength(val);
-							}
-						}else {
-							size += lengthType.size();
-							size += val == null ? 0 : Array.getLength(val);
-						}
-						ret += size;
+						size += lengthType.size();
+						size += value.toString().getBytes(cs).length;
 					}
-					break;
+					ret += size;
 				}
+				break;
+			}
+			case RAW:{
+				int size = Utils.lengthForSerializingRAW(fi, this);
+				if(size>=0) {
+					ret += size * length;
+				}else {
+					size = 0;
+					DataType lengthType = fi.annotation(Length.class).type();
+					if(value instanceof List) {
+						@SuppressWarnings("rawtypes")
+						List lst = (List)value;
+						for(int i=0;i<lst.size();++i) {
+							value = lst.get(i);
+							size += lengthType.size();
+							size += Array.getLength(value);
+						}
+					}else {
+						size += lengthType.size();
+						size += Array.getLength(value);
+					}
+					ret += size;
 				}
+				break;
+			}
 			}
 		}
 		return ret;
