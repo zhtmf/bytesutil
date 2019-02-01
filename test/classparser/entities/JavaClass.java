@@ -2,6 +2,7 @@ package classparser.entities;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -115,6 +116,9 @@ public class JavaClass extends DataPacket{
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
+		if(constantPool==null) {
+			constantPool = new ArrayList<>();
+		}
 		CONSTANT_Class_info classInfo = (CONSTANT_Class_info)constantPool.get(thisClass-1).info;
 		CONSTANT_Utf8_info utf8 = (CONSTANT_Utf8_info) constantPool.get(classInfo.nameIndex-1).info;
 		String className = utf8.bytes.replace('/', '.');

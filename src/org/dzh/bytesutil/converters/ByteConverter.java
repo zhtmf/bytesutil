@@ -22,7 +22,7 @@ public class ByteConverter implements Converter<Byte> {
 
 	@Override
 	public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException,ConversionException {
+			throws IOException,ConversionException {
 		byte val = (byte)value;
 		switch(ctx.type) {
 		case BYTE:
@@ -48,18 +48,18 @@ public class ByteConverter implements Converter<Byte> {
 			}
 			StreamUtils.writeBytes(dest, str.getBytes());
 			return;
-		case BCD:
+		case BCD:{
 			StreamUtils.writeBCD(
 					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
 			return;
-		default:
-			throw new UnsupportedOperationException();
+		}
+		default:throw new Error("cannot happen");
 		}
 	}
 
 	@Override
 	public Byte deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException,ConversionException {
+			throws IOException,ConversionException {
 		switch(ctx.type) {
 		case BYTE:{
 			return (byte)(ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
@@ -84,8 +84,7 @@ public class ByteConverter implements Converter<Byte> {
 			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
 			return (byte)val;
 		}
-		default:
-			throw new UnsupportedOperationException();
+		default:throw new Error("cannot happen");
 		}
 	}
 }

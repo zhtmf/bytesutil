@@ -2,14 +2,12 @@ package test.exceptions;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
@@ -95,24 +93,7 @@ public class TestCaseDataPacket {
 		}
 		Assert.fail();
 	}
-	public static class Entity4 extends DataPacket{
-		@Order(0)
-		@INT
-		@Length(1)
-		public List<Byte> bytes;
-	}
-	@Test
-	public void test4() throws ConversionException {
-		Entity4 entity = new Entity4();
-		entity.bytes = Arrays.asList((byte)1);
-		try {
-			entity.serialize(new ByteArrayOutputStream());
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 3);
-			return;
-		}
-		Assert.fail();
-	}
+
 	public static class Entity5 extends DataPacket{
 		@Order(0)
 		@BYTE
@@ -131,58 +112,7 @@ public class TestCaseDataPacket {
 		}
 		Assert.fail();
 	}
-	public static class Entity6 extends DataPacket{
-		@Order(0)
-		@BYTE
-		@Length(1)
-		public List<Timestamp> bytes;
-	}
-	@Test
-	public void test6() throws ConversionException {
-		Entity6 entity = new Entity6();
-		entity.bytes = Arrays.asList(new Timestamp(0));
-		try {
-			entity.serialize(TestUtils.newThrowOnlyOutputStream());
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 5);
-			return;
-		}
-		Assert.fail();
-	}
-	public static class Entity7 extends DataPacket{
-		@Order(0)
-		@BYTE
-		public Timestamp bytes;
-	}
-	@Test
-	public void test7() throws ConversionException {
-		Entity7 entity = new Entity7();
-		entity.bytes = new Timestamp(0);
-		try {
-			entity.serialize(TestUtils.newThrowOnlyOutputStream());
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 7);
-			return;
-		}
-		Assert.fail();
-	}
-	public static class Entity8 extends DataPacket{
-		@Order(0)
-		@INT	
-		public Byte abyte;
-	}
-	@Test
-	public void test8() throws ConversionException {
-		Entity8 entity = new Entity8();
-		entity.abyte = (byte)1;
-		try {
-			entity.serialize(TestUtils.newThrowOnlyOutputStream());
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 8);
-			return;
-		}
-		Assert.fail();
-	}
+
 	public static class Entity9 extends DataPacket{
 		@Order(0)
 		@BYTE	
@@ -271,25 +201,6 @@ public class TestCaseDataPacket {
 		Assert.fail();
 	}
 	
-	public static class Entity13 extends DataPacket{
-		@Order(0)
-		@INT
-		@Length(3)
-		public List<Byte> b;
-	}
-	
-	@Test
-	public void test13() throws ConversionException {
-		Entity13 entity = new Entity13();
-		try {
-			entity.deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 13);
-		}
-		
-	}
-	
 	public static class Entity14 extends DataPacket{
 		@Order(0)
 		@BYTE
@@ -330,59 +241,6 @@ public class TestCaseDataPacket {
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, DataPacket.class, 15);
-		}
-	}
-	
-	public static class Entity16 extends DataPacket{
-		@Order(0)
-		@CHAR
-		@Length(3)
-		@ListLength(3)
-		public List<Timestamp> b;
-	}
-	
-	@Test
-	public void test16() throws ConversionException {
-		Entity16 entity = new Entity16();
-		try {
-			entity.deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 16);
-		}
-	}
-	
-	public static class Entity17 extends DataPacket{
-		@Order(0)
-		@INT
-		public Timestamp b;
-	}
-	
-	@Test
-	public void test17() throws ConversionException {
-		Entity17 entity = new Entity17();
-		try {
-			entity.deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 17);
-		}
-	}
-	
-	public static class Entity18 extends DataPacket{
-		@Order(0)
-		@INT
-		public byte b;
-	}
-	
-	@Test
-	public void test18() throws ConversionException {
-		Entity18 entity = new Entity18();
-		try {
-			entity.deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 18);
 		}
 	}
 	

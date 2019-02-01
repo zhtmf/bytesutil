@@ -34,8 +34,12 @@ public class TestClassParsing {
 				clazz.deserialize(inputStream);
 				System.out.println(clazz);
 			} catch (Exception e) {
-				System.out.println(clazz);
-				throw e;
+				e.printStackTrace();
+				try {
+					System.out.println(clazz);
+				} catch (Exception e1) {
+				}
+				Assert.fail();
 			}
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			clazz.serialize(baos);

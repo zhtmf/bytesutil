@@ -10,7 +10,7 @@ import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 public interface Converter<T> {
 	void serialize(T value, OutputStream dest
 			, FieldInfo fi, Object self) 
-			throws IOException,UnsupportedOperationException,ConversionException;
+			throws IOException,ConversionException;
 	T deserialize(MarkableInputStream is, FieldInfo fi, Object self)
-			throws IOException,UnsupportedOperationException,ConversionException;
+			throws IOException,ConversionException;
 }

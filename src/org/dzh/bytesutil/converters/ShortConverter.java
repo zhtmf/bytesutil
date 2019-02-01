@@ -16,7 +16,7 @@ public class ShortConverter implements Converter<Short> {
 
 	@Override
 	public void serialize(Short value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException, ConversionException {
+			throws IOException,ConversionException {
 		short val = (short)value;
 		switch(ctx.type) {
 		case BYTE:{
@@ -48,18 +48,18 @@ public class ShortConverter implements Converter<Short> {
 			}
 			StreamUtils.writeBytes(dest, str.getBytes());
 			return;
-		case BCD:
+		case BCD:{
 			StreamUtils.writeBCD(
 					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
 			return;
-		default:
-			throw new UnsupportedOperationException();
+		}
+		default:throw new Error("cannot happen");
 		}
 	}
 
 	@Override
 	public Short deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException, ConversionException {
+			throws IOException,ConversionException {
 		switch(ctx.type) {
 		case BYTE:{
 			return (short)(ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
@@ -89,8 +89,7 @@ public class ShortConverter implements Converter<Short> {
 			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
 			return (short)val;
 		}
-		default:
-			throw new UnsupportedOperationException();
+		default:throw new Error("cannot happen");
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class TestUtils {
 		if(!((ex instanceof ExactException)
 		&& ((ExactException)ex).getSite() == site
 		&& ((ExactException)ex).getOrdinal() == ordinal)){
-			throw new IllegalArgumentException(ex+" not expected");
+			throw new IllegalArgumentException(ex+" "+((ExactException)ex).getSite()+" "+((ExactException)ex).getOrdinal()+" not expected");
 		}
 		return true;
 	}

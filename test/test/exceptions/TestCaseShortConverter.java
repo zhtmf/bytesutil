@@ -5,7 +5,6 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.converters.ShortConverter;
 import org.junit.Assert;
 import org.junit.Test;
@@ -73,28 +72,6 @@ public class TestCaseShortConverter {
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, ShortConverter.class, 2);
-		}
-	}
-	
-	public static class Entity3 extends DataPacket{
-		@Order(0)
-		@RAW(2)
-		public short b;
-	}
-	@Test
-	public void test3() throws ConversionException {
-		Entity3 entity = new Entity3();
-		try {
-			entity.serialize(TestUtils.newByteArrayOutputStream());
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 8);
-		}
-		try {
-			entity.deserialize(TestUtils.newZeroLengthInputStream());
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 18);
 		}
 	}
 }

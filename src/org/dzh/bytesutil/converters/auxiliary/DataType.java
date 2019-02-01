@@ -27,6 +27,17 @@ public enum DataType{
 			}
 			return null;
 		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			return javaType == byte.class || javaType == short.class || javaType == int.class || javaType == long.class
+				|| javaType == Byte.class || javaType == Short.class || javaType == Integer.class || javaType == Long.class
+				/*
+				 * checking for validity of this enum class 
+				 * is done in EnumFieldInfo, not here.
+				 */
+				|| javaType.isEnum();
+		}
 	},
 	SHORT {
 		@Override
@@ -51,6 +62,12 @@ public enum DataType{
 				}
 			}
 			return null;
+		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			return javaType == short.class || javaType == int.class || javaType == long.class
+				|| javaType == Short.class || javaType == Integer.class || javaType == Long.class || javaType.isEnum();
 		}
 	},
 	INT {
@@ -77,6 +94,12 @@ public enum DataType{
 			}
 			return null;
 		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			return javaType == int.class || javaType == long.class
+				|| javaType == Integer.class || javaType == Long.class || javaType.isEnum();
+		}
 	},
 	BCD {
 		@Override
@@ -92,6 +115,13 @@ public enum DataType{
 		@Override
 		public String checkRange(long val, boolean unsigned) {
 			return null;
+		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			return javaType == byte.class || javaType == short.class || javaType == int.class || javaType == long.class
+				|| javaType == Byte.class || javaType == Short.class || javaType == Integer.class || javaType == Long.class
+				|| javaType == String.class || javaType == java.util.Date.class || javaType.isEnum();
 		}
 	},
 	RAW{
@@ -110,6 +140,11 @@ public enum DataType{
 		public String checkRange(long val, boolean unsigned) {
 			return null;
 		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			return javaType == byte[].class || javaType == int[].class || javaType.isEnum();
+		}
 	},
 	CHAR{
 
@@ -127,8 +162,17 @@ public enum DataType{
 		public String checkRange(long val, boolean unsigned) {
 			return null;
 		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			return javaType == byte.class || javaType == short.class || javaType == int.class || javaType == long.class
+					|| javaType == Byte.class || javaType == Short.class || javaType == Integer.class || javaType == Long.class
+					|| javaType == String.class || javaType == char.class
+					|| javaType == Character.class || javaType == java.util.Date.class || javaType.isEnum();
+		}
 	};
 	abstract public Class<? extends Annotation> annotationClassOfThisType();
 	abstract public int size();
 	abstract public String checkRange(long val, boolean unsigned);
+	abstract boolean supports(Class<?> javaType);
 }

@@ -150,33 +150,7 @@ public abstract class DataPacket {
 									,length,listValue.size()))
 								.withSiteAndOrdinal(DataPacket.class, 2);
 				}
-				@SuppressWarnings("unchecked")
-				Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
-				if(cv!=null) {
-					//class of list elements is pre-defined data types
-					try {
-						for(int i=0;i<length;++i) {
-							Object elem = listValue.get(i);
-							if(elem==null) {
-								throw new ExtendedConversionException(
-										this.getClass(),fi.name,
-										"list contains null value")
-										.withSiteAndOrdinal(DataPacket.class, -1);
-							}
-							cv.serialize(elem, dest, fi, this);
-						}
-					} catch (UnsupportedOperationException e) {
-						throw new ExtendedConversionException(
-								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type)
-							.withSiteAndOrdinal(DataPacket.class, 3);
-					} catch(ConversionException e) {
-						throw e;
-					} catch (Exception e) {
-						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-						.withSiteAndOrdinal(DataPacket.class, 4);
-					}
-				}else if(fi.isEntityList){
+				if(fi.isEntityList){
 					//class of list elements is another DataPacket
 					for(int i=0;i<length;++i) {
 						Object elem = listValue.get(i);
@@ -189,35 +163,38 @@ public abstract class DataPacket {
 						((DataPacket)elem).serialize(dest);
 					}
 				}else {
-					throw new ExtendedConversionException(
-								this.getClass(),fi.name,
-								String.format("component class [%s] is not supported"
-										, fi.listComponentClass))
-							.withSiteAndOrdinal(DataPacket.class, 5);
+					//class of list elements is pre-defined data types
+					try {
+						for(int i=0;i<length;++i) {
+							Object elem = listValue.get(i);
+							if(elem==null) {
+								throw new ExtendedConversionException(
+										this.getClass(),fi.name,
+										"list contains null value")
+										.withSiteAndOrdinal(DataPacket.class, -1);
+							}
+							@SuppressWarnings("unchecked")
+							Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
+							cv.serialize(elem, dest, fi, this);
+						}
+					} catch(ConversionException e) {
+						throw e;
+					} catch (Exception e) {
+						throw new ExtendedConversionException(this.getClass(),fi.name,e)
+						.withSiteAndOrdinal(DataPacket.class, 4);
+					}
 				}
 			//a plain field
 			}else {
 				@SuppressWarnings("unchecked")
 				Converter<Object> cv = (Converter<Object>) converters.get(fi.getFieldType());
-				if(cv==null) {
-					throw new ExtendedConversionException(
-							this.getClass(),fi.name,
-							String.format("class [%s] is not supported", fi.getFieldType()))
-								.withSiteAndOrdinal(DataPacket.class, 7);
-				}else {
-					try {
-						cv.serialize(value, dest, fi,this);
-					} catch (UnsupportedOperationException e) {
-						throw new ExtendedConversionException(
-								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type,e)
-								.withSiteAndOrdinal(DataPacket.class, 8);
-					} catch(ConversionException e) {
-						throw e;
-					} catch (Exception e) {
-						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-								.withSiteAndOrdinal(DataPacket.class, 9);
-					}
+				try {
+					cv.serialize(value, dest, fi,this);
+				} catch(ConversionException e) {
+					throw e;
+				} catch (Exception e) {
+					throw new ExtendedConversionException(this.getClass(),fi.name,e)
+					.withSiteAndOrdinal(DataPacket.class, 9);
 				}
 			}
 		}
@@ -291,29 +268,9 @@ public abstract class DataPacket {
 					}
 				}
 				
-				Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
 				List<Object> tmp = null;
-				//component class is a pre-defined data type
-				if(cv!=null) {
-					try {
-						tmp = new ArrayList<>(length);
-						while(length-->0) {
-							tmp.add(cv.deserialize(_src, fi, this));
-						}
-					} catch (UnsupportedOperationException e) {
-						throw new ExtendedConversionException(
-								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type,e)
-								.withSiteAndOrdinal(DataPacket.class, 13);
-					} catch(ConversionException e) {
-						throw e;
-					} catch (Exception e) {
-						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-								.withSiteAndOrdinal(DataPacket.class, 14);
-					}
-					value = tmp;
-				//component class is subclass of DataPacket
-				}else if(fi.isEntityList){
+				if(fi.isEntityList){
+					//component class is subclass of DataPacket
 					try {
 						tmp = new ArrayList<>(length);
 						while(length-->0) {
@@ -331,34 +288,32 @@ public abstract class DataPacket {
 					}
 					value = tmp;
 				}else {
-					throw new ExtendedConversionException(
-							this.getClass(),fi.name,
-							String.format(
-							"component class [%s] is not supported"
-							, fi.listComponentClass))
-							.withSiteAndOrdinal(DataPacket.class, 16);
-				}
-				
-			//a plain field
-			}else {
-				Converter<Object> cv = (Converter<Object>) converters.get(fi.getFieldType());
-				if(cv==null) {
-					throw new ExtendedConversionException(this.getClass(),fi.name,fi.getFieldType()+" not supported")
-					.withSiteAndOrdinal(DataPacket.class, 17);
-				}else {
+					//component class is a pre-defined data type
+					//cv cannot be null as we lifted checking for validity of DataType<>JavaType mapping
+					//to constructor of FieldInfo
+					Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
 					try {
-						value = cv.deserialize(_src, fi,this);
-					} catch (UnsupportedOperationException e) {
-						throw new ExtendedConversionException(
-								this.getClass(),fi.name,
-								"Unsupported conversion to "+fi.type)
-						.withSiteAndOrdinal(DataPacket.class, 18);
+						tmp = new ArrayList<>(length);
+						while(length-->0) {
+							tmp.add(cv.deserialize(_src, fi, this));
+						}
 					} catch(ConversionException e) {
 						throw e;
 					} catch (Exception e) {
 						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-						.withSiteAndOrdinal(DataPacket.class, 19);
+								.withSiteAndOrdinal(DataPacket.class, 14);
 					}
+					value = tmp;
+				}
+			//a plain field
+			}else {
+				try {
+					value = ((Converter<Object>) converters.get(fi.getFieldType())).deserialize(_src, fi,this);
+				} catch(ConversionException e) {
+					throw e;
+				} catch (Exception e) {
+					throw new ExtendedConversionException(this.getClass(),fi.name,e)
+					.withSiteAndOrdinal(DataPacket.class, 19);
 				}
 			}
 			
@@ -389,8 +344,9 @@ public abstract class DataPacket {
 			Object value = fi.get(this);
 			if(value==null) {
 				throw new UnsatisfiedConstraintException(
-						fi.name + " is intended to be processed but its value is null"
-						, DataPacket.class, 20);
+						fi.name + " is intended to be processed but its value is null")
+						.withSiteAndOrdinal(DataPacket.class, 20);
+						
 			}
 			if(fi.isEntity) {
 				DataPacket dp = (DataPacket)value;

@@ -124,9 +124,19 @@ public class FieldInfo{
 			}
 			this.listComponentClass = componentClass;
 			this.isEntityList = DataPacket.class.isAssignableFrom(listComponentClass);
+			
+			if(! isEntityList && ! type.supports(componentClass)) {
+				throw forContext(base.entityClass, field.getName(), "conversion from "+componentClass+" to "+type+" is not supported")
+					.withSiteAndOrdinal(FieldInfo.class, 0);
+			}
 		}else {
 			this.listComponentClass = null;
 			this.isEntityList = false;
+			
+			if(! isEntity && ! type.supports(fieldClass)) {
+				throw forContext(base.entityClass, field.getName(), "conversion from "+fieldClass+" to "+type+" is not supported")
+					.withSiteAndOrdinal(FieldInfo.class, 1);
+			}
 		}
 		
 		Map<Class<? extends Annotation>,Annotation> _annotations = new HashMap<>();

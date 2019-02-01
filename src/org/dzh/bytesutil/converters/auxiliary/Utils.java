@@ -7,6 +7,7 @@ import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
+import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
 public class Utils {
 	
@@ -172,7 +173,7 @@ public class Utils {
 		return ret;
 	}
 		
-	static IllegalArgumentException forContext(Class<?> entity, String field, String error) {
+	static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error) {
 		StringBuilder ret = new StringBuilder();
 		if(entity!=null) {
 			ret.append("Entity:"+entity);
@@ -187,6 +188,6 @@ public class Utils {
 			ret.append(", ");
 		}
 		ret.append("Error:").append(error);
-		return new IllegalArgumentException(ret.toString());
+		return new UnsatisfiedConstraintException(ret.toString());
 	}
 }
