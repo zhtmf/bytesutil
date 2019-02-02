@@ -1,5 +1,7 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -149,7 +151,7 @@ public class Utils {
 		}
 	}
 	
-	public static final int numericCharsToNumber(byte[] numChars) throws IllegalArgumentException {
+	public static final long numericCharsToNumber(byte[] numChars) throws IllegalArgumentException {
 		/*
 		 * such strings causes asymmetry between serialization and deserialization. it
 		 * is possible to avoid this problem by using written-ahead length, however such
@@ -160,7 +162,7 @@ public class Utils {
 		if(numChars.length>1 && numChars[0]=='0') {
 			throw new IllegalArgumentException("streams contains numeric string that contains leading zero");
 		}
-		int ret = 0;
+		long ret = 0;
 		for(byte b:numChars) {
 			if(!(b>='0' && b<='9')) {
 				throw new IllegalArgumentException("streams contains non-numeric character");
@@ -169,6 +171,47 @@ public class Utils {
 			if(ret<0) {
 				throw new IllegalArgumentException("numeric string overflows:"+Arrays.toString(numChars));
 			}
+		}
+		return ret;
+	}
+	
+	public static final void serializeAsCHAR(long val, OutputStream dest, FieldInfo ctx, Object self)
+			throws ConversionException, IOException {
+		if(val<0) {
+			//implementation choice
+			throw new ExtendedConversionException(ctx,"negative number should not be converted to CHAR")
+						.withSiteAndOrdinal(Utils.class, 0);
+		}
+		String str = Long.toString(val);
+		int length = Utils.lengthForSerializingCHAR(ctx, self);
+		if(length<0) {
+			length = str.length();
+			StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
+		}else if(length!=str.length()) {
+			throw new ExtendedConversionException(ctx,
+					String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
+								,str, val,length))
+						.withSiteAndOrdinal(Utils.class, 2);
+		}
+		StreamUtils.writeBytes(dest, str.getBytes());
+	}
+	
+	public static final long deserializeAsCHAR(
+			MarkableInputStream is, FieldInfo ctx, Object self, DataType type)
+			throws IOException, ConversionException {
+		int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
+		if(length<0) {
+			length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+		}
+		long ret;
+		try {
+			ret = Utils.numericCharsToNumber(StreamUtils.readBytes(is, length));
+		} catch (IllegalArgumentException e) {
+			throw new ExtendedConversionException(ctx, e.getMessage())
+					.withSiteAndOrdinal(Utils.class, 3);
+		}
+		if(type!=null) {
+			Utils.checkRangeInContext(type, ret, ctx);
 		}
 		return ret;
 	}

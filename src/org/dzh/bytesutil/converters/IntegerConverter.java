@@ -15,8 +15,8 @@ public class IntegerConverter implements Converter<Integer> {
 
 	@Override
 	public void serialize(Integer value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException,ConversionException {
-		int val = value==null ? 0 : (int)value;
+			throws IOException,ConversionException {
+		int val = value;
 		switch(ctx.type) {
 		case BYTE:{
 			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
@@ -29,20 +29,7 @@ public class IntegerConverter implements Converter<Integer> {
 			return;
 		}
 		case CHAR:
-			if(val<0) {
-				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
-			}
-			String str = Long.toString(val);
-			int length = Utils.lengthForSerializingCHAR(ctx, self);
-			if(length<0) {
-				length = str.length();
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
-			}else if(length!=str.length()) {
-				throw new IllegalArgumentException(
-						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
-									,str, val,length));
-			}
-			StreamUtils.writeBytes(dest, str.getBytes());
+			Utils.serializeAsCHAR(val, dest, ctx, self);
 			return;
 		case INT:{
 			Utils.checkRangeInContext(DataType.INT, val, ctx);
@@ -53,14 +40,13 @@ public class IntegerConverter implements Converter<Integer> {
 			StreamUtils.writeBCD(
 					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
 			return;
-		default:
-			throw new UnsupportedOperationException();
+		default:throw new Error("cannot happen");
 		}
 	}
 
 	@Override
 	public Integer deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException, ConversionException {
+			throws IOException, ConversionException {
 		switch(ctx.type) {
 		case BYTE:{
 			return ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
@@ -74,28 +60,14 @@ public class IntegerConverter implements Converter<Integer> {
 			return (int)val;
 		}
 		case CHAR:{
-			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
-			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
-			}
-			byte[] numChars = StreamUtils.readBytes(is, length);
-			long ret = 0;
-			for(byte b:numChars) {
-				if(!(b>='0' && b<='9')) {
-					throw new IllegalArgumentException("streams contains non-numeric character");
-				}
-				ret = ret*10 + (b-'0');
-				Utils.checkRangeInContext(DataType.INT, ret, ctx);
-			}
-			return (int)ret;
+			return (int)Utils.deserializeAsCHAR(is, ctx, self, DataType.INT);
 		}
 		case BCD:{
 			long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
 			Utils.checkRangeInContext(DataType.INT, val, ctx);
 			return (int) val;
 		}
-		default:
-			throw new UnsupportedOperationException();
+		default:throw new Error("cannot happen");
 		}
 	}
 }

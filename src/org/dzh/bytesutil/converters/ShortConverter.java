@@ -10,7 +10,6 @@ import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
-import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
 public class ShortConverter implements Converter<Short> {
 
@@ -30,23 +29,7 @@ public class ShortConverter implements Converter<Short> {
 			return;
 		}
 		case CHAR:
-			if(val<0) {
-				//implementation choice
-				throw new ExtendedConversionException(ctx,"negative number cannot be converted to CHAR")
-							.withSiteAndOrdinal(ShortConverter.class, 0);
-			}
-			String str = Long.toString(val);
-			int length = Utils.lengthForSerializingCHAR(ctx, self);
-			if(length<0) {
-				length = str.length();
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
-			}else if(length!=str.length()) {
-				throw new ExtendedConversionException(ctx,
-						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
-									,str, val,length))
-							.withSiteAndOrdinal(ShortConverter.class, 1);
-			}
-			StreamUtils.writeBytes(dest, str.getBytes());
+			Utils.serializeAsCHAR(val, dest, ctx, self);
 			return;
 		case BCD:{
 			StreamUtils.writeBCD(
@@ -70,19 +53,7 @@ public class ShortConverter implements Converter<Short> {
 			return (short)val;
 		}
 		case CHAR:{
-			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
-			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
-			}
-			int ret;
-			try {
-				ret = Utils.numericCharsToNumber(StreamUtils.readBytes(is, length));
-			} catch (IllegalArgumentException e) {
-				throw new ExtendedConversionException(ctx, e.getMessage())
-						.withSiteAndOrdinal(ShortConverter.class, 2);
-			}
-			Utils.checkRangeInContext(DataType.SHORT, ret, ctx);
-			return (short)ret;
+			return (short)Utils.deserializeAsCHAR(is, ctx, self, DataType.SHORT);
 		}
 		case BCD:{
 			long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());

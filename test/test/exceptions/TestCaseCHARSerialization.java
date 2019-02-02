@@ -5,13 +5,13 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.converters.ByteConverter;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import test.TestUtils;
 
-public class TestCaseByteConverter {
+public class TestCaseCHARSerialization {
 	public static class Entity0 extends DataPacket{
 		@Order(0)
 		@CHAR
@@ -26,7 +26,7 @@ public class TestCaseByteConverter {
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, ByteConverter.class, 0);
+			TestUtils.assertExactException(e, Utils.class, 0);
 			return;
 		}
 	}
@@ -43,7 +43,7 @@ public class TestCaseByteConverter {
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, ByteConverter.class, 1);
+			TestUtils.assertExactException(e, Utils.class, 2);
 			return;
 		}
 	}
@@ -59,19 +59,19 @@ public class TestCaseByteConverter {
 			entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'0',(byte)'9'}));
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, ByteConverter.class, 2);
+			TestUtils.assertExactException(e, Utils.class, 3);
 		}
 		try {
 			entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'1',(byte)'/'}));
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, ByteConverter.class, 2);
+			TestUtils.assertExactException(e, Utils.class, 3);
 		}
 		try {
 			entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'1',(byte)';'}));
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, ByteConverter.class, 2);
+			TestUtils.assertExactException(e, Utils.class, 3);
 		}
 	}
 }

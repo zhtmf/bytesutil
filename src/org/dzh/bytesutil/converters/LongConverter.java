@@ -15,8 +15,8 @@ public class LongConverter implements Converter<Long> {
 
 	@Override
 	public void serialize(Long value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException, ConversionException {
-		long val = value==null ? 0 : value;
+			throws IOException, ConversionException {
+		long val = value;
 		switch(ctx.type) {
 		case BYTE:{
 			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
@@ -28,39 +28,25 @@ public class LongConverter implements Converter<Long> {
 			StreamUtils.writeSHORT(dest, (short) val, ctx.bigEndian);
 			return;
 		}
-		case CHAR:
-			if(val<0) {
-				throw new IllegalArgumentException("negative number cannot be converted to CHAR");
-			}
-			String str = Long.toString(val);
-			int length = Utils.lengthForSerializingCHAR(ctx, self);
-			if(length<0) {
-				length = str.length();
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
-			}else if(length!=str.length()) {
-				throw new IllegalArgumentException(
-						String.format("length of string representation [%s] of number [%d] not equals with declared CHAR length [%d]"
-									,str, val,length));
-			}
-			StreamUtils.writeBytes(dest, str.getBytes());
-			return;
 		case INT:{
 			Utils.checkRangeInContext(DataType.INT, val, ctx);
 			StreamUtils.writeInt(dest, (int) val, ctx.bigEndian);
 			return;
 		}
+		case CHAR:
+			Utils.serializeAsCHAR(val, dest, ctx, self);
+			return;
 		case BCD:
 			StreamUtils.writeBCD(
 					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
 			return;
-		default:
-			throw new UnsupportedOperationException();
+		default:throw new Error("cannot happen");
 		}
 	}
 
 	@Override
 	public Long deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException,UnsupportedOperationException {
+			throws IOException, ConversionException {
 		switch(ctx.type) {
 		case BYTE:{
 			return (long) (ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
@@ -72,19 +58,12 @@ public class LongConverter implements Converter<Long> {
 			return ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
 		}
 		case CHAR:{
-			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
-			if(length<0) {
-				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
-			}
-			byte[] numChars = StreamUtils.readBytes(is, length);
-			return Long.valueOf(new String(numChars));
+			return Utils.deserializeAsCHAR(is, ctx, self, null);
 		}
 		case BCD:{
-			long value = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
-			return value;
+			return StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
 		}
-		default:
-			throw new UnsupportedOperationException();
+		default:throw new Error("cannot happen");
 		}
 	}
 }

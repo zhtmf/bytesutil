@@ -19,6 +19,7 @@ import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
 import org.dzh.bytesutil.annotations.types.RAW;
+import org.dzh.bytesutil.annotations.types.SHORT;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -89,6 +90,30 @@ public class TestCase91{
 		@BYTE
 		@Unsigned
 		public short short5;
+		@Order(16)
+		@BYTE
+		@Signed
+		public long long1 = 120L;
+		@Order(17)
+		@BYTE
+		@Unsigned
+		public Long long2 = 240L;
+		@Order(18)
+		@SHORT
+		@Signed
+		public long long3 = Short.MAX_VALUE;
+		@Order(19)
+		@SHORT
+		@Unsigned
+		public Long long4 = (long) (((int)Short.MAX_VALUE)*2);
+		@Order(20)
+		@INT
+		@Signed
+		public long long5 = Integer.MAX_VALUE;
+		@Order(21)
+		@INT
+		@Unsigned
+		public Long long6 = ((long)Integer.MAX_VALUE)*2;
 	}
 	
 	
