@@ -4,74 +4,52 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
 
+import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
+import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
 public class DateConverter implements Converter<Date>{
 	
 	@Override
 	public void serialize(Date value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException, UnsupportedOperationException {
-		String datePattern = ctx.datePattern;
-		if(datePattern==null) {
-			throw new IllegalArgumentException("define a date pattern");
-		}
-		String str = value == null ? "" : getThreadLocalObject(datePattern).format(value);
-		byte[] bytes = str.getBytes(StandardCharsets.ISO_8859_1);
-		
+			throws IOException, ConversionException {
+		String str = Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value);
 		switch(ctx.type) {
 		case BCD:
 			Utils.checkBCDLength(str, ctx.annotation(BCD.class).value());
-			int[] values = new int[str.length()];
-			for(int i=0;i<str.length();++i) {
+			int len = str.length();
+			int[] values = new int[len];
+			for(int i=0;i<len;++i) {
 				char c = str.charAt(i);
 				if(!(c>='0' && c<='9')) {
-					throw new IllegalArgumentException("only numeric value is supported in bcd");
+					throw new ExtendedConversionException(ctx,
+							"only numeric value is supported in bcd")
+								.withSiteAndOrdinal(DateConverter.class, 1);
 				}
 				values[i] = c-'0';
 			}
 			StreamUtils.writeBCD(dest, values);
 			break;
 		case CHAR:
-			
-			int length = Utils.lengthForSerializingCHAR(ctx, self);
-			if(length<0) {
-				//due to the pre-check in Context class, Length must be present at this point
-				length = bytes.length;
-				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
-				
-			}else if(length!=bytes.length) {
-				throw new IllegalArgumentException(
-						String.format("encoded byte array length [%d] not equals with declared CHAR length [%d]"
-									,bytes.length,length));
-			}
-			
-			StreamUtils.writeBytes(dest, bytes);
-			
+			Utils.serializeAsCHAR(str, dest, ctx, self);
 			break;
-		default:
-			throw new UnsupportedOperationException();
+		default:throw new Error("cannot happen");
 		}
 	}
 
 	@Override
 	public Date deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException, UnsupportedOperationException {
-		String datePattern = ctx.datePattern;
-		if(datePattern==null) {
-			throw new IllegalArgumentException("define a date pattern");
-		}
+			throws IOException, ConversionException {
 		try {
 			switch(ctx.type) {
 			case BCD:
-					return getThreadLocalObject(datePattern)
+					return Utils.getThreadLocalDateFormatter(ctx.datePattern)
 							.parse(StreamUtils.readStringBCD(
 									is,ctx.annotation(BCD.class).value()));
 				
@@ -80,41 +58,18 @@ public class DateConverter implements Converter<Date>{
 				if(length<0) {
 					length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 				}
-				return getThreadLocalObject(datePattern)
+				return Utils.getThreadLocalDateFormatter(ctx.datePattern)
 						.parse(new String(
 								StreamUtils.readBytes(
 										is, length)
 								,StandardCharsets.ISO_8859_1));
 			}
-			default:
-				throw new UnsupportedOperationException();
+			default:throw new Error("cannot happen");
 			}
 		} catch (ParseException e) {
-			throw new IllegalArgumentException(e);
-		}
-	}
-	
-	private static final SimpleDateFormat getThreadLocalObject(String datePattern) {
-		ThreadLocal<SimpleDateFormat> tl = formatterMap.get(datePattern);
-		if (tl == null) {
-			tl = new _TLFormatter(datePattern);
-			formatterMap.put(datePattern, tl);
-		}
-		return tl.get();
-	}
-	
-	private static final ConcurrentHashMap<String, ThreadLocal<SimpleDateFormat>> formatterMap = new ConcurrentHashMap<>();
-
-	private static final class _TLFormatter extends ThreadLocal<SimpleDateFormat> {
-		private String p;
-
-		public _TLFormatter(String p) {
-			this.p = p;
-		}
-
-		@Override
-		protected SimpleDateFormat initialValue() {
-			return new SimpleDateFormat(p);
+			throw new ExtendedConversionException(ctx,
+					"parser error",e)
+						.withSiteAndOrdinal(DateConverter.class, 2);
 		}
 	}
 }

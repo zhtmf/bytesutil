@@ -3,12 +3,15 @@ package test.general;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
+import org.dzh.bytesutil.annotations.modifiers.DatePattern;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
@@ -132,6 +135,11 @@ public class TestCase91{
 		@Length
 		@Unsigned
 		public int[] intArray2 = new int[] {255,255};
+		@Order(26)
+		@CHAR
+		@Length
+		@DatePattern("yyyyMMdd")
+		public Date date = new GregorianCalendar(1997, 11, 17).getTime();
 	}
 	
 	

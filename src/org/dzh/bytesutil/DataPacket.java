@@ -7,6 +7,7 @@ import java.lang.reflect.Array;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -406,6 +407,9 @@ public abstract class DataPacket {
 							size += lengthType.size();
 							size += value.toString().getBytes(cs).length;
 						}
+					}else if(value instanceof Date) {
+						size += lengthType.size();
+						size += Utils.getThreadLocalDateFormatter(fi.datePattern).format((Date)value).length();
 					}else {
 						size += lengthType.size();
 						size += value.toString().getBytes(cs).length;

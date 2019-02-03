@@ -212,7 +212,7 @@ public class FieldInfo{
 				case INT:
 					break;
 				default:
-					throw new IllegalArgumentException("data type "+lengthType+" cannot be set as length type");
+					throw forContext(base.entityClass, name, "data type "+lengthType+" cannot be set as length type");
 				}
 				
 				lengthDefined = true;
@@ -241,6 +241,10 @@ public class FieldInfo{
 		{
 			DatePattern df = localAnnotation(DatePattern.class);
 			if(df==null) {
+				if(fieldClass == java.util.Date.class) {
+					throw forContext(base.entityClass, name, "define a date pattern")
+						.withSiteAndOrdinal(FieldInfo.class, 2);
+				}
 				this.datePattern = null;
 			}else {
 				String val = df.value();
