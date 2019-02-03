@@ -120,7 +120,8 @@ public class FieldInfo{
 		if(List.class.isAssignableFrom(fieldClass)) {
 			Class<?> componentClass = ClassInfo.firstTypeParameterClass(field);
 			if(componentClass==null) {
-				throw forContext(base.entityClass, name, "should declare type parameter if it is a List");
+				throw forContext(base.entityClass, name, "should declare type parameter if it is a List")
+					.withSiteAndOrdinal(FieldInfo.class, -1);
 			}
 			this.listComponentClass = componentClass;
 			this.isEntityList = DataPacket.class.isAssignableFrom(listComponentClass);
@@ -151,8 +152,9 @@ public class FieldInfo{
 		}else {
 			try {
 				this.entityCreator = cond.value().newInstance();
-			} catch (InstantiationException | IllegalAccessException e) {
-				throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor");
+			} catch (Exception e) {
+				throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor")
+					.withSiteAndOrdinal(FieldInfo.class, 5);
 			}
 		}
 		
@@ -175,14 +177,16 @@ public class FieldInfo{
 				charset = null;
 				try {
 					charsetHandler = cs.handler().newInstance();
-				} catch (InstantiationException | IllegalAccessException e) {
-					throw forContext(base.entityClass, name, "Charset ModifierHandler cannot be initialized by no-arg contructor");
+				} catch (Exception e) {
+					throw forContext(base.entityClass, name, "Charset ModifierHandler cannot be initialized by no-arg contructor")
+						.withSiteAndOrdinal(FieldInfo.class, 6);
 				}
 			}else {
 				try {
 					charset = Charset.forName(cs.value());
 				} catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
-					throw forContext(base.entityClass, name, "Illegal charset name");
+					throw forContext(base.entityClass, name, "Illegal charset name: "+cs.value())
+						.withSiteAndOrdinal(FieldInfo.class, 6);
 				}
 				charsetHandler = null;
 			}
@@ -199,8 +203,9 @@ public class FieldInfo{
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
 						this.lengthHandler = len.handler().newInstance();
-					} catch (InstantiationException | IllegalAccessException e) {
-						throw forContext(base.entityClass, name, "Length ModifierHandler cannot be initialized by no-arg contructor");
+					} catch (Exception e) {
+						throw forContext(base.entityClass, name, "Length ModifierHandler cannot be initialized by no-arg contructor")
+							.withSiteAndOrdinal(FieldInfo.class, 9);
 					}
 				}else {
 					this.lengthHandler = null;
@@ -212,7 +217,8 @@ public class FieldInfo{
 				case INT:
 					break;
 				default:
-					throw forContext(base.entityClass, name, "data type "+lengthType+" cannot be set as length type");
+					throw forContext(base.entityClass, name, "data type "+lengthType+" cannot be specified as length type")
+							.withSiteAndOrdinal(FieldInfo.class, 10);
 				}
 				
 				lengthDefined = true;
@@ -229,8 +235,9 @@ public class FieldInfo{
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
 						this.listLengthHandler = len.handler().newInstance();
-					} catch (InstantiationException | IllegalAccessException e) {
-						throw forContext(base.entityClass, name, "ListLength ModifierHandler cannot be initialized by no-arg contructor");
+					} catch (Exception e) {
+						throw forContext(base.entityClass, name, "ListLength ModifierHandler cannot be initialized by no-arg contructor")
+							.withSiteAndOrdinal(FieldInfo.class, 11);
 					}
 				}else {
 					this.listLengthHandler = null;
@@ -247,14 +254,7 @@ public class FieldInfo{
 				}
 				this.datePattern = null;
 			}else {
-				String val = df.value();
-				for(int i=0;i<val.length();++i) {
-					if(val.charAt(i)>127) {
-						throw forContext(base.entityClass, name, "Illegal date pattern,"
-								+ " only ASCII characters are permitted");
-					}
-				}
-				this.datePattern = val;
+				this.datePattern = df.value();
 			}
 		}
 	}
@@ -348,7 +348,8 @@ public class FieldInfo{
 		Annotation local2 = localAnnotation(another);
 		if(local1!=null && local2!=null) {
 			throw forContext(base.entityClass, name, 
-					String.format("[%s] and [%s] should not be both present on the same field declaration",def,another));
+					String.format("[%s] and [%s] should not be both present on the same field declaration",def,another))
+					.withSiteAndOrdinal(FieldInfo.class, 21);
 		}else if(local1!=null && local2==null) {
 			return local1;
 		}else if(local1==null && local2!=null) {
@@ -358,7 +359,8 @@ public class FieldInfo{
 		Annotation global2 = globalAnnotation(another);
 		if(global1!=null && global2!=null) {
 			throw forContext(base.entityClass, name, 
-					String.format("[%s] and [%s] should not be both present on the same class declaration",def,another));
+					String.format("[%s] and [%s] should not be both present on the same class declaration",def,another))
+					.withSiteAndOrdinal(FieldInfo.class, 22);
 		}else if(global1!=null && global2==null) {
 			return global1;
 		}else if(global1==null && global2!=null) {

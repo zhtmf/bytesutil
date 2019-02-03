@@ -2,6 +2,9 @@ package test.exceptions;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Date;
@@ -9,17 +12,26 @@ import java.util.List;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
+import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
+import org.dzh.bytesutil.annotations.modifiers.Signed;
+import org.dzh.bytesutil.annotations.modifiers.Unsigned;
+import org.dzh.bytesutil.annotations.modifiers.Variant;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
+import org.dzh.bytesutil.annotations.types.RAW;
+import org.dzh.bytesutil.converters.auxiliary.DataType;
+import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
+import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
 import test.TestUtils;
+import test.exceptions.TestCaseInitialParsing.Entity6.CharsetHandler;
 
 public class TestCaseInitialParsing {
 	public static class Entity4 extends DataPacket {
@@ -94,6 +106,207 @@ public class TestCaseInitialParsing {
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, FieldInfo.class, 2);
+		}
+	}
+	
+	public static class Entity3 extends DataPacket{
+		@SuppressWarnings("rawtypes")
+		@Order(0)
+		@RAW(2)
+		@ListLength
+		public List list;
+	}
+	
+	@Test
+	public void test3() throws ConversionException {
+		Entity3 entity = new Entity3();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, -1);
+		}
+	}
+	
+	public static class Entity5 extends DataPacket{
+		@Order(0)
+		@Variant(VariantHandler.class)
+		public DataPacket list;
+		
+		public static class VariantHandler extends EntityHandler{
+			public VariantHandler() {throw new IllegalArgumentException();}
+			@Override
+			public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+				return null;
+			}
+			
+		}
+	}
+	
+	@Test
+	public void test5() throws ConversionException {
+		Entity5 entity = new Entity5();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 5);
+		}
+	}
+	
+	@CHARSET(handler=CharsetHandler.class)
+	public static class Entity6 extends DataPacket{
+		
+		@Order(0)
+		@CHAR(1)
+		public char ch;
+		
+		public static class CharsetHandler extends ModifierHandler<Charset>{
+			public CharsetHandler() {throw new IllegalArgumentException();}
+			@Override
+			public Charset handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+				return null;
+			}
+			@Override
+			public Charset handleSerialize0(String fieldName, Object entity) {
+				return null;
+			}
+		}
+	}
+	
+	@Test
+	public void test6() throws ConversionException {
+		Entity6 entity = new Entity6();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 6);
+		}
+	}
+	
+	@CHARSET("abc")
+	public static class Entity7 extends DataPacket{
+		
+		@Order(0)
+		@CHAR(1)
+		public char ch;
+	}
+	
+	@Test
+	public void test7() throws ConversionException {
+		Entity7 entity = new Entity7();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 6);
+		}
+	}
+	
+	public static class LengthHandler extends ModifierHandler<Integer>{
+		public LengthHandler() {throw new IllegalArgumentException();}
+		@Override
+		public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+			return null;
+		}
+		@Override
+		public Integer handleSerialize0(String fieldName, Object entity) {
+			return null;
+		}
+	} 
+	
+	public static class Entity9 extends DataPacket{
+		@Order(0)
+		@CHAR
+		@Length(handler=LengthHandler.class)
+		public char ch;
+	}
+	
+	@Test
+	public void test9() throws ConversionException {
+		Entity9 entity = new Entity9();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 9);
+		}
+	}
+	
+	public static class Entity10 extends DataPacket{
+		@Order(0)
+		@CHAR
+		@Length(type=DataType.BCD)
+		public char ch;
+	}
+	
+	@Test
+	public void test10() throws ConversionException {
+		Entity10 entity = new Entity10();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 10);
+		}
+	}
+	
+	public static class Entity11 extends DataPacket{
+		@Order(0)
+		@CHAR(2)
+		@ListLength(handler=LengthHandler.class)
+		public List<Byte> ch;
+	}
+	
+	@Test
+	public void test11() throws ConversionException {
+		Entity11 entity = new Entity11();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 11);
+		}
+	}
+	
+	public static class Entity21 extends DataPacket{
+		@Order(0)
+		@CHAR(2)
+		@ListLength(2)
+		@Unsigned
+		@Signed
+		public List<Byte> ch;
+	}
+	
+	@Test
+	public void test21() throws ConversionException {
+		Entity21 entity = new Entity21();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 21);
+		}
+	}
+	
+	@Unsigned
+	@Signed
+	public static class Entity22 extends DataPacket{
+		@Order(0)
+		@CHAR(2)
+		@ListLength(2)
+		public List<Byte> ch;
+	}
+	
+	@Test
+	public void test22() throws ConversionException {
+		Entity22 entity = new Entity22();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 22);
 		}
 	}
 }

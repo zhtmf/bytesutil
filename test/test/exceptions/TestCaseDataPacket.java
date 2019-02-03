@@ -177,11 +177,32 @@ public class TestCaseDataPacket {
 		entity.serialize(baos);
 		try {
 			new Entity11().deserialize(new ByteArrayInputStream(baos.toByteArray()));
+			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, DataPacket.class, 11);
 			return;
 		}
-		Assert.fail();
+	}
+	
+	public static class Entity11_1 extends DataPacket{
+		@Order(0)
+		public SubEntity11_1 field1;
+		public static abstract class SubEntity11_1 extends DataPacket{
+			@Order(0)
+			@SHORT
+			private int i1;
+		}
+	}
+	@Test
+	public void test11_1() throws ConversionException {
+		Entity11_1 entity = new Entity11_1();
+		try {
+			entity.deserialize(TestUtils.newZeroLengthInputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, DataPacket.class, 11);
+			return;
+		}
 	}
 	
 	public static class Entity12 extends DataPacket{
