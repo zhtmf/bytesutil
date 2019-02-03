@@ -12,7 +12,9 @@ import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
+import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
+import org.dzh.bytesutil.converters.IntArrayConverter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -310,6 +312,25 @@ public class TestCaseDataPacket {
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, DataPacket.class, -2);
+		}
+	}
+	
+	public static class EntityList extends DataPacket{
+		@Order(0)
+		@RAW(2)
+		@Length
+		public List<int[]> b;
+	}
+	
+	@Test
+	public void testList() throws ConversionException {
+		EntityList entity = new EntityList();
+		entity.b = Arrays.asList(new int[3]);
+		try {
+			entity.serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, IntArrayConverter.class, 1);
 		}
 	}
 }

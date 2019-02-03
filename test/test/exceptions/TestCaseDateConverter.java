@@ -9,6 +9,7 @@ import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.converters.DateConverter;
+import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,7 +29,7 @@ public class TestCaseDateConverter{
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DateConverter.class, 1);
+			TestUtils.assertExactException(e, Utils.class, 4);
 		}
 	}
 	public static class Entity1 extends DataPacket{

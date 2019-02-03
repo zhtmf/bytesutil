@@ -140,6 +140,29 @@ public class TestCase91{
 		@Length
 		@DatePattern("yyyyMMdd")
 		public Date date = new GregorianCalendar(1997, 11, 17).getTime();
+		
+		@Order(27)
+		@CHAR
+		@Length
+		@CHARSET("GBK")
+		public String strGBK = "哦哦哦";
+		
+		@Order(28)
+		@CHAR
+		@Length
+		@CHARSET("SHIFT-JIS")
+		public String strSHIFTJIS = "マイン";
+		
+		@Order(29)
+		@CHAR(2)
+		@CHARSET("GBK")
+		public Character ch1 = '我';
+		
+		@Order(30)
+		@CHAR
+		@Length
+		@CHARSET("SHIFT-JIS")
+		public Character ch2 = 'マ';
 	}
 	
 	

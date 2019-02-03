@@ -21,23 +21,11 @@ public class DateConverter implements Converter<Date>{
 			throws IOException, ConversionException {
 		String str = Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value);
 		switch(ctx.type) {
-		case BCD:
-			Utils.checkBCDLength(str, ctx.annotation(BCD.class).value());
-			int len = str.length();
-			int[] values = new int[len];
-			for(int i=0;i<len;++i) {
-				char c = str.charAt(i);
-				if(!(c>='0' && c<='9')) {
-					throw new ExtendedConversionException(ctx,
-							"only numeric value is supported in bcd")
-								.withSiteAndOrdinal(DateConverter.class, 1);
-				}
-				values[i] = c-'0';
-			}
-			StreamUtils.writeBCD(dest, values);
-			break;
 		case CHAR:
 			Utils.serializeAsCHAR(str, dest, ctx, self);
+			break;
+		case BCD:
+			Utils.serializeBCD(str, dest, ctx, self);
 			break;
 		default:throw new Error("cannot happen");
 		}
@@ -48,11 +36,6 @@ public class DateConverter implements Converter<Date>{
 			throws IOException, ConversionException {
 		try {
 			switch(ctx.type) {
-			case BCD:
-					return Utils.getThreadLocalDateFormatter(ctx.datePattern)
-							.parse(StreamUtils.readStringBCD(
-									is,ctx.annotation(BCD.class).value()));
-				
 			case CHAR:{
 				int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 				if(length<0) {
@@ -64,6 +47,11 @@ public class DateConverter implements Converter<Date>{
 										is, length)
 								,StandardCharsets.ISO_8859_1));
 			}
+			case BCD:
+					return Utils.getThreadLocalDateFormatter(ctx.datePattern)
+							.parse(StreamUtils.readStringBCD(
+									is,ctx.annotation(BCD.class).value()));
+				
 			default:throw new Error("cannot happen");
 			}
 		} catch (ParseException e) {

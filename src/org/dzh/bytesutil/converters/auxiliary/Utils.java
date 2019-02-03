@@ -3,12 +3,12 @@ package org.dzh.bytesutil.converters.auxiliary;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.ConversionException;
+import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
@@ -154,19 +154,38 @@ public class Utils {
 		}
 	}
 	
+	public static final void serializeBCD(String str, OutputStream dest, FieldInfo ctx, Object self) 
+			throws ConversionException, IOException {
+		Utils.checkBCDLength(str, ctx.annotation(BCD.class).value());
+		int len = str.length();
+		int[] values = new int[len];
+		for(int i=0;i<len;++i) {
+			char c = str.charAt(i);
+			if(!(c>='0' && c<='9')) {
+				throw new ExtendedConversionException(ctx,
+						"only numeric value is supported in bcd")
+							.withSiteAndOrdinal(Utils.class, 4);
+			}
+			values[i] = c-'0';
+		}
+		StreamUtils.writeBCD(dest, values);
+	}
+	
 	public static final void serializeAsCHAR(String str, OutputStream dest, FieldInfo ctx, Object self)
 			throws ConversionException, IOException {
+		Charset cs = Utils.charsetForSerializingCHAR(ctx, self);
+		byte[] bytes = str.getBytes(cs);
 		int length = Utils.lengthForSerializingCHAR(ctx, self);
 		if(length<0) {
-			length = str.length();
+			length = bytes.length;
 			StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
-		}else if(length!=str.length()) {
+		}else if(length!=bytes.length) {
 			throw new ExtendedConversionException(ctx,
 					String.format("length of string representation [%s] does not equals with declared CHAR length [%d]"
 								,str,length))
 						.withSiteAndOrdinal(Utils.class, 2);
 		}
-		StreamUtils.writeBytes(dest, str.getBytes(StandardCharsets.ISO_8859_1));
+		StreamUtils.writeBytes(dest, bytes);
 	}
 	
 	public static final void serializeAsCHAR(long val, OutputStream dest, FieldInfo ctx, Object self)
