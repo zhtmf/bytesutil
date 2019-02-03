@@ -1,7 +1,5 @@
 package test.general;
 
-import java.io.ByteArrayOutputStream;
-
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Order;
@@ -10,6 +8,7 @@ import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
+import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
@@ -19,44 +18,6 @@ import test.TestUtils;
 
 public class TestIntegerRange {
 
-	@Unsigned
-	public static class EntityByte extends DataPacket{
-		@Order(0)
-		@BYTE
-		public byte b;
-	}
-	
-	@Test
-	public void testByte() throws ConversionException {
-		EntityByte entity = new EntityByte();
-		try {
-			entity.b = -1;
-			entity.serialize(new ByteArrayOutputStream());
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, Utils.class, 1);
-		}
-		try {
-			entity.b = -128;
-			entity.serialize(new ByteArrayOutputStream());
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, Utils.class, 1);
-		}
-		try {
-			entity.b = 1;
-			entity.serialize(new ByteArrayOutputStream());
-		} catch (Exception e) {
-			throw e;
-		}
-		try {
-			entity.b = 127;
-			entity.serialize(new ByteArrayOutputStream());
-		} catch (Exception e) {
-			throw e;
-		}
-	}
-	
 	@Signed
 	public static class EntityByte2 extends DataPacket{
 		@Order(0)
@@ -153,25 +114,6 @@ public class TestIntegerRange {
 		}
 	}
 	
-	@Unsigned
-	public static class EntityByte5 extends DataPacket{
-		@Order(0)
-		@SHORT
-		public short b;
-	}
-	
-	@Test
-	public void testByte5() throws ConversionException {
-		EntityByte5 entity = new EntityByte5();
-		entity.b = -1;
-		try {
-			entity.serialize(TestUtils.newByteArrayOutputStream());
-			Assert.fail();
-		} catch (Exception e) {
-			TestUtils.assertExactException(e, Utils.class, 1);
-		}
-	}
-	
 	@Signed
 	public static class EntityByte6 extends DataPacket{
 		@Order(0)
@@ -192,6 +134,74 @@ public class TestIntegerRange {
 			TestUtils.serializeAndRestore(entity);
 		} catch (Exception e) {
 			throw e;
+		}
+	}
+	
+	@Unsigned
+	public static class EntityIntArray extends DataPacket{
+		@Order(0)
+		@RAW(5)
+		public int[] arr;
+	}
+	
+	@Signed
+	public static class EntityIntArray2 extends DataPacket{
+		@Order(0)
+		@RAW(5)
+		public int[] arr;
+	}
+	
+	@Test
+	public void testEntityIntArray() throws Exception {
+		{
+			EntityIntArray entity = new EntityIntArray();
+			entity.arr = new int[] {255,200,127,0,1};
+			TestUtils.serializeAndRestore(entity);
+		}
+		{
+			EntityIntArray2 entity = new EntityIntArray2();
+			entity.arr = new int[] {-1,0,1,127,-128};
+			TestUtils.serializeAndRestore(entity);
+		}
+		{
+			EntityIntArray entity = new EntityIntArray();
+			entity.arr = new int[] {-1,256,127,0,1};
+			try {
+				entity.serialize(TestUtils.newByteArrayOutputStream());
+				Assert.fail();
+			} catch (Exception e) {
+				TestUtils.assertExactException(e, Utils.class, 1);
+			}
+		}
+		{
+			EntityIntArray entity = new EntityIntArray();
+			entity.arr = new int[] {256,-1,127,0,1};
+			try {
+				entity.serialize(TestUtils.newByteArrayOutputStream());
+				Assert.fail();
+			} catch (Exception e) {
+				TestUtils.assertExactException(e, Utils.class, 1);
+			}
+		}
+		{
+			EntityIntArray2 entity = new EntityIntArray2();
+			entity.arr = new int[] {-129,0,0,0,0};
+			try {
+				entity.serialize(TestUtils.newByteArrayOutputStream());
+				Assert.fail();
+			} catch (Exception e) {
+				TestUtils.assertExactException(e, Utils.class, 1);
+			}
+		}
+		{
+			EntityIntArray2 entity = new EntityIntArray2();
+			entity.arr = new int[] {128,0,0,0,0};
+			try {
+				entity.serialize(TestUtils.newByteArrayOutputStream());
+				Assert.fail();
+			} catch (Exception e) {
+				TestUtils.assertExactException(e, Utils.class, 1);
+			}
 		}
 	}
 }

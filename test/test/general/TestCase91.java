@@ -114,6 +114,24 @@ public class TestCase91{
 		@INT
 		@Unsigned
 		public Long long6 = ((long)Integer.MAX_VALUE)*2;
+		@Order(22)
+		@RAW(2)
+		@Signed
+		public byte[] byteArray1 = new byte[] {-3,120};
+		@Order(23)
+		@RAW
+		@Length
+		@Unsigned
+		public byte[] byteArray2 = new byte[] {(byte) 250,(byte) 230};
+		@Order(24)
+		@RAW(2)
+		@Signed
+		public int[] intArray1 = new int[] {-3,127};
+		@Order(25)
+		@RAW
+		@Length
+		@Unsigned
+		public int[] intArray2 = new int[] {255,255};
 	}
 	
 	
@@ -136,7 +154,11 @@ public class TestCase91{
 		entity.serialize(baos);
 		Assert.assertEquals(baos.size(), entity.length());
 		Entity restored = new Entity();
-		restored.deserialize(new ByteArrayInputStream(baos.toByteArray()));
+		byte[] arr1 = baos.toByteArray();
+		restored.deserialize(new ByteArrayInputStream(arr1));
 		Assert.assertTrue(TestUtils.equalsOrderFields(entity, restored));
+		baos.reset();
+		restored.serialize(baos);
+		Assert.assertArrayEquals(arr1, baos.toByteArray());
 	}
 }

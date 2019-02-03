@@ -10,7 +10,7 @@ public class StreamUtils {
 	public static void writeBYTE(OutputStream os, byte value) throws IOException {
 		os.write(value);
 	}
-	public static void writeSHORT(OutputStream os, short value, boolean bigendian) throws IOException {
+	public static void writeSHORT(OutputStream os, int value, boolean bigendian) throws IOException {
 		if(bigendian) {
 			os.write((byte)(value>>8 & 0xFF));
 			os.write((byte)(value & 0xFF));
@@ -60,9 +60,6 @@ public class StreamUtils {
 	
 	public static void writeBytes(OutputStream os, int[] raw) throws IOException{
 		for(int i : raw) {
-			if(i<Byte.MIN_VALUE || i>Byte.MAX_VALUE) {
-				throw new IOException("int value "+i+" cannot be written as a byte");
-			}
 			os.write(i);
 		}
 	}

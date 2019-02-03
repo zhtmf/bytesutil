@@ -24,8 +24,7 @@ public class ShortConverter implements Converter<Short> {
 			return;
 		}
 		case SHORT:{
-			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
-			StreamUtils.writeSHORT(dest, val, ctx.bigEndian);
+			StreamUtils.writeSHORT(dest, value, ctx.bigEndian);
 			return;
 		}
 		case CHAR:

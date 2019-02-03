@@ -203,9 +203,28 @@ public class Utils {
 		if(length<0) {
 			length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 		}
-		long ret;
+		long ret = 0;
 		try {
-			ret = Utils.numericCharsToNumber(StreamUtils.readBytes(is, length));
+			byte[] numChars = StreamUtils.readBytes(is, length);
+			/*
+			 * such strings causes asymmetry between serialization and deserialization. it
+			 * is possible to avoid this problem by using written-ahead length, however such
+			 * use case is rare so it is better prevent deserialization from such strings to
+			 * a numeric type explicitly rather than later cause errors that are hard to
+			 * detect.
+			 */
+			if(numChars.length>1 && numChars[0]=='0') {
+				throw new IllegalArgumentException("streams contains numeric string that contains leading zero");
+			}
+			for(byte b:numChars) {
+				if(!(b>='0' && b<='9')) {
+					throw new IllegalArgumentException("streams contains non-numeric character");
+				}
+				ret = ret*10 + (b-'0');
+				if(ret<0) {
+					throw new IllegalArgumentException("numeric string overflows:"+Arrays.toString(numChars));
+				}
+			}
 		} catch (IllegalArgumentException e) {
 			throw new ExtendedConversionException(ctx, e.getMessage())
 					.withSiteAndOrdinal(Utils.class, 3);

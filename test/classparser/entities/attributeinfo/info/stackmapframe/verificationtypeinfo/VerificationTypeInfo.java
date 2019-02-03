@@ -18,10 +18,9 @@ public class VerificationTypeInfo extends DataPacket{
 	@Order(1)
 	@RAW
 	@Length(handler=IndexHandler.class)
-	public byte[] optionalIndex;
+	public int[] optionalIndex;
 	
 	public static class IndexHandler extends ModifierHandler<Integer>{
-
 		@Override
 		public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
 			VerificationTypeInfo info = (VerificationTypeInfo)entity;
@@ -33,7 +32,6 @@ public class VerificationTypeInfo extends DataPacket{
 				return 0;
 			}
 		}
-
 		@Override
 		public Integer handleSerialize0(String fieldName, Object entity) {
 			VerificationTypeInfo info = (VerificationTypeInfo)entity;
@@ -45,6 +43,5 @@ public class VerificationTypeInfo extends DataPacket{
 				return 0;
 			}
 		}
-		
 	}
 }

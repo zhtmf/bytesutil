@@ -25,7 +25,6 @@ public class ByteConverter implements Converter<Byte> {
 		byte val = (byte)value;
 		switch(ctx.type) {
 		case BYTE:
-			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
 			StreamUtils.writeBYTE(dest, val);
 			return;
 		case CHAR:

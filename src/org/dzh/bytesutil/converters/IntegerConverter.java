@@ -28,14 +28,13 @@ public class IntegerConverter implements Converter<Integer> {
 			StreamUtils.writeSHORT(dest, (short) val, ctx.bigEndian);
 			return;
 		}
-		case CHAR:
-			Utils.serializeAsCHAR(val, dest, ctx, self);
-			return;
 		case INT:{
-			Utils.checkRangeInContext(DataType.INT, val, ctx);
 			StreamUtils.writeInt(dest, val, ctx.bigEndian);
 			return;
 		}
+		case CHAR:
+			Utils.serializeAsCHAR(val, dest, ctx, self);
+			return;
 		case BCD:
 			StreamUtils.writeBCD(
 					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
