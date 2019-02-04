@@ -31,9 +31,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import test.TestUtils;
-import test.exceptions.TestCaseInitialParsing.Entity6.CharsetHandler;
+import test.exceptions.TestCaseFieldInfo.Entity6.CharsetHandler;
 
-public class TestCaseInitialParsing {
+public class TestCaseFieldInfo {
 	public static class Entity4 extends DataPacket {
 		@Order(0)
 		@INT

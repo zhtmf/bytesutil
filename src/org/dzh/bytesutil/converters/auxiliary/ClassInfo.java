@@ -47,6 +47,11 @@ public class ClassInfo {
 	
 	public ClassInfo(Class<?> cls) {
 		
+		if(cls==null || ! DataPacket.class.isAssignableFrom(cls)) {
+			throw forContext(cls, null, "should be a class which inherits DataPacket")
+				.withSiteAndOrdinal(ClassInfo.class, 0);
+		}
+		
 		this.entityClass = cls;
 		
 		for(Annotation an:cls.getAnnotations()) {
@@ -60,7 +65,7 @@ public class ClassInfo {
 		 * class.
 		 */
 		Class<?> tmp = cls;
-		while(tmp!=null){
+		while(true){
 			List<Field> tmpList = new ArrayList<>(Arrays.asList(tmp.getDeclaredFields()));
 			for(int i=0;i<tmpList.size();++i) {
 				Field f = tmpList.get(i);
@@ -75,18 +80,13 @@ public class ClassInfo {
 					tmpList.remove(i);
 					--i;
 				}
-				try {
-					f.setAccessible(true);
-				} catch (SecurityException e) {
-					throw forContext(tmp, f.getName(), "field cannot be made accessible.");
-				}
+				f.setAccessible(true);
 			}
 			
 			Collections.sort(tmpList, reverseFieldComparator);
 			fieldList.addAll(tmpList);
 			tmp = tmp.getSuperclass();
-			//theoretically Object.class cannot be reached
-			if(tmp == DataPacket.class || tmp==Object.class) {
+			if(tmp == DataPacket.class) {
 				break;
 			}
 		}
@@ -109,7 +109,8 @@ public class ClassInfo {
 			for(DataType tp:DataType.values()) {
 				if(f.getAnnotation(tp.annotationClassOfThisType())!=null) {
 					if(type!=null) {
-						throw forContext(cls, name, "multiple data type declaration on same field is not allowed");
+						throw forContext(cls, name, "multiple data type declaration on same field is not allowed")
+							.withSiteAndOrdinal(ClassInfo.class, 1);
 					}
 					type = tp;
 				}
@@ -119,14 +120,16 @@ public class ClassInfo {
 				if( ! DataPacket.class.isAssignableFrom(f.getType())
 				&& ((componentClass = firstTypeParameterClass(f))==null
 				|| ! DataPacket.class.isAssignableFrom(componentClass))) {
-					throw forContext(cls, name, "field not marked with a DataType");
+					throw forContext(cls, name, "field not marked with a DataType")
+						.withSiteAndOrdinal(ClassInfo.class, 2);
 				}
 			}
 			
 			if(type == DataType.BCD) {
 				BCD anno = f.getAnnotation(BCD.class);
 				if(anno.value()<0) {
-					throw forContext(cls, name, "BCD length should not be negative");
+					throw forContext(cls, name, "BCD length should not be negative")
+						.withSiteAndOrdinal(ClassInfo.class, 3);
 				}
 			}
 			
@@ -135,13 +138,15 @@ public class ClassInfo {
 			if(fi.listComponentClass!=null) {
 				if(fi.localAnnotation(Length.class)==null
 						&& fi.localAnnotation(ListLength.class)==null) {
-					throw forContext(cls, name, "neither Length nor ListLength annotation are present on it");
+					throw forContext(cls, name, "neither Length nor ListLength annotation are present")
+						.withSiteAndOrdinal(ClassInfo.class, 4);
 				}
 				if(((fi.type == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
 						|| (fi.type == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
 						&& fi.localAnnotation(ListLength.class)==null) {
 					throw forContext(cls, name, "this field is a list of Data Type that supports dynamic length, "
-							+ "to avoid ambiguity, use ListLength but not Length to specify the list length");
+							+ "to avoid ambiguity, use ListLength but not Length to specify the list length")
+						.withSiteAndOrdinal(ClassInfo.class, 5);
 				}
 			}
 			
@@ -151,7 +156,8 @@ public class ClassInfo {
 			if(ch!=null && ch.value()<0) {
 				if( ! fi.lengthDefined) {
 					throw forContext(cls, name, "this field is defined as CHAR, but its value property is negative"
-							+ " and a Length annotation is not present on it");
+							+ " and a Length annotation is not present on it")
+						.withSiteAndOrdinal(ClassInfo.class, 6);
 				}
 			}
 			
@@ -159,7 +165,8 @@ public class ClassInfo {
 			if(raw!=null && raw.value()<0) {
 				if( ! fi.lengthDefined)
 					throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
-							+ " and a Length annotation is not present on it");
+							+ " and a Length annotation is not present on it")
+						.withSiteAndOrdinal(ClassInfo.class, 7);
 			}
 			
 			fieldInfoByField.put(name, fi);
@@ -186,9 +193,6 @@ public class ClassInfo {
 			return null;
 		}
 		Type[] types = ((ParameterizedType)type).getActualTypeArguments();
-		if(types.length==0) {
-			return null;
-		}
 		return (Class<?>)types[0];
 	}
 	
@@ -198,7 +202,8 @@ public class ClassInfo {
 			int val1 = o1.getAnnotation(Order.class).value();
 			int val2 = o2.getAnnotation(Order.class).value();
 			if(val1==val2) {
-				throw forContext(null, o1.getName()+"/"+o2.getName(), "two fields have same order value");
+				throw forContext(null, o1.getName()+"/"+o2.getName(), "two fields have same order value")
+					.withSiteAndOrdinal(ClassInfo.class, 8);
 			}
 			/*
 			 * sort them reversely there to prevent inserting into the beginning

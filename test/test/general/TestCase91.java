@@ -163,6 +163,13 @@ public class TestCase91{
 		@Length
 		@CHARSET("SHIFT-JIS")
 		public Character ch2 = 'マ';
+		
+		@Order(31)
+		@INT
+		public final int ignored1 = 1;
+		@Order(32)
+		@INT
+		public static int ignored2;
 	}
 	
 	
