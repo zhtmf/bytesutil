@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import classparser.entities.JavaClass;
+import test.TestUtils;
 
 public class TestClassParsing {
 
@@ -44,6 +45,8 @@ public class TestClassParsing {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			clazz.serialize(baos);
 			deserialized = baos.toByteArray();
+			
+			TestUtils.serializeMultipleTimesAndRestore(clazz);
 		}
 		Assert.assertArrayEquals(original, deserialized);
 	}

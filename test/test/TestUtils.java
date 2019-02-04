@@ -77,6 +77,19 @@ public class TestUtils {
 		restored.deserialize(newInputStream(data));
 		Assert.assertTrue(equalsOrderFields(entity, restored));
 	}
+	public static void serializeMultipleTimesAndRestore(DataPacket entity) throws Exception {
+		ByteArrayOutputStream os = newByteArrayOutputStream();
+		for(int i=0;i<10;++i) {
+			entity.serialize(os);
+		}
+		byte[] data = os.toByteArray();
+		InputStream is = newInputStream(data);
+		for(int i=0;i<10;++i) {
+			DataPacket restored = entity.getClass().newInstance();
+			restored.deserialize(is);
+			Assert.assertTrue(equalsOrderFields(entity, restored));
+		}
+	}
 	public static boolean equalsOrderFields(Object o1, Object o2) {
 		if(o1==o2) {
 			return true;

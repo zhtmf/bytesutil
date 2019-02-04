@@ -19,12 +19,8 @@ import org.dzh.bytesutil.annotations.modifiers.Variant;
 public abstract class EntityHandler extends ModifierHandler<DataPacket> {
 
 	@Override
-	public DataPacket handleDeserialize0(String fieldName, Object entity, InputStream is) {
-		try {
-			return handle0(fieldName, entity, is);
-		} catch (IOException e) {
-			throw new Error(e);
-		}
+	public DataPacket handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException{
+		return handle0(fieldName, entity, is);
 	}
 
 	@Override

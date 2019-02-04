@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.enums.NumericEnum;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
@@ -252,7 +251,7 @@ public class TestCase91{
 	
 	
 	@Test
-	public void test() throws ConversionException {
+	public void test() throws Exception {
 		Entity entity = new Entity();
 		entity.i = 5;
 		entity.str = "ccc";
@@ -266,6 +265,7 @@ public class TestCase91{
 		entity.byteUnsigned = 119;
 		entity.short2 = 32344;
 		entity.short3 = 1919;
+		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		entity.serialize(baos);
 		Assert.assertEquals(baos.size(), entity.length());
@@ -276,5 +276,7 @@ public class TestCase91{
 		baos.reset();
 		restored.serialize(baos);
 		Assert.assertArrayEquals(arr1, baos.toByteArray());
+		
+		TestUtils.serializeMultipleTimesAndRestore(entity);
 	}
 }
