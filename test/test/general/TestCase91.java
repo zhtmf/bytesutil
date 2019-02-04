@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
+import org.dzh.bytesutil.annotations.enums.NumericEnum;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
@@ -29,6 +30,23 @@ import org.junit.Test;
 import test.TestUtils;
 
 public class TestCase91{
+	
+	private enum NEnum1 implements NumericEnum{
+		FLAG1 {
+			@Override
+			public long getValue() {
+				return 1;
+			}
+		},
+		FLAG2 {
+			@Override
+			public long getValue() {
+				return 2;
+			}
+		};
+		@Override
+		public abstract long getValue();
+	}
 	
 	@Signed
 	@BigEndian
@@ -163,6 +181,66 @@ public class TestCase91{
 		@Length
 		@CHARSET("SHIFT-JIS")
 		public Character ch2 = 'マ';
+		
+		@Order(31)
+		@BYTE
+		@Unsigned
+		public byte bbb = -100;
+		
+		@Order(32)
+		@BYTE
+		@Unsigned
+		public Short s1 = 250;
+		
+		@Order(33)
+		@BYTE
+		@Signed
+		public NEnum1 n1 = NEnum1.FLAG1;
+		
+		@Order(34)
+		@SHORT
+		@Unsigned
+		public short s2 = (short) 65535;
+		
+		@Order(35)
+		@SHORT
+		@Signed
+		public Short s3 = Short.MAX_VALUE;
+		
+		@Order(36)
+		@SHORT
+		@Unsigned
+		public Long l1 = 65535L;
+		
+		@Order(37)
+		@SHORT
+		@Signed
+		public NEnum1 n2 = NEnum1.FLAG1;
+		
+		@Order(38)
+		@BCD(1)
+		@Signed
+		public Byte bcd1 = 30;
+		
+		@Order(39)
+		@BCD(2)
+		@Signed
+		public Short bcd2 = 3011;
+		
+		@Order(40)
+		@BCD(3)
+		@Signed
+		public Long bcd3 = 123456L;
+		
+		@Order(41)
+		@CHAR
+		@Length
+		public Long ch3 = 123456L;
+		
+		@Order(42)
+		@CHAR
+		@Length
+		public Integer ch4 = 123456;
 		
 		@Order(31)
 		@INT

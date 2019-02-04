@@ -20,9 +20,11 @@ import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.modifiers.Variant;
 import org.dzh.bytesutil.annotations.types.BCD;
+import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
 import org.dzh.bytesutil.annotations.types.RAW;
+import org.dzh.bytesutil.annotations.types.SHORT;
 import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
@@ -34,6 +36,53 @@ import test.TestUtils;
 import test.exceptions.TestCaseFieldInfo.Entity6.CharsetHandler;
 
 public class TestCaseFieldInfo {
+	
+	@Test
+	public void test0() throws ConversionException {
+		try {
+			class Entity extends DataPacket{@Order(0)@BYTE public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+		try {
+			class Entity extends DataPacket{@Order(0)@SHORT public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+		try {
+			class Entity extends DataPacket{@Order(0)@INT public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+		try {
+			class Entity extends DataPacket{@Order(0)@CHAR public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+		try {
+			class Entity extends DataPacket{@Order(0)@RAW public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+		try {
+			class Entity extends DataPacket{@Order(0)@BCD(1) public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+	}
+	
 	public static class Entity4 extends DataPacket {
 		@Order(0)
 		@INT
