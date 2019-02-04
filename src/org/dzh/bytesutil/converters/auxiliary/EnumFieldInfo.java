@@ -14,7 +14,7 @@ import org.dzh.bytesutil.annotations.enums.StringEnum;
  * Dedicated subclass used to eliminate the branches in {@link #get(Object)} and
  * {@link #set(Object, Object)}
  */
-class EnumFieldInfo extends FieldInfo {
+public class EnumFieldInfo extends FieldInfo {
 	
 	private final Map<Object,Object> mapValueByEnumMember;
 	private final Map<Object,Object> mapEnumMemberByValue;
@@ -24,18 +24,7 @@ class EnumFieldInfo extends FieldInfo {
 		super(field, type, base);
 		Class<?> fieldClass = field.getType();
 		
-		switch(type) {
-		case BYTE:
-		case SHORT:
-		case INT:
-			this.mappedEnumFieldClass = Long.class;
-			break;
-		case CHAR:
-			this.mappedEnumFieldClass = String.class;
-			break;
-		default:
-			throw forContext(base.entityClass, name, "enum type fields should be declared as a numeric type or CHAR");
-		}
+		this.mappedEnumFieldClass = type.mappedEnumFieldClass();
 		
 		Map<Object,Object> mapEnumMemberByValue = new HashMap<>();
 		Map<Object,Object> mapValueByEnumMember = new HashMap<>();
@@ -45,7 +34,8 @@ class EnumFieldInfo extends FieldInfo {
 		case SHORT:
 		case INT:
 			if(StringEnum.class.isAssignableFrom(fieldClass)) {
-				throw forContext(base.entityClass, name, "numeric enum type should implement NumericEnum, not StringEnum");
+				throw forContext(base.entityClass, name, "numeric enum type should implement NumericEnum, not StringEnum")
+					.withSiteAndOrdinal(EnumFieldInfo.class, 1);
 			}
 			for(Object constant:constants) {
 				long val = 0;
@@ -56,11 +46,13 @@ class EnumFieldInfo extends FieldInfo {
 				}
 				String error;
 				if((error = type.checkRange(val, true))!=null) {
-					throw forContext(base.entityClass, name, error);
+					throw forContext(base.entityClass, name, error)
+						.withSiteAndOrdinal(EnumFieldInfo.class, 7);
 				}
 				Long key = Long.valueOf(val);
 				if(mapEnumMemberByValue.containsKey(key)) {
-					throw forContext(base.entityClass, name, "multiple enum members should have distinct values");
+					throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
+					.withSiteAndOrdinal(EnumFieldInfo.class, 2);
 				}
 				mapEnumMemberByValue.put(key, constant);
 				mapValueByEnumMember.put(constant, key);
@@ -68,7 +60,8 @@ class EnumFieldInfo extends FieldInfo {
 			break;
 		case CHAR:
 			if(NumericEnum.class.isAssignableFrom(fieldClass)) {
-				throw forContext(base.entityClass, name, "numeric enum type should implements StringEnum, not NumericEnum");
+				throw forContext(base.entityClass, name, "CHAR should implements StringEnum, not NumericEnum")
+					.withSiteAndOrdinal(EnumFieldInfo.class, 3);
 			}
 			for(Object constant:constants) {
 				String key = null;
@@ -80,17 +73,18 @@ class EnumFieldInfo extends FieldInfo {
 				if(key==null) {
 					throw forContext(base.entityClass, name,
 							"members of an enum mapped to string values should return"
-							+ " non-null string as values");
+							+ " non-null string as values")
+					.withSiteAndOrdinal(EnumFieldInfo.class, 4);
 				}
 				if(mapEnumMemberByValue.containsKey(key)) {
-					throw forContext(base.entityClass, name, "multiple enum members should have distinct values");
+					throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
+					.withSiteAndOrdinal(EnumFieldInfo.class, 5);
 				}
 				mapEnumMemberByValue.put(key, constant);
 				mapValueByEnumMember.put(constant, key);
 			}
 			break;
-		default:
-			throw forContext(base.entityClass, name, "enum type fields should be declared as a numeric type or CHAR");
+		default:throw new Error("cannot happen");
 		}
 		this.mapValueByEnumMember = Collections.unmodifiableMap(mapValueByEnumMember);
 		this.mapEnumMemberByValue = Collections.unmodifiableMap(mapEnumMemberByValue);
@@ -110,7 +104,8 @@ class EnumFieldInfo extends FieldInfo {
 	public void set(Object self, Object val) {
 		val = mapEnumMemberByValue.get(val);
 		if(val==null) {
-			throw forContext(base.entityClass, name, "unmapped enum value:"+val);
+			throw forContext(base.entityClass, name, "unmapped enum value:"+val)
+				.withSiteAndOrdinal(EnumFieldInfo.class, 6);
 		}
 		super.set(self, val);
 	}

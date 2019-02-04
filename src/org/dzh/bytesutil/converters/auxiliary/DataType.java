@@ -27,6 +27,11 @@ public enum DataType{
 			}
 			return null;
 		}
+		
+		@Override
+		Class<?> mappedEnumFieldClass() {
+			return Long.class;
+		}
 
 		@Override
 		boolean supports(Class<?> javaType) {
@@ -54,6 +59,11 @@ public enum DataType{
 		@Override
 		public int size() {
 			return 2;
+		}
+		
+		@Override
+		Class<?> mappedEnumFieldClass() {
+			return Long.class;
 		}
 
 		@Override
@@ -90,6 +100,11 @@ public enum DataType{
 		@Override
 		public int size() {
 			return 4;
+		}
+		
+		@Override
+		Class<?> mappedEnumFieldClass() {
+			return Long.class;
 		}
 
 		@Override
@@ -158,6 +173,11 @@ public enum DataType{
 		}
 		
 		@Override
+		Class<?> mappedEnumFieldClass() {
+			return String.class;
+		}
+		
+		@Override
 		boolean supports(Class<?> javaType) {
 			return javaType == byte.class
 					|| javaType == short.class
@@ -174,6 +194,7 @@ public enum DataType{
 					|| javaType.isEnum();
 		}
 	};
+	Class<?> mappedEnumFieldClass(){throw new UnsupportedOperationException();}
 	abstract public Class<? extends Annotation> annotationClassOfThisType();
 	public int size() {throw new UnsupportedOperationException();}
 	public String checkRange(long val, boolean unsigned) {throw new UnsupportedOperationException();}

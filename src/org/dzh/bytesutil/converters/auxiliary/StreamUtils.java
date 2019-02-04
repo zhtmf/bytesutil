@@ -1,9 +1,11 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
-import java.io.InputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedIOException;
 
 public class StreamUtils {
 	
@@ -33,9 +35,6 @@ public class StreamUtils {
 		}
 	}
 	public static void writeBCD(OutputStream os, int[] value) throws IOException {
-		if(value.length %2 !=0) {
-			throw new IOException("illegal value array length for BCD:"+value.length+", as value array length is "+value.length);
-		}
 		byte tmp = 0;
 		for(int i=0;i<value.length;i+=2) {
 			tmp |= ((byte)value[i] << 4);
@@ -43,19 +42,6 @@ public class StreamUtils {
 			os.write(tmp);
 			tmp = 0;
 		}
-	}
-	public static void writeBCD(OutputStream os, int num, int digits) throws IOException {
-		int[] values = new int[digits];
-		int ptr = values.length-1;
-		while(ptr>=0 && num>0) {
-			values[ptr--] = num % 10;
-			num /= 10;
-		}
-		if(num>0 || ptr>0) {
-			throw new IOException(
-					String.format("string format of number [%d] does not match BCD length [%d]", num, digits));
-		}
-		writeBCD(os, values);
 	}
 	
 	public static void writeBytes(OutputStream os, int[] raw) throws IOException{
@@ -71,7 +57,8 @@ public class StreamUtils {
 	public static void writeIntegerOfType(OutputStream os, DataType type, int val, boolean bigEndian) throws IOException{
 		String error;
 		if((error = type.checkRange(val, true))!=null) {
-			throw new IOException(error);
+			throw new UnsatisfiedIOException(error)
+				.withSiteAndOrdinal(StreamUtils.class, 1);
 		}
 		switch(type) {
 		case BYTE:
@@ -83,8 +70,7 @@ public class StreamUtils {
 		case INT:
 			StreamUtils.writeInt(os, val, bigEndian);
 			break;
-		default:
-			throw new Error("data type "+type+" unsupported for length type");
+		default:throw new Error("cannot happen");
 		}
 	}
 	
@@ -108,19 +94,19 @@ public class StreamUtils {
 		return (int)readUnsignedInt(is,bigendian);
 	}
 	public static long readUnsignedInt(InputStream is, boolean bigendian) throws IOException{
-		long ret = 0;
+		int ret = 0;
 		if(bigendian) {
-			ret |= ((long)read(is))<<24;
-			ret |= ((long)read(is) << 16);
-			ret |= ((long)read(is) << 8);
-			ret |= (long)read(is);
+			ret |= (read(is)<<24);
+			ret |= (read(is) << 16);
+			ret |= (read(is) << 8);
+			ret |= read(is);
 		}else {
-			ret |= (long)read(is);
-			ret |= ((long)read(is) << 8);
-			ret |= ((long)read(is) << 16);
-			ret |= ((long)read(is))<<24;
+			ret |= read(is);
+			ret |= (read(is) << 8);
+			ret |= (read(is) << 16);
+			ret |= (read(is)<<24);
 		}
-		return ret;
+		return (((long)ret) & 0xFFFFFFFFL);
 	}
 	public static final String readStringBCD(InputStream is, int len) throws IOException {
 		byte[] arr = readBytes(is, len);
@@ -138,7 +124,8 @@ public class StreamUtils {
 			ret = ret * 10 + ((arr[i] >> 4) & 0x0F);
 			ret = ret * 10 + (arr[i] & 0x0F);
 			if(ret<0) {
-				throw new IOException("BCD value overflows Java long type range");
+				throw new UnsatisfiedIOException("BCD value overflows Java long type range")
+						.withSiteAndOrdinal(StreamUtils.class, 2);
 			}
 		}
 		return ret;
@@ -168,29 +155,16 @@ public class StreamUtils {
 		case INT:
 			long _length = StreamUtils.readUnsignedInt(src, bigEndian);
 			String error;
-			if((error = DataType.INT.checkRange(_length, true))!=null) {
-				throw new IOException(error);
+			//array or list length in Java cannot exceed signed 32-bit integer
+			if((error = DataType.INT.checkRange(_length, false))!=null) {
+				throw new UnsatisfiedIOException(error)
+					.withSiteAndOrdinal(StreamUtils.class, 3);
 			}
 			length = (int)_length;
 			break;
-		default:
-			throw new Error("data type "+type+" unsupported for length type");
+		default:throw new Error("cannot happen");
 		}
 		return length;
-	}
-	
-	public static boolean eof(MarkableInputStream bis) throws IOException {
-		bis.mark(1);
-		try {
-			int b = bis.read();
-			bis.reset();
-			return b == -1;
-		} catch (IOException e) {
-			if(e instanceof EOFException) {
-				return true;
-			}
-			throw e;
-		}
 	}
 	
 	private static int read(InputStream bis) throws IOException {
