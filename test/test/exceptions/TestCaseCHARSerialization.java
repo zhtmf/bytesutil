@@ -52,6 +52,11 @@ public class TestCaseCHARSerialization {
 		@CHAR(2)
 		public byte b;
 	}
+	public static class Entity3 extends DataPacket{
+		@Order(0)
+		@CHAR(20)
+		public byte b;
+	}
 	@Test
 	public void test2() throws ConversionException {
 		Entity2 entity = new Entity2();
@@ -69,6 +74,14 @@ public class TestCaseCHARSerialization {
 		}
 		try {
 			entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'1',(byte)';'}));
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, Utils.class, 3);
+		}
+		try {
+			new Entity3().deserialize(TestUtils.newInputStream(new byte[] {'9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9',
+																	'9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9',
+																	'9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9','9',}));
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, Utils.class, 3);

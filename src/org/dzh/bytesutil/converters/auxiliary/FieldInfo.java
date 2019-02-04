@@ -203,6 +203,7 @@ public class FieldInfo{
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
 						this.lengthHandler = len.handler().newInstance();
+						this.lengthHandler.checkLength = true;
 					} catch (Exception e) {
 						throw forContext(base.entityClass, name, "Length ModifierHandler cannot be initialized by no-arg contructor")
 							.withSiteAndOrdinal(FieldInfo.class, 9);
@@ -235,6 +236,7 @@ public class FieldInfo{
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
 					try {
 						this.listLengthHandler = len.handler().newInstance();
+						this.listLengthHandler.checkLength = true;
 					} catch (Exception e) {
 						throw forContext(base.entityClass, name, "ListLength ModifierHandler cannot be initialized by no-arg contructor")
 							.withSiteAndOrdinal(FieldInfo.class, 11);

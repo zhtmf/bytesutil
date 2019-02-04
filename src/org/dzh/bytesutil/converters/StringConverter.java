@@ -30,7 +30,7 @@ public class StringConverter implements Converter<String> {
 
 	@Override
 	public String deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException, UnsupportedOperationException {
+			throws IOException, ConversionException {
 		switch(ctx.type) {
 		case CHAR:{
 			Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);

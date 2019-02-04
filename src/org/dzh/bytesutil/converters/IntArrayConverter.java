@@ -40,7 +40,7 @@ public class IntArrayConverter implements Converter<int[]>{
 	}
 
 	@Override
-	public int[] deserialize(MarkableInputStream is, FieldInfo ctx, Object self)throws IOException {
+	public int[] deserialize(MarkableInputStream is, FieldInfo ctx, Object self)throws IOException, ConversionException {
 		switch(ctx.type) {
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(ctx, self, is);

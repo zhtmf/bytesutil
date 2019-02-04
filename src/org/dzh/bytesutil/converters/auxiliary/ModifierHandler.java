@@ -4,8 +4,9 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-/**
- * Helper class which is called during runtime to obtain dynamic values such as
+import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
+
+/** * Helper class which is called during runtime to obtain dynamic values such as
  * length of list, charset of strings etc.
  * <p>
  * Within the handler method, typically users can refer to another property of
@@ -31,27 +32,36 @@ public abstract class ModifierHandler<E> {
 	 */
 	static final int HANDLER_READ_BUFFER_SIZE = 256;
 	
-	public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is){
+	boolean checkLength = false;
+	
+	public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is) throws IllegalArgumentException{
 		is.mark(HANDLER_READ_BUFFER_SIZE);
 		E ret = null;
 		try {
 			ret = handleDeserialize0(fieldName, entity, is);
-			if(ret==null) {
-				throw new NullPointerException("should return non-null value from handler");
-			}
+			checkReturnValue(ret);
 			is.reset();
 		} catch (IOException e) {
-			throw new Error(e);
+			throw new UnsatisfiedConstraintException(e)
+				.withSiteAndOrdinal(ModifierHandler.class, 3);
 		}
 		return ret;
 	}
 	
-	public E handleSerialize(String fieldName, Object entity){
+	public E handleSerialize(String fieldName, Object entity)  throws IllegalArgumentException{
 		E ret = handleSerialize0(fieldName, entity);
-		if(ret==null) {
-			throw new NullPointerException("should return non-null value from handler");
-		}
+		checkReturnValue(ret);
 		return ret;
+	}
+	
+	private void checkReturnValue(E ret) {
+		if(ret==null) {
+			throw new UnsatisfiedConstraintException("should return non-null value from handler "+this.getClass())
+					.withSiteAndOrdinal(ModifierHandler.class, 1);
+		}else if(checkLength && ((Integer)ret)<0) {
+			throw new UnsatisfiedConstraintException("should return positive value from handler "+this.getClass())
+			.withSiteAndOrdinal(ModifierHandler.class, 2);
+		}
 	}
 	
 	public abstract E handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException;

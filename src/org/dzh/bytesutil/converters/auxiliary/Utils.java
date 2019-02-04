@@ -32,7 +32,7 @@ public class Utils {
 		return cs;
 	}
 	
-	public static int lengthForSerializingCHAR(FieldInfo ctx,Object self) {
+	public static int lengthForSerializingCHAR(FieldInfo ctx,Object self){
 		int length = ctx.annotation(CHAR.class).value();
 		if(length<0) {
 			length = lengthForSerializingLength(ctx, self);
@@ -40,7 +40,7 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingCHAR(FieldInfo ctx,Object self, MarkableInputStream bis) {
+	public static int lengthForDeserializingCHAR(FieldInfo ctx,Object self, MarkableInputStream bis) throws ConversionException {
 		int length = ctx.annotation(CHAR.class).value();
 		if(length<0) {
 			length = lengthForDeserializingLength(ctx,self,bis);
@@ -64,40 +64,31 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForSerializingLength(FieldInfo ctx,Object self) {
-		int length = ctx.length;
+	public static int lengthForSerializingLength(FieldInfo ctx,Object self) throws IllegalArgumentException {
+		Integer length = ctx.length;
 		if(length<0 && ctx.lengthHandler!=null) {
-			length = (Integer)ctx.lengthHandler.handleSerialize(ctx.name, self);
-			if(length<0) {
-				throw new IllegalArgumentException("should return non-negative value from length handler");
-			}
+			length = ctx.lengthHandler.handleSerialize(ctx.name, self);
 		}
 		return length;
 	}
 	
 	public static int lengthForDeserializingLength(FieldInfo ctx,Object self, MarkableInputStream bis) {
-		int length = ctx.length;
+		Integer length = ctx.length;
 		if(length<0 && ctx.lengthHandler!=null) {
-			length = (Integer)ctx.lengthHandler.handleDeserialize(ctx.name, self, bis);
-			if(length<0) {
-				throw new IllegalArgumentException("should return non-negative value from length handler");
-			}
+			length = ctx.lengthHandler.handleDeserialize(ctx.name, self, bis);
 		}
 		return length;
 	}
 	
-	public static int lengthForSerializingListLength(FieldInfo ctx,Object self) {
-		int length = ctx.listLength;
+	public static int lengthForSerializingListLength(FieldInfo ctx,Object self){
+		Integer length = ctx.listLength;
 		if(length<0 && ctx.listLengthHandler!=null) {
-			length = (Integer)ctx.listLengthHandler.handleSerialize(ctx.name, self);
-			if(length<0) {
-				throw new IllegalArgumentException("should return non-negative value from length handler");
-			}
+			length = ctx.listLengthHandler.handleSerialize(ctx.name, self);
 		}
 		return length;
 	}
 	
-	public static int lengthForList(FieldInfo fi,Object self) {
+	public static int lengthForList(FieldInfo fi,Object self){
 		/*
 		 * ListLength first
 		 * If the component type is not a dynamic-length data type, both listLength or Length may be present,
@@ -110,20 +101,18 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingListLength(FieldInfo ctx,Object self, MarkableInputStream bis) {
-		int length = ctx.listLength;
+	public static int lengthForDeserializingListLength(FieldInfo ctx,Object self, MarkableInputStream bis) throws ConversionException {
+		Integer length = ctx.listLength;
 		if(length<0 && ctx.listLengthHandler!=null) {
-			length = (Integer)ctx.listLengthHandler.handleDeserialize(ctx.name, self, bis);
-			if(length<0) {
-				throw new IllegalArgumentException("should return non-negative value from length handler");
-			}
+			length = ctx.listLengthHandler.handleDeserialize(ctx.name, self, bis);
 		}
 		return length;
 	}
 	
 	public static int[] checkAndConvertToBCD(long val, int bcdBytes) {
 		if(val<0) {
-			throw new IllegalArgumentException(String.format("negative number [%d] cannot be stored as BCD",val));
+			throw new UnsatisfiedConstraintException(String.format("negative number [%d] cannot be stored as BCD",val))
+						.withSiteAndOrdinal(Utils.class, 5);
 		}
 		long copy = val;
 		int[] values = new int[bcdBytes*2];
@@ -133,16 +122,18 @@ public class Utils {
 			copy /= 10;
 		}
 		if(copy>0 || ptr>0) {
-			throw new IllegalArgumentException(
-					String.format("string format of number [%d] cannot fit in [%d]-byte BCD value", val, bcdBytes));
+			throw new UnsatisfiedConstraintException(
+					String.format("string format of number [%d] cannot fit in [%d]-byte BCD value", val, bcdBytes))
+						.withSiteAndOrdinal(Utils.class, 6);
 		}
 		return values;
 	}
 	
 	public static final void checkBCDLength(String src, int length) {
 		if((src.length()>>1)!=length) {
-			throw new IllegalArgumentException(String.format(
-					"length of string should be [%d] (double long as declared BCD value), but it was [%d]", length*2, src.length()));
+			throw new UnsatisfiedConstraintException(String.format(
+					"length of string should be [%d] (double long as declared BCD value), but it was [%d]", length*2, src.length()))
+						.withSiteAndOrdinal(Utils.class, 7);
 		}
 	}
 	
@@ -207,7 +198,8 @@ public class Utils {
 			length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
 		}
 		long ret = 0;
-		try {
+		String error = null;
+		parsing:{
 			byte[] numChars = StreamUtils.readBytes(is, length);
 			/*
 			 * such strings causes asymmetry between serialization and deserialization. it
@@ -217,19 +209,23 @@ public class Utils {
 			 * detect.
 			 */
 			if(numChars.length>1 && numChars[0]=='0') {
-				throw new IllegalArgumentException("streams contains numeric string that contains leading zero");
+				error = "streams contains numeric string that contains leading zero";
+				break parsing;
 			}
 			for(byte b:numChars) {
 				if(!(b>='0' && b<='9')) {
-					throw new IllegalArgumentException("streams contains non-numeric character");
+					error = "streams contains non-numeric character";
+					break parsing;
 				}
 				ret = ret*10 + (b-'0');
 				if(ret<0) {
-					throw new IllegalArgumentException("numeric string overflows:"+Arrays.toString(numChars));
+					error = "numeric string overflows:"+Arrays.toString(numChars);
+					break parsing;
 				}
 			}
-		} catch (IllegalArgumentException e) {
-			throw new ExtendedConversionException(ctx, e.getMessage())
+		}
+		if(error!=null) {
+			throw new ExtendedConversionException(ctx, error)
 					.withSiteAndOrdinal(Utils.class, 3);
 		}
 		if(type!=null) {

@@ -39,7 +39,7 @@ public class ByteArrayConverter implements Converter<byte[]>{
 
 	@Override
 	public byte[] deserialize(MarkableInputStream is, FieldInfo fi, Object self)
-			throws IOException {
+			throws IOException, ConversionException {
 		switch(fi.type) {
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(fi, self, is);

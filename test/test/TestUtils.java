@@ -37,6 +37,20 @@ public class TestUtils {
 		}
 		return true;
 	}
+	public static boolean assertExactExceptionInHierarchy(Throwable ex,Class<?> site, int ordinal) {
+		Throwable original = ex;
+		while(ex!=null) {
+			if(!((ex instanceof ExactException)
+					&& ((ExactException)ex).getSite() == site
+					&& ((ExactException)ex).getOrdinal() == ordinal)){
+				ex = ex.getCause();
+			}else {
+				return true;
+			}
+		}
+		throw new IllegalArgumentException(
+				original+" "+((ExactException)original).getSite()+" "+((ExactException)original).getOrdinal()+" not expected");
+	}
 	public static ByteArrayOutputStream newByteArrayOutputStream() {
 		return new ByteArrayOutputStream();
 	}
