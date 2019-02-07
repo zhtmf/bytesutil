@@ -40,7 +40,7 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingCHAR(FieldInfo ctx,Object self, MarkableInputStream bis) throws ConversionException {
+	public static int lengthForDeserializingCHAR(FieldInfo ctx,Object self, MarkableInputStream bis){
 		int length = ctx.annotation(CHAR.class).value();
 		if(length<0) {
 			length = lengthForDeserializingLength(ctx,self,bis);

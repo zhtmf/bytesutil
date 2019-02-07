@@ -18,13 +18,11 @@ public class EnumFieldInfo extends FieldInfo {
 	
 	private final Map<Object,Object> mapValueByEnumMember;
 	private final Map<Object,Object> mapEnumMemberByValue;
-	private final Class<?> mappedEnumFieldClass;
+	private Class<?> mappedEnumFieldClass;
 
 	EnumFieldInfo(Field field, DataType type, ClassInfo base) {
 		super(field, type, base);
 		Class<?> fieldClass = field.getType();
-		
-		this.mappedEnumFieldClass = type.mappedEnumFieldClass();
 		
 		Map<Object,Object> mapEnumMemberByValue = new HashMap<>();
 		Map<Object,Object> mapValueByEnumMember = new HashMap<>();
@@ -92,6 +90,13 @@ public class EnumFieldInfo extends FieldInfo {
 	
 	@Override
 	public Class<?> getFieldType() {
+		/*
+		 * this method will be called prior to
+		 * constructor, so move the assignment here
+		 */
+		if(this.mappedEnumFieldClass==null) {
+			this.mappedEnumFieldClass = super.type.mappedEnumFieldClass();
+		}
 		return mappedEnumFieldClass;
 	}
 

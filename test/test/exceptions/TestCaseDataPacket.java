@@ -8,13 +8,19 @@ import java.util.List;
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Length;
+import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
+import org.dzh.bytesutil.converters.CharConverter;
+import org.dzh.bytesutil.converters.DataPacketConverter;
+import org.dzh.bytesutil.converters.DataPacketListConverter;
 import org.dzh.bytesutil.converters.IntArrayConverter;
+import org.dzh.bytesutil.converters.ListConverter;
+import org.dzh.bytesutil.converters.auxiliary.AbstractListConverter;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -72,7 +78,7 @@ public class TestCaseDataPacket {
 		try {
 			entity.serialize(TestUtils.newThrowOnlyOutputStream());
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 1);
+			TestUtils.assertExactException(e, AbstractListConverter.class, 1);
 			return;
 		}
 		Assert.fail();
@@ -90,7 +96,7 @@ public class TestCaseDataPacket {
 		try {
 			entity.serialize(new ByteArrayOutputStream());
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 2);
+			TestUtils.assertExactException(e, AbstractListConverter.class, 2);
 			return;
 		}
 		Assert.fail();
@@ -109,7 +115,7 @@ public class TestCaseDataPacket {
 		try {
 			entity.serialize(TestUtils.newThrowOnlyOutputStream());
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 4);
+			TestUtils.assertExactException(e, ListConverter.class, 4);
 			return;
 		}
 		Assert.fail();
@@ -127,7 +133,7 @@ public class TestCaseDataPacket {
 		try {
 			entity.serialize(TestUtils.newThrowOnlyOutputStream());
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 9);
+			TestUtils.assertExactException(e, DataPacket.class, 4);
 			return;
 		}
 		Assert.fail();
@@ -179,7 +185,7 @@ public class TestCaseDataPacket {
 			new Entity11().deserialize(new ByteArrayInputStream(baos.toByteArray()));
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 11);
+			TestUtils.assertExactException(e, DataPacketConverter.class, 11);
 			return;
 		}
 	}
@@ -200,7 +206,7 @@ public class TestCaseDataPacket {
 			entity.deserialize(TestUtils.newZeroLengthInputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 11);
+			TestUtils.assertExactException(e, DataPacketConverter.class, 11);
 			return;
 		}
 	}
@@ -218,7 +224,7 @@ public class TestCaseDataPacket {
 		try {
 			entity.deserialize(new ByteArrayInputStream(new byte[0]));
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 12);
+			TestUtils.assertExactException(e, AbstractListConverter.class, 12);
 			return;
 		}
 		Assert.fail();
@@ -238,7 +244,7 @@ public class TestCaseDataPacket {
 			entity.deserialize(TestUtils.newZeroLengthInputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 14);
+			TestUtils.assertExactException(e, ListConverter.class, 14);
 		}
 	}
 	
@@ -263,7 +269,7 @@ public class TestCaseDataPacket {
 			entity.deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 15);
+			TestUtils.assertExactException(e, DataPacketListConverter.class, 15);
 		}
 	}
 	
@@ -280,7 +286,7 @@ public class TestCaseDataPacket {
 			entity.deserialize(TestUtils.newZeroLengthInputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, 19);
+			TestUtils.assertExactException(e, DataPacket.class, 14);
 		}
 	}
 	
@@ -324,7 +330,7 @@ public class TestCaseDataPacket {
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, -1);
+			TestUtils.assertExactException(e, ListConverter.class, -1);
 		}
 		entity.b = Arrays.asList((Byte)(byte)3);
 		entity.b2 = Arrays.asList((Entity$1)null);
@@ -332,7 +338,7 @@ public class TestCaseDataPacket {
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacket.class, -2);
+			TestUtils.assertExactException(e, DataPacketListConverter.class, -2);
 		}
 	}
 	
@@ -352,6 +358,24 @@ public class TestCaseDataPacket {
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, IntArrayConverter.class, 1);
+		}
+	}
+	
+	public static class EntityList2 extends DataPacket{
+		@Order(0)
+		@CHAR(2)
+		@ListLength
+		public List<Character> array;
+	}
+	
+	@Test
+	public void testList2() throws ConversionException {
+		EntityList2 entity = new EntityList2();
+		try {
+			entity.deserialize(TestUtils.newInputStream(new byte[] {1,0x30,0x31}));
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, CharConverter.class, 1);
 		}
 	}
 }

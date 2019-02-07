@@ -24,6 +24,8 @@ import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.modifiers.Variant;
+import org.dzh.bytesutil.converters.Converter;
+import org.dzh.bytesutil.converters.Converters;
 
 /**
  * Internal class that stores compile-time information of a {@link Field}
@@ -35,6 +37,8 @@ public class FieldInfo{
 	protected final ClassInfo base;
 	private final Map<Class<? extends Annotation>,Annotation> annotations;
 	private final Class<?> fieldClass;
+	
+	public final Converter<?> converter;
 	
 	public final String name;
 	//TODO: change name of this field to eliminate ambiguity
@@ -258,6 +262,20 @@ public class FieldInfo{
 			}else {
 				this.datePattern = df.value();
 			}
+		}
+		
+		if(isEntityList) {
+			//class of list elements is another DataPacket
+			this.converter = Converters.dataPacketListConverter;
+		}else if(listComponentClass!=null) {
+			//component class is a pre-defined data type
+			this.converter = Converters.listConverter;
+		}else if(isEntity) {
+			//class of field is a DataPacket
+			this.converter = Converters.dataPacketConverter;
+		}else {
+			//a plain field
+			this.converter = Converters.converters.get(getFieldType());
 		}
 	}
 	/**

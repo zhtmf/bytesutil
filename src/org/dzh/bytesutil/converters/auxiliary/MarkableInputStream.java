@@ -94,7 +94,7 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
 		if(marked()) {
 			pos = 0;
 		}else {
-			throw new IOException("not marked or read passed max buffer size");
+			throw new IOException("not marked or already depleted buffer");
 		}
 	}
 

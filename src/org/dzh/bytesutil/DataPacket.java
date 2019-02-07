@@ -1,36 +1,21 @@
 package org.dzh.bytesutil;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.converters.ByteArrayConverter;
-import org.dzh.bytesutil.converters.ByteConverter;
-import org.dzh.bytesutil.converters.CharConverter;
 import org.dzh.bytesutil.converters.Converter;
-import org.dzh.bytesutil.converters.DateConverter;
-import org.dzh.bytesutil.converters.IntArrayConverter;
-import org.dzh.bytesutil.converters.IntegerConverter;
-import org.dzh.bytesutil.converters.LongConverter;
-import org.dzh.bytesutil.converters.ShortConverter;
-import org.dzh.bytesutil.converters.StringConverter;
 import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
 import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
-import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
@@ -59,28 +44,6 @@ public abstract class DataPacket {
 	private static final ConcurrentHashMap<Class<?>,ClassInfo> 
 		classInfoMap = new ConcurrentHashMap<>();
 	
-	//all built-in converters that are initialized on startup
-	//this map is made unmodifiable to ensure thread safety
-	private static final Map<Class<?>,Converter<?>> converters;
-	static {
-		Map<Class<?>,Converter<?>> tmp = new HashMap<>();
-		tmp.put(Byte.class, new ByteConverter());
-		tmp.put(byte.class, tmp.get(Byte.class));
-		tmp.put(Short.class, new ShortConverter());
-		tmp.put(short.class, tmp.get(Short.class));
-		tmp.put(Integer.class, new IntegerConverter());
-		tmp.put(int.class, tmp.get(Integer.class));
-		tmp.put(String.class, new StringConverter());
-		tmp.put(Character.class, new CharConverter());
-		tmp.put(char.class, tmp.get(Character.class));
-		tmp.put(byte[].class, new ByteArrayConverter());
-		tmp.put(int[].class, new IntArrayConverter());
-		tmp.put(java.util.Date.class, new DateConverter());
-		tmp.put(Long.class, new LongConverter());
-		tmp.put(long.class, tmp.get(Long.class));
-		converters = Collections.unmodifiableMap(tmp);
-	}
-
 	/**
 	 * <p>
 	 * Serialize entity class into the specified output stream.
@@ -122,81 +85,15 @@ public abstract class DataPacket {
 						.withSiteAndOrdinal(DataPacket.class, 0);
 			}
 			
-			//this field is an entity
-			if(fi.isEntity) {
-				((DataPacket)value).serialize(dest);
-			//this field is a list
-			}else if(fi.listComponentClass!=null) {
+			try {
 				@SuppressWarnings("unchecked")
-				List<Object> listValue = (List<Object>)value;
-				//validity check is done in ClassInfo
-				int length = Utils.lengthForList(fi, this);
-				if(length<0) {
-					length = listValue.size();
-					try {
-						StreamUtils.writeIntegerOfType(dest, fi.lengthType(), listValue.size(), fi.bigEndian);
-					} catch (IOException e) {
-						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-							.withSiteAndOrdinal(DataPacket.class, 1);
-					}
-				}
-				
-				//serialize objects in the list
-				//do not use the actual length of the list but the length obtained above
-				if(length!=listValue.size()) {
-					throw new ExtendedConversionException(
-							this.getClass(),fi.name,
-							String.format(
-									"defined list length [%d] is not the same as length [%d] of list value"
-									,length,listValue.size()))
-								.withSiteAndOrdinal(DataPacket.class, 2);
-				}
-				if(fi.isEntityList){
-					//class of list elements is another DataPacket
-					for(int i=0;i<length;++i) {
-						Object elem = listValue.get(i);
-						if(elem==null) {
-							throw new ExtendedConversionException(
-									this.getClass(),fi.name,
-									"list contains null value")
-									.withSiteAndOrdinal(DataPacket.class, -2);
-						}
-						((DataPacket)elem).serialize(dest);
-					}
-				}else {
-					//class of list elements is pre-defined data types
-					try {
-						for(int i=0;i<length;++i) {
-							Object elem = listValue.get(i);
-							if(elem==null) {
-								throw new ExtendedConversionException(
-										this.getClass(),fi.name,
-										"list contains null value")
-										.withSiteAndOrdinal(DataPacket.class, -1);
-							}
-							@SuppressWarnings("unchecked")
-							Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
-							cv.serialize(elem, dest, fi, this);
-						}
-					} catch(ConversionException e) {
-						throw e;
-					} catch (Exception e) {
-						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-						.withSiteAndOrdinal(DataPacket.class, 4);
-					}
-				}
-			//a plain field
-			}else {
-				@SuppressWarnings("unchecked")
-				Converter<Object> cv = (Converter<Object>) converters.get(fi.getFieldType());
-				try {
-					cv.serialize(value, dest, fi,this);
-				} catch(ConversionException e) {
-					throw e;
-				} catch (Exception e) {
-					throw new ExtendedConversionException(this.getClass(),fi.name,e)
-					.withSiteAndOrdinal(DataPacket.class, 9);
-				}
+				Converter<Object> cv = (Converter<Object>)fi.converter;
+				cv.serialize(value, dest, fi, this);
+			} catch(ConversionException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new ExtendedConversionException(this.getClass(),fi.name,e)
+				.withSiteAndOrdinal(DataPacket.class, 4);
 			}
 		}
 	}
@@ -231,93 +128,20 @@ public abstract class DataPacket {
 		deserialize0(new MarkableInputStream(src));
 	}
 	
-	@SuppressWarnings({ "unchecked"})
 	private void deserialize0(MarkableInputStream _src) throws ConversionException {
 		ClassInfo ci = getClassInfo();
 		for(FieldInfo fi:ci.fieldInfoList()) {
 			Object value = null;
-			//this field is defined as a DataPacket
-			if(fi.isEntity) {
-				DataPacket object = ((DataPacket)fi.get(this));
-				if(object==null) {
-					try {
-						object = fi.entityCreator.handleDeserialize(fi.name, this, _src);
-					} catch (Exception e) {
-						throw new ExtendedConversionException(
-								this.getClass(),fi.name,
-								String.format("field value is null and"
-										+ " instance of the entity class [%s] cannot be created"
-										, fi.name, fi.getFieldType()),e)
-								.withSiteAndOrdinal(DataPacket.class, 11);
-					}
-				}
-				object.deserialize(_src);
-				value = object;
-			//this field is defined as a list
-			}else if(fi.listComponentClass!=null) {
-				
-				int length = Utils.lengthForDeserializingListLength(fi, this, _src);
-				if(length<0) {
-					length = Utils.lengthForDeserializingLength(fi, this, _src);
-				}
-				if(length<0) {
-					try {
-						length = StreamUtils.readIntegerOfType(_src, fi.lengthType(), fi.bigEndian);
-					} catch (IOException e) {
-						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-								.withSiteAndOrdinal(DataPacket.class, 12);
-					}
-				}
-				
-				List<Object> tmp = null;
-				if(fi.isEntityList){
-					//component class is subclass of DataPacket
-					try {
-						tmp = new ArrayList<>(length);
-						while(length-->0) {
-							DataPacket object = (DataPacket) fi.entityCreator.handleDeserialize(fi.name, this, _src);
-							object.deserialize(_src);
-							tmp.add(object);
-						}
-					} catch (Exception e) {
-						throw new ExtendedConversionException(
-								this.getClass(),fi.name,
-								String.format(
-								"instance of component class [%s] cannot be created by calling no-arg constructor"
-								, fi.listComponentClass),e)
-							.withSiteAndOrdinal(DataPacket.class, 15);
-					}
-					value = tmp;
-				}else {
-					//component class is a pre-defined data type
-					//cv cannot be null as we lifted checking for validity of DataType<>JavaType mapping
-					//to constructor of FieldInfo
-					Converter<Object> cv = (Converter<Object>) converters.get(fi.listComponentClass);
-					try {
-						tmp = new ArrayList<>(length);
-						while(length-->0) {
-							tmp.add(cv.deserialize(_src, fi, this));
-						}
-					} catch(ConversionException e) {
-						throw e;
-					} catch (Exception e) {
-						throw new ExtendedConversionException(this.getClass(),fi.name,e)
-								.withSiteAndOrdinal(DataPacket.class, 14);
-					}
-					value = tmp;
-				}
-			//a plain field
-			}else {
-				try {
-					value = ((Converter<Object>) converters.get(fi.getFieldType())).deserialize(_src, fi,this);
-				} catch(ConversionException e) {
-					throw e;
-				} catch (Exception e) {
-					throw new ExtendedConversionException(this.getClass(),fi.name,e)
-					.withSiteAndOrdinal(DataPacket.class, 19);
-				}
+			@SuppressWarnings("unchecked")
+			Converter<Object> cv = (Converter<Object>)fi.converter;
+			try {
+				value = cv.deserialize(_src, fi, this);
+			} catch(ConversionException e) {
+				throw e;
+			} catch (Exception e) {
+				throw new ExtendedConversionException(this.getClass(),fi.name,e)
+						.withSiteAndOrdinal(DataPacket.class, 14);
 			}
-			
 			fi.set(this, value);
 		}
 	}
