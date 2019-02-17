@@ -23,6 +23,7 @@ import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
+import org.dzh.bytesutil.annotations.types.LONG;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
 import org.dzh.bytesutil.converters.auxiliary.DataType;
@@ -76,6 +77,13 @@ public class TestCaseFieldInfo {
 		}
 		try {
 			class Entity extends DataPacket{@Order(0)@BCD(1) public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+		try {
+			class Entity extends DataPacket{@Order(0)@LONG public Timestamp ts;}
 			new Entity().serialize(new ByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {

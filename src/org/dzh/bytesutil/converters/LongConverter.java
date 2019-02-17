@@ -33,6 +33,10 @@ public class LongConverter implements Converter<Long> {
 			StreamUtils.writeInt(dest, (int) val, ctx.bigEndian);
 			return;
 		}
+		case LONG:{
+			StreamUtils.writeLong(dest, val, ctx.bigEndian);
+			return;
+		}
 		case CHAR:
 			Utils.serializeAsCHAR(val, dest, ctx, self);
 			return;
@@ -56,6 +60,9 @@ public class LongConverter implements Converter<Long> {
 		}
 		case INT:{
 			return ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
+		}
+		case LONG:{
+			return StreamUtils.readLong(is, ctx.bigEndian);
 		}
 		case CHAR:{
 			return Utils.deserializeAsCHAR(is, ctx, self, null);

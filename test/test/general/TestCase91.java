@@ -2,6 +2,7 @@ package test.general;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -14,6 +15,7 @@ import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
+import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
@@ -21,6 +23,7 @@ import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.BYTE;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.INT;
+import org.dzh.bytesutil.annotations.types.LONG;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
 import org.junit.Assert;
@@ -247,6 +250,83 @@ public class TestCase91{
 		@Order(32)
 		@INT
 		public static int ignored2;
+		
+		@Order(43)
+		@Signed
+		@LittleEndian
+		@LONG
+		public long longa = Long.MIN_VALUE;
+		
+		@Order(44)
+		@Signed
+		@BigEndian
+		@LONG
+		public long longb = Long.MAX_VALUE;
+		
+		@Order(45)
+		@Unsigned
+		@BigEndian
+		@LONG
+		public long longa1 = 0;
+		
+		@Order(46)
+		@Unsigned
+		@BigEndian
+		@LONG
+		public long longa2 = Long.MIN_VALUE;
+		
+		@Order(47)
+		@Unsigned
+		@BigEndian
+		@LONG
+		public BigInteger longc = BigInteger.valueOf(Long.MAX_VALUE).multiply(BigInteger.valueOf(2));
+		
+		@Order(48)
+		@Signed
+		@BigEndian
+		@LONG
+		public BigInteger longd1 = BigInteger.valueOf(Long.MIN_VALUE);
+		
+		@Order(49)
+		@Signed
+		@BigEndian
+		@LONG
+		public BigInteger longd2 = BigInteger.valueOf(Long.MAX_VALUE);
+		
+		@Order(50)
+		@Unsigned
+		@BigEndian
+		@LONG
+		public BigInteger longc1 = BigInteger.valueOf(0);
+		
+		@Order(51)
+		@LittleEndian
+		@INT
+		public Date datea = new Date(System.currentTimeMillis()/1000*1000);
+		
+		@Order(52)
+		@BigEndian
+		@LONG
+		public Date dateb = new Date(System.currentTimeMillis());
+		
+		@Order(53)
+		@CHAR(27)
+		public BigInteger bic1 = new BigInteger("111222333444555666777888999");
+		
+		@Order(54)
+		@CHAR(9)
+		public BigInteger bic2 = new BigInteger("111222333");
+		
+		@Order(55)
+		@LONG
+		@Signed
+		public NEnum1 n3 = NEnum1.FLAG1;
+		
+		@Order(56)
+		@Unsigned
+		@BigEndian
+		@LONG
+		public Long longa3 = Long.MIN_VALUE;
 	}
 	
 	

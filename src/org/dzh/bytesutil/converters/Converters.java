@@ -1,5 +1,6 @@
 package org.dzh.bytesutil.converters;
 
+import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -28,6 +29,7 @@ public class Converters {
 		tmp.put(java.util.Date.class, new DateConverter());
 		tmp.put(Long.class, new LongConverter());
 		tmp.put(long.class, tmp.get(Long.class));
+		tmp.put(BigInteger.class, new BigIntegerConverter());
 		converters = Collections.unmodifiableMap(tmp);
 	}
 }

@@ -1,6 +1,7 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
 import java.lang.annotation.Annotation;
+import java.math.BigInteger;
 
 public enum DataType{
 	BYTE {
@@ -127,6 +128,7 @@ public enum DataType{
 				|| javaType == long.class
 				|| javaType == Integer.class
 				|| javaType == Long.class
+				|| javaType == java.util.Date.class
 				|| javaType.isEnum();
 		}
 	},
@@ -191,12 +193,58 @@ public enum DataType{
 					|| javaType == char.class
 					|| javaType == Character.class
 					|| javaType == java.util.Date.class
+					|| javaType == java.math.BigInteger.class
 					|| javaType.isEnum();
 		}
-	};
+	}
+	,
+	LONG{
+
+		@Override
+		public Class<? extends Annotation> annotationClassOfThisType() {
+			return org.dzh.bytesutil.annotations.types.LONG.class;
+		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			return javaType == long.class
+				|| javaType == Long.class
+				|| javaType == java.util.Date.class
+				|| javaType == java.math.BigInteger.class
+				|| javaType.isEnum();
+		}
+		@Override
+		public int size() {
+			return 8;
+		}
+		@Override
+		Class<?> mappedEnumFieldClass() {
+			return Long.class;
+		}
+		@Override
+		public String checkRange(long val, boolean unsigned) {
+			//always expect no error
+			//as java long type cannot store an unsigned 64-bit value
+			return null;
+		}
+		@Override
+		public String checkRange(BigInteger val, boolean unsigned) {
+			if(unsigned) {
+				return (val.compareTo(BigInteger.ZERO)>=0 && val.compareTo(UNSIGNED_LONG_MAX)<=0) ? null : 
+					String.format("val [%s] cannot be stored as unsigned 8-byte integer value",val.toString());
+			}
+			return (val.compareTo(SIGNED_LONG_MIN)>=0 && val.compareTo(SIGNED_LONG_MAX)<=0) ? null : 
+				String.format("val [%s] cannot be stored as signed 8-byte integer value",val.toString());
+		}
+	}
+	;
+	private static final BigInteger SIGNED_LONG_MIN = new BigInteger(Long.MIN_VALUE+"");
+	private static final BigInteger SIGNED_LONG_MAX = new BigInteger(Long.MAX_VALUE+"");
+	private static final BigInteger UNSIGNED_LONG_MAX = new BigInteger(Long.MAX_VALUE+"").multiply(new BigInteger("2"));
 	Class<?> mappedEnumFieldClass(){throw new UnsupportedOperationException();}
 	abstract public Class<? extends Annotation> annotationClassOfThisType();
 	public int size() {throw new UnsupportedOperationException();}
 	public String checkRange(long val, boolean unsigned) {throw new UnsupportedOperationException();}
+	public String checkRange(BigInteger val, boolean unsigned) {throw new UnsupportedOperationException();}
 	abstract boolean supports(Class<?> javaType);
 }

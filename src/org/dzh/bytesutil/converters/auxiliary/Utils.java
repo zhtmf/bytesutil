@@ -2,6 +2,7 @@ package org.dzh.bytesutil.converters.auxiliary;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -190,34 +191,30 @@ public class Utils {
 		serializeAsCHAR(str,dest,ctx,self);
 	}
 	
+	public static final void serializeAsCHAR(BigInteger val, OutputStream dest, FieldInfo ctx, Object self)
+			throws ConversionException, IOException {
+		if(val.compareTo(BigInteger.ZERO)<0) {
+			//implementation choice
+			throw new ExtendedConversionException(ctx,"negative number should not be converted to CHAR")
+						.withSiteAndOrdinal(Utils.class, 8);
+		}
+		String str = val.toString();
+		serializeAsCHAR(str,dest,ctx,self);
+	}
+	
 	public static final long deserializeAsCHAR(
 			MarkableInputStream is, FieldInfo ctx, Object self, DataType type)
 			throws IOException, ConversionException {
-		int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
-		if(length<0) {
-			length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
-		}
 		long ret = 0;
 		String error = null;
+		byte[] numChars = readBytesForDeserializingCHAR(is, ctx, self, type);
 		parsing:{
-			byte[] numChars = StreamUtils.readBytes(is, length);
-			/*
-			 * such strings causes asymmetry between serialization and deserialization. it
-			 * is possible to avoid this problem by using written-ahead length, however such
-			 * use case is rare so it is better prevent deserialization from such strings to
-			 * a numeric type explicitly rather than later cause errors that are hard to
-			 * detect.
-			 */
-			if(numChars.length>1 && numChars[0]=='0') {
-				error = "streams contains numeric string that contains leading zero";
-				break parsing;
-			}
 			for(byte b:numChars) {
 				if(!(b>='0' && b<='9')) {
-					error = "streams contains non-numeric character";
+					error = "streams contains non-numeric characters";
 					break parsing;
 				}
-				ret = ret*10 + (b-'0');
+				ret = (ret<<3)+(ret<<1)+(b-'0');
 				if(ret<0) {
 					error = "numeric string overflows:"+Arrays.toString(numChars);
 					break parsing;
@@ -232,6 +229,63 @@ public class Utils {
 			Utils.checkRangeInContext(type, ret, ctx);
 		}
 		return ret;
+	}
+	
+	public static final BigInteger deserializeAsBigCHAR(
+			MarkableInputStream is, FieldInfo ctx, Object self, DataType type)
+			throws IOException, ConversionException {
+		long ret = 0;
+		BigInteger ret2 = null;
+		String error = null;
+		byte[] numChars = readBytesForDeserializingCHAR(is, ctx, self, type);
+		parsing:{
+			for(byte b:numChars) {
+				if(!(b>='0' && b<='9')) {
+					error = "streams contains non-numeric characters";
+					break parsing;
+				}
+				if(ret2==null) {
+					long tmp = (ret<<3)+(ret<<1)+(b-'0');
+					if(tmp<0) {
+						ret2 = BigInteger.valueOf(ret);
+						ret2 = ret2.multiply(BigInteger.TEN).add(BigInteger.valueOf(b-'0'));
+					}else {
+						ret = tmp;
+					}
+				}else {
+					ret2 = ret2.multiply(BigInteger.TEN).add(BigInteger.valueOf(b-'0'));
+				}
+			}
+		}
+		if(error!=null) {
+			throw new ExtendedConversionException(ctx, error)
+					.withSiteAndOrdinal(Utils.class, 9);
+		}
+		//no need to check the range here
+		//as we do not permit negative sign in the character streams
+		//and BigInteger never overflows a BigInteger except it overflows the memory
+		return ret2==null ? BigInteger.valueOf(ret) : ret2;
+	}
+	
+	private static byte[] readBytesForDeserializingCHAR(
+			MarkableInputStream is, FieldInfo ctx, Object self, DataType type) throws IOException, ConversionException {
+		int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
+		if(length<0) {
+			length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+		}
+		byte[] numChars = StreamUtils.readBytes(is, length);
+		/*
+		 * such strings causes asymmetry between serialization and deserialization. it
+		 * is possible to avoid this problem by using written-ahead length, however such
+		 * use case is rare so it is better prevent deserialization from such strings to
+		 * a numeric type explicitly rather than later cause errors that are hard to
+		 * detect.
+		 */
+		if(numChars.length>1 && numChars[0]=='0') {
+			throw new ExtendedConversionException(ctx, "streams contains numeric string with leading zero")
+					.withSiteAndOrdinal(Utils.class, 10);
+		}
+		return numChars;
 	}
 	
 	public static final SimpleDateFormat getThreadLocalDateFormatter(String datePattern) {

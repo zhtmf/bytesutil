@@ -55,7 +55,6 @@ public class IntegerConverter implements Converter<Integer> {
 		}
 		case INT:{
 			long val = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
-			Utils.checkRangeInContext(DataType.INT, val, ctx);
 			return (int)val;
 		}
 		case CHAR:{

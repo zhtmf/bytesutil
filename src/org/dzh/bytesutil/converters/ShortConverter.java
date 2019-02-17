@@ -48,7 +48,6 @@ public class ShortConverter implements Converter<Short> {
 		}
 		case SHORT:{
 			int val = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
-			Utils.checkRangeInContext(DataType.SHORT, val, ctx);
 			return (short)val;
 		}
 		case CHAR:{

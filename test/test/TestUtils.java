@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExactException;
@@ -68,6 +69,11 @@ public class TestUtils {
 	}
 	public static InputStream newInputStream(byte[] arr) {
 		return new ByteArrayInputStream(arr);
+	}
+	public static InputStream serializeAndGetBytesAsInputStream(DataPacket src) throws IllegalArgumentException, ConversionException {
+		ByteArrayOutputStream baos = newByteArrayOutputStream();
+		src.serialize(baos);
+		return newInputStream(baos.toByteArray());
 	}
 	public static void serializeAndRestore(DataPacket entity) throws Exception {
 		ByteArrayOutputStream os = newByteArrayOutputStream();
@@ -183,6 +189,7 @@ public class TestUtils {
 					Object val1 = f.get(o1);
 					Object val2 = f.get(o2);
 					if( ! equalsOrderFields(val1,val2)) {
+						System.err.println("not equals:"+f+" "+val1+" "+val2);
 						return false;
 					}
 				} catch (IllegalArgumentException | IllegalAccessException e) {

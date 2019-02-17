@@ -19,14 +19,23 @@ public class DateConverter implements Converter<Date>{
 	@Override
 	public void serialize(Date value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		String str = Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value);
 		switch(ctx.type) {
 		case CHAR:
-			Utils.serializeAsCHAR(str, dest, ctx, self);
+			Utils.serializeAsCHAR(Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
 			break;
 		case BCD:
-			Utils.serializeBCD(str, dest, ctx, self);
+			Utils.serializeBCD(Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
 			break;
+		case INT:{
+			long millis = value.getTime();
+			StreamUtils.writeInt(dest, (int)(millis/1000), ctx.bigEndian);
+			break;
+		}
+		case LONG:{
+			long millis = value.getTime();
+			StreamUtils.writeLong(dest, millis, ctx.bigEndian);
+			break;
+		}
 		default:throw new Error("cannot happen");
 		}
 	}
@@ -51,7 +60,13 @@ public class DateConverter implements Converter<Date>{
 					return Utils.getThreadLocalDateFormatter(ctx.datePattern)
 							.parse(StreamUtils.readStringBCD(
 									is,ctx.annotation(BCD.class).value()));
-				
+			case INT:{
+				long val = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
+				return new Date(val*1000);
+			}
+			case LONG:{
+				return new Date(StreamUtils.readLong(is, ctx.bigEndian));
+			}
 			default:throw new Error("cannot happen");
 			}
 		} catch (ParseException e) {

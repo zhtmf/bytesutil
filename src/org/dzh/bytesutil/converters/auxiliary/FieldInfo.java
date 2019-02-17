@@ -222,7 +222,7 @@ public class FieldInfo{
 				case INT:
 					break;
 				default:
-					throw forContext(base.entityClass, name, "data type "+lengthType+" cannot be specified as length type")
+					throw forContext(base.entityClass, name, "data type "+lengthType+" should not be specified as length type")
 							.withSiteAndOrdinal(FieldInfo.class, 10);
 				}
 				
@@ -254,7 +254,7 @@ public class FieldInfo{
 		{
 			DatePattern df = localAnnotation(DatePattern.class);
 			if(df==null) {
-				if(fieldClass == java.util.Date.class) {
+				if(fieldClass == java.util.Date.class && type!=DataType.INT && type!=DataType.LONG) {
 					throw forContext(base.entityClass, name, "define a date pattern")
 						.withSiteAndOrdinal(FieldInfo.class, 2);
 				}

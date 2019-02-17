@@ -64,7 +64,7 @@ public class TestCaseCHARSerialization {
 			entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'0',(byte)'9'}));
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, Utils.class, 3);
+			TestUtils.assertExactException(e, Utils.class, 10);
 		}
 		try {
 			entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'1',(byte)'/'}));

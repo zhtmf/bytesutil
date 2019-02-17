@@ -31,6 +31,7 @@ public class EnumFieldInfo extends FieldInfo {
 		case BYTE:
 		case SHORT:
 		case INT:
+		case LONG:
 			if(StringEnum.class.isAssignableFrom(fieldClass)) {
 				throw forContext(base.entityClass, name, "numeric enum type should implement NumericEnum, not StringEnum")
 					.withSiteAndOrdinal(EnumFieldInfo.class, 1);

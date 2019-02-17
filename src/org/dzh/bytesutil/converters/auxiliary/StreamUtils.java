@@ -34,6 +34,27 @@ public class StreamUtils {
 			os.write((byte)(value>>24 & 0xFF));
 		}
 	}
+	public static void writeLong(OutputStream os, long value, boolean bigendian) throws IOException {
+		if(bigendian) {
+			os.write((byte)(value>>56 & 0xFF));
+			os.write((byte)(value>>48 & 0xFF));
+			os.write((byte)(value>>40 & 0xFF));
+			os.write((byte)(value>>32 & 0xFF));
+			os.write((byte)(value>>24 & 0xFF));
+			os.write((byte)(value>>16 & 0xFF));
+			os.write((byte)(value>>8 & 0xFF));
+			os.write((byte)(value & 0xFF));
+		}else {
+			os.write((byte)(value & 0xFF));
+			os.write((byte)(value>>8 & 0xFF));
+			os.write((byte)(value>>16 & 0xFF));
+			os.write((byte)(value>>24 & 0xFF));
+			os.write((byte)(value>>32 & 0xFF));
+			os.write((byte)(value>>40 & 0xFF));
+			os.write((byte)(value>>48 & 0xFF));
+			os.write((byte)(value>>56 & 0xFF));
+		}
+	}
 	public static void writeBCD(OutputStream os, int[] value) throws IOException {
 		byte tmp = 0;
 		for(int i=0;i<value.length;i+=2) {
@@ -108,6 +129,29 @@ public class StreamUtils {
 		}
 		return (((long)ret) & 0xFFFFFFFFL);
 	}
+	public static long readLong(InputStream is, boolean bigendian) throws IOException{
+		long ret = 0;
+		if(bigendian) {
+			ret |= (((long)read(is)) << 56);
+			ret |= (((long)read(is)) << 48);
+			ret |= (((long)read(is)) << 40);
+			ret |= (((long)read(is)) << 32);
+			ret |= (((long)read(is)) << 24);
+			ret |= (((long)read(is)) << 16);
+			ret |= (((long)read(is)) << 8);
+			ret |= ((long)read(is));
+		}else {
+			ret |= ((long)read(is));
+			ret |= (((long)read(is)) << 8);
+			ret |= (((long)read(is)) << 16);
+			ret |= (((long)read(is)) << 24);
+			ret |= (((long)read(is)) << 32);
+			ret |= (((long)read(is)) << 40);
+			ret |= (((long)read(is)) << 48);
+			ret |= (((long)read(is)) << 56);
+		}
+		return ret;
+	}
 	public static final String readStringBCD(InputStream is, int len) throws IOException {
 		byte[] arr = readBytes(is, len);
 		StringBuilder sb = new StringBuilder();
@@ -162,6 +206,8 @@ public class StreamUtils {
 			}
 			length = (int)_length;
 			break;
+		case LONG:
+			
 		default:throw new Error("cannot happen");
 		}
 		return length;
