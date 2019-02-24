@@ -1,17 +1,15 @@
 package org.dzh.bytesutil.annotations.enums;
 
 /**
- * "Marker" interface used to indicates an enum-typed field is intended to be
- * mapped with string values (byte sequence that are interpreted as
- * human-readable text).
+ * "Marker" interface used to enable an enum-typed field be mapped to string
+ * values (byte sequences interpreted as human-readable text).
  * <p>
- * The implementing class should return non-null and distinct string value for
- * each enum member. Length of strings returned are also restricted normally by
- * annotations like {@link Length}.
+ * The enum class implementing this interface should return non-null and
+ * distinct string value for each enum member. Length of strings returned are
+ * also restricted by annotations like {@link Length}.
  * <p>
- * If for some reason the enum class cannot implement a {@link #getValue()}
- * method, it should return that string value in {@link #toString()} methods of
- * each enum member.
+ * If for some reason the enum class cannot implement this interface, it should
+ * return string value in {@link #toString()} methods for each enum member.
  */
 public interface StringEnum {
 	/**

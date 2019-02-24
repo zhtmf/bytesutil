@@ -10,8 +10,8 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintEx
  * length of list, charset of strings etc.
  * <p>
  * Within the handler method, typically users can refer to another property of
- * the (incomplete) entity class object passed as the second parameter, or
- * directly look ahead from the input stream during deserialization for some
+ * the half-constructed entity class object passed as the second parameter, or
+ * read ahead in the input stream during deserialization for some
  * values.
  * <p>
  * The input stream object passed as the third parameter is a special one that
@@ -21,7 +21,7 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintEx
  * @author dzh
  *
  * @param <E>
- *            type of the return value of handler methods, as required by
+ *            dataType of the return value of handler methods, as required by
  *            modifier annotations.
  */
 public abstract class ModifierHandler<E> {

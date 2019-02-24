@@ -14,7 +14,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 
 /**
  * <p>
- * Specified charset for all CHAR type fields in a class or for a single field.
+ * Specified charset for all CHAR dataType fields in a class or for a single field.
  * <p>
  * Annotations on a specific field always override annotation at the class
  * level.

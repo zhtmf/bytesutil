@@ -92,8 +92,8 @@ public class Utils {
 	public static int lengthForList(FieldInfo fi,Object self){
 		/*
 		 * ListLength first
-		 * If the component type is not a dynamic-length data type, both listLength or Length may be present,
-		 * if the component type is a dynamic-length data type, then listLenght must be present or an exception 
+		 * If the component dataType is not a dynamic-length data dataType, both listLength or Length may be present,
+		 * if the component dataType is a dynamic-length data dataType, then listLenght must be present or an exception 
 		 * will be thrown by ClassInfo
 		 */
 		int length = Utils.lengthForSerializingListLength(fi, self);
@@ -278,7 +278,7 @@ public class Utils {
 		 * such strings causes asymmetry between serialization and deserialization. it
 		 * is possible to avoid this problem by using written-ahead length, however such
 		 * use case is rare so it is better prevent deserialization from such strings to
-		 * a numeric type explicitly rather than later cause errors that are hard to
+		 * a numeric dataType explicitly rather than later cause errors that are hard to
 		 * detect.
 		 */
 		if(numChars.length>1 && numChars[0]=='0') {

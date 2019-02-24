@@ -9,6 +9,12 @@ import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
+/**
+ * Wrapper class for eliminating branches in {@link DataPacket} when converting
+ * DataPacket values
+ * 
+ * @author dzh
+ */
 public class DataPacketConverter implements Converter<DataPacket> {
 
 	@Override

@@ -23,7 +23,7 @@ public class ByteConverter implements Converter<Byte> {
 	public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,ConversionException {
 		byte val = (byte)value;
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case BYTE:
 			StreamUtils.writeBYTE(dest, val);
 			return;
@@ -42,7 +42,7 @@ public class ByteConverter implements Converter<Byte> {
 	@Override
 	public Byte deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException,ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case BYTE:{
 			return (byte)(ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
 		}

@@ -17,7 +17,7 @@ public class BigIntegerConverter implements Converter<BigInteger>{
 	@Override
 	public void serialize(BigInteger value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case LONG:
 			String error = null;
 			if((error = DataType.LONG.checkRange(value, ctx.unsigned))!=null) {
@@ -36,7 +36,7 @@ public class BigIntegerConverter implements Converter<BigInteger>{
 	@Override
 	public BigInteger deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case LONG:
 			BigInteger ret = null;
 			if(ctx.signed) {
@@ -51,7 +51,7 @@ public class BigIntegerConverter implements Converter<BigInteger>{
 			}
 			return ret;
 		case CHAR:
-			return Utils.deserializeAsBigCHAR(is, ctx, self, ctx.type);
+			return Utils.deserializeAsBigCHAR(is, ctx, self, ctx.dataType);
 		default: throw new Error("cannot happen");
 		}
 	}

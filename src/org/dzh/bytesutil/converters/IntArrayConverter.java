@@ -20,7 +20,7 @@ public class IntArrayConverter implements Converter<int[]>{
 	
 	@Override
 	public void serialize(int[] value, OutputStream dest, FieldInfo ctx, Object self)throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case RAW:
 			int length = Utils.lengthForSerializingRAW(ctx, self);
 			if(length<0) {
@@ -41,7 +41,7 @@ public class IntArrayConverter implements Converter<int[]>{
 
 	@Override
 	public int[] deserialize(MarkableInputStream is, FieldInfo ctx, Object self)throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(ctx, self, is);
 			if(length<0) {

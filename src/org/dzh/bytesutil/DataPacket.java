@@ -24,16 +24,15 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintEx
  * <p>
  * Entrance of this library.
  * <p>
- * Users make their entity classes subclass of this base class to inherit 3 methods
- * from it: {@link #serialize(OutputStream) serialize},
+ * Users make their entity classes subclass of this base class to inherit 3
+ * methods from it: {@link #serialize(OutputStream) serialize},
  * {@link #deserialize(InputStream) deserialize}, {@link #length() length} which
  * helps converting entity class to/from byte streams.
  * <p>
- * This class itself is thread-safe as it does not define any non-static
- * fields.
+ * This class itself is thread-safe as it does not define any non-static fields.
  * <p>
- * It does not define any abstract methods but declared as abstract to remind
- * users that it should not be used alone but subclassed.
+ * It is declared as abstract without defining any abstract methods only to
+ * remind users that it should not be used alone but subclassed.
  * 
  * @author dzh
  *
@@ -107,7 +106,7 @@ public abstract class DataPacket {
 	 * ascending order as specified by {@link Order#value()}.
 	 * <p>
 	 * Fields declared as subtypes of {@link DataPacket} should declare a no-arg
-	 * constructor and that type should be accessible (not a non-static inner class
+	 * constructor and that dataType should be accessible (not a non-static inner class
 	 * or a private inner class).
 	 * 
 	 * @param src
@@ -201,7 +200,7 @@ public abstract class DataPacket {
 			}else {
 				length = 1;
 			}
-			DataType type = fi.type;
+			DataType type = fi.dataType;
 			switch(type) {
 			case BCD:
 				ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;

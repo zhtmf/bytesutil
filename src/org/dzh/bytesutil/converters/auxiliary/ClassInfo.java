@@ -36,7 +36,7 @@ public class ClassInfo {
 	final Class<?> entityClass;
 	
 	/**
-	 * Annotations that are present on the class (on the type)
+	 * Annotations that are present on the class (on the dataType)
 	 */
 	private Map<Class<? extends Annotation>, Annotation> globalAnnotations = new HashMap<>();
 	/**
@@ -109,7 +109,7 @@ public class ClassInfo {
 			for(DataType tp:DataType.values()) {
 				if(f.getAnnotation(tp.annotationClassOfThisType())!=null) {
 					if(type!=null) {
-						throw forContext(cls, name, "multiple data type declaration on same field is not allowed")
+						throw forContext(cls, name, "multiple data dataType declaration on same field is not allowed")
 							.withSiteAndOrdinal(ClassInfo.class, 1);
 					}
 					type = tp;
@@ -141,8 +141,8 @@ public class ClassInfo {
 					throw forContext(cls, name, "neither Length nor ListLength annotation are present")
 						.withSiteAndOrdinal(ClassInfo.class, 4);
 				}
-				if(((fi.type == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
-						|| (fi.type == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
+				if(((fi.dataType == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
+						|| (fi.dataType == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
 						&& fi.localAnnotation(ListLength.class)==null) {
 					throw forContext(cls, name, "this field is a list of Data Type that supports dynamic length, "
 							+ "to avoid ambiguity, use ListLength but not Length to specify the list length")

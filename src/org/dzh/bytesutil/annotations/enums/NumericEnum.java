@@ -1,16 +1,16 @@
 package org.dzh.bytesutil.annotations.enums;
 
 /**
- * "Marker" interface used to indicates an enum-typed field is intended to be
- * mapped with numeric values.
+ * "Marker" interface used to enable an enum-typed field be mapped to numeric
+ * values.
  * <p>
- * The implementing enum class should return distinct value for each enum member and
- * those values should be within the defined range of numeric types annotations
- * ({@link BYTE}, {@link SHORT} etc.).
+ * The enum class implementing this interface should return distinct value for
+ * each enum member and those values should be within the defined range of
+ * numeric dataType annotations ({@link BYTE}, {@link SHORT} etc.).
  * <p>
- * If for some reason the enum class cannot implement a {@link #getValue()}
- * method, it should return that numeric value as a string in
- * {@link #toString()} methods of each enum member.
+ * If for some reason the enum class cannot implement this interface, it should
+ * return that numeric value as a string in {@link #toString()} methods for each
+ * enum member.
  */
 public interface NumericEnum {
 	/**

@@ -19,7 +19,7 @@ public class ByteArrayConverter implements Converter<byte[]>{
 	
 	@Override
 	public void serialize(byte[] value, OutputStream dest, FieldInfo ctx, Object self)throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case RAW:
 			int length = Utils.lengthForSerializingRAW(ctx, self);
 			if(length<0) {
@@ -40,7 +40,7 @@ public class ByteArrayConverter implements Converter<byte[]>{
 	@Override
 	public byte[] deserialize(MarkableInputStream is, FieldInfo fi, Object self)
 			throws IOException, ConversionException {
-		switch(fi.type) {
+		switch(fi.dataType) {
 		case RAW:
 			int length = Utils.lengthForDeserializingRAW(fi, self, is);
 			if(length<0) {

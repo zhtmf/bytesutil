@@ -19,7 +19,7 @@ public class DateConverter implements Converter<Date>{
 	@Override
 	public void serialize(Date value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case CHAR:
 			Utils.serializeAsCHAR(Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
 			break;
@@ -44,7 +44,7 @@ public class DateConverter implements Converter<Date>{
 	public Date deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
 		try {
-			switch(ctx.type) {
+			switch(ctx.dataType) {
 			case CHAR:{
 				int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
 				if(length<0) {

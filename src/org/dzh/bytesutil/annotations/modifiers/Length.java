@@ -11,7 +11,7 @@ import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
 import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 
 /**
- * Annotation used to specify length of various data type. It is used in the
+ * Annotation used to specify length of various data dataType. It is used in the
  * following cases:
  * <ul>
  * <li>Specify length of a field declared as a {@link List}.</li>
@@ -36,11 +36,11 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * value and {@link #handler() handler} is set to {@link PlaceHolderHandler}
  * (left unassigned), it serves as a marker annotation that instructs the
  * library to dynamically read from/write to the stream the actual length. In
- * this case, the {@link #type() type} property is also referred to for
+ * this case, the {@link #dataType() dataType} property is also referred to for
  * determining how the length value is stored in the stream.</li>
  * </ul>
  * <p>
- * When used to define length of a field of <tt>CHAR</tt> type, this annotation
+ * When used to define length of a field of <tt>CHAR</tt> dataType, this annotation
  * should not be used together with {@link EndsWith}.
  * <p>
  * It is necessary that this annotation be used with care, because if all
@@ -62,7 +62,7 @@ public @interface Length {
 	/**
 	 * how the length value itself is stored in the stream.<br/>
 	 * by default it is treated as a single byte value.
-	 * @return	the data type which describes how the length value itself is stored in the stream
+	 * @return	the data dataType which describes how the length value itself is stored in the stream
 	 */
 	DataType type() default DataType.BYTE;
 	

@@ -10,19 +10,17 @@ import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 
 /**
  * <p>
- * Consecutive bytes that are interpreted as human-readable characters.
+ * Consecutive bytes that are interpreted as human-readable characters. It has
+ * nothing to do with Java two-bytes <tt>char</tt> dataType.
  * <p>
- * Note that this data type has nothing to do with Java two-bytes <tt>char</tt>
- * type, as CHARs are in fact single-byte data.
- * <p>
- * Charsets of CHAR sequences are specified using {@link CHARSET}.
+ * Char sets are specified using {@link CHARSET}.
  * <p>
  * Length of CHARs should be specified with either positive {@link #value()
  * value} property or an additional {@link Length} annotation on the same field.
  * If neither of them is present, an exception will be thrown during initial
  * parsing.
  * <p>
- * CHARs can be converted from/to <tt>char</tt> or <tt>String</tt>.
+ * CHARs are convertible from/to <tt>char</tt>,<tt>Character</tt> or <tt>String</tt>.
  * 
  * @author dzh
  */

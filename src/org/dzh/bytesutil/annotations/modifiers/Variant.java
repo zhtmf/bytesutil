@@ -14,7 +14,7 @@ import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
  * using plain reflection.
  * <p>
  * Typical uses of this annotation are when the object being constructed need to
- * carry over some properties from its "parent" or when the declaring type of a
+ * carry over some properties from its "parent" or when the declaring dataType of a
  * field is an interface/abstract class and needs to be instantiated to one of
  * its implementations.
  * <p>
@@ -24,7 +24,7 @@ import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
  * The confusing name <code>Variant</code> is from the fact that historically it
  * is only used when creating subclasses of field types which are declared as
  * interfaces or abstract classes and there are many possibilities for the
- * actual type instantiated. Its use of merely providing a custom creator has
+ * actual dataType instantiated. Its use of merely providing a custom creator has
  * only been added recently.
  * 
  * @author dzh

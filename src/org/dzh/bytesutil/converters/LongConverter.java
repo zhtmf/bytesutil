@@ -17,7 +17,7 @@ public class LongConverter implements Converter<Long> {
 	public void serialize(Long value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
 		long val = value;
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case BYTE:{
 			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
 			StreamUtils.writeBYTE(dest, (byte)val);
@@ -51,7 +51,7 @@ public class LongConverter implements Converter<Long> {
 	@Override
 	public Long deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case BYTE:{
 			return (long) (ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
 		}

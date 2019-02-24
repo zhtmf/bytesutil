@@ -16,7 +16,7 @@ public class StringConverter implements Converter<String> {
 	@Override
 	public void serialize(String value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case CHAR:
 			Utils.serializeAsCHAR(value, dest, ctx, self);
 			break;
@@ -31,7 +31,7 @@ public class StringConverter implements Converter<String> {
 	@Override
 	public String deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case CHAR:{
 			Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);

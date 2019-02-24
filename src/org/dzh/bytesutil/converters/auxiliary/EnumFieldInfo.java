@@ -33,7 +33,7 @@ public class EnumFieldInfo extends FieldInfo {
 		case INT:
 		case LONG:
 			if(StringEnum.class.isAssignableFrom(fieldClass)) {
-				throw forContext(base.entityClass, name, "numeric enum type should implement NumericEnum, not StringEnum")
+				throw forContext(base.entityClass, name, "numeric enum dataType should implement NumericEnum, not StringEnum")
 					.withSiteAndOrdinal(EnumFieldInfo.class, 1);
 			}
 			for(Object constant:constants) {
@@ -96,7 +96,7 @@ public class EnumFieldInfo extends FieldInfo {
 		 * constructor, so move the assignment here
 		 */
 		if(this.mappedEnumFieldClass==null) {
-			this.mappedEnumFieldClass = super.type.mappedEnumFieldClass();
+			this.mappedEnumFieldClass = super.dataType.mappedEnumFieldClass();
 		}
 		return mappedEnumFieldClass;
 	}

@@ -41,8 +41,7 @@ public class FieldInfo{
 	public final Converter<?> converter;
 	
 	public final String name;
-	//TODO: change name of this field to eliminate ambiguity
-	public final DataType type;
+	public final DataType dataType;
 	public final boolean isEntity;
 	public final boolean isEntityList;
 	public final Class<?> listComponentClass;
@@ -116,7 +115,7 @@ public class FieldInfo{
 		this.name = field.getName();
 		final Class<?> fieldClass = field.getType();
 		this.fieldClass = fieldClass;
-		this.type = type;
+		this.dataType = type;
 		this.enclosingEntityClass = field.getDeclaringClass();
 		
 		this.isEntity = DataPacket.class.isAssignableFrom(fieldClass);
@@ -124,7 +123,7 @@ public class FieldInfo{
 		if(List.class.isAssignableFrom(fieldClass)) {
 			Class<?> componentClass = ClassInfo.firstTypeParameterClass(field);
 			if(componentClass==null) {
-				throw forContext(base.entityClass, name, "should declare type parameter if it is a List")
+				throw forContext(base.entityClass, name, "should declare dataType parameter if it is a List")
 					.withSiteAndOrdinal(FieldInfo.class, -1);
 			}
 			this.listComponentClass = componentClass;
@@ -222,7 +221,7 @@ public class FieldInfo{
 				case INT:
 					break;
 				default:
-					throw forContext(base.entityClass, name, "data type "+lengthType+" should not be specified as length type")
+					throw forContext(base.entityClass, name, "data dataType "+lengthType+" should not be specified as length dataType")
 							.withSiteAndOrdinal(FieldInfo.class, 10);
 				}
 				
@@ -268,7 +267,7 @@ public class FieldInfo{
 			//class of list elements is another DataPacket
 			this.converter = Converters.dataPacketListConverter;
 		}else if(listComponentClass!=null) {
-			//component class is a pre-defined data type
+			//component class is a pre-defined data dataType
 			this.converter = Converters.listConverter;
 		}else if(isEntity) {
 			//class of field is a DataPacket

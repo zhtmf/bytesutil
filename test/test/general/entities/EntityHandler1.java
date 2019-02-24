@@ -11,7 +11,7 @@ public class EntityHandler1 extends EntityHandler{
 
 	@Override
 	public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-		//type
+		//dataType
 		int b = StreamUtils.readUnsignedByte(is);
 		if(b==1) {
 			return new Sub1();

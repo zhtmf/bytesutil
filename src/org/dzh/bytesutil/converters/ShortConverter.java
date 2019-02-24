@@ -17,7 +17,7 @@ public class ShortConverter implements Converter<Short> {
 	public void serialize(Short value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException,ConversionException {
 		short val = (short)value;
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case BYTE:{
 			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
 			StreamUtils.writeBYTE(dest, (byte)val);
@@ -42,7 +42,7 @@ public class ShortConverter implements Converter<Short> {
 	@Override
 	public Short deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException,ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case BYTE:{
 			return (short)(ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
 		}

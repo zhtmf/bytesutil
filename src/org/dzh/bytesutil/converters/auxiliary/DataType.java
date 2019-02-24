@@ -224,7 +224,7 @@ public enum DataType{
 		@Override
 		public String checkRange(long val, boolean unsigned) {
 			//always expect no error
-			//as java long type cannot store an unsigned 64-bit value
+			//as java long dataType cannot store an unsigned 64-bit value
 			return null;
 		}
 		@Override

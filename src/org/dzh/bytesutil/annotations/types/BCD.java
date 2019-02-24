@@ -6,16 +6,19 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import org.dzh.bytesutil.annotations.modifiers.DatePattern;
+
 /**
  * <p>
- * Binary-Coded-Decimal data which uses one byte to represent two digits of
- * decimal.
+ * Binary-Coded-Decimal data which uses one byte to represent two decimal
+ * digits.
  * <p>
- * Java types that are convertable to/from BCD data are
+ * Following Java types are convertible to/from it:
  * <ul>
- * <li><code>java.util.Date</code> (8 digits decimal in the form of
- * YYYYMMDD)</li>
- * <li><code>String</code> (numeric strings)</li>
+ * <li><code>java.util.Date</code>, format for such date or date-values are
+ * defined by {@link DatePattern} annotation. Only date formats that produces
+ * numeric characters are considered valid in this situation.</li>
+ * <li><code>String</code> composed of only numeric characters</li>
  * <li>Integral types</li>
  * </ul>
  * 

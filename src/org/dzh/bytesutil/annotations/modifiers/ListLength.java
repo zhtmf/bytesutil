@@ -15,7 +15,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * {@link List} field.
  * <p>
  * To achieve backwards compatibility, {@link Length} can also be used to
- * specify length of a list but only when the component class is not a data type
+ * specify length of a list but only when the component class is not a data dataType
  * that can be used together with a {@link Length} annotation to indicate dynamic
  * length. To avoid ambiguity, an exception will be thrown in this case.
  * 
@@ -33,7 +33,7 @@ public @interface ListLength {
 	/**
 	 * How the length value itself is stored in the stream.<br/>
 	 * by default it is treated as a single byte value.
-	 * @return	the data type which describes how the length value itself is stored in the stream
+	 * @return	the data dataType which describes how the length value itself is stored in the stream
 	 */
 	DataType type() default DataType.BYTE;
 	

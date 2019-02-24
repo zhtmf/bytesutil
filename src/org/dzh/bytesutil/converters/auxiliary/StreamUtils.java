@@ -168,7 +168,7 @@ public class StreamUtils {
 			ret = ret * 10 + ((arr[i] >> 4) & 0x0F);
 			ret = ret * 10 + (arr[i] & 0x0F);
 			if(ret<0) {
-				throw new UnsatisfiedIOException("BCD value overflows Java long type range")
+				throw new UnsatisfiedIOException("BCD value overflows Java long dataType range")
 						.withSiteAndOrdinal(StreamUtils.class, 2);
 			}
 		}

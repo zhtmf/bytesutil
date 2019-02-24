@@ -3,6 +3,10 @@ package org.dzh.bytesutil.converters.auxiliary.exceptions;
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 
+/**
+ * Sub class for code coverage purposes.
+ * @author dzh
+ */
 public class ExtendedConversionException extends ConversionException implements ExactException{
 	private static final long serialVersionUID = 1L;
 	private Class<?> site;

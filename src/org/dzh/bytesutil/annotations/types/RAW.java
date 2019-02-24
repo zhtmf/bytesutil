@@ -10,16 +10,16 @@ import org.dzh.bytesutil.annotations.modifiers.Length;
 
 /**
  * <p>
- * Consecutive bytes that are read as-is and not specially interpreted. It
- * exists to represent non-integral and non-string byte data.
+ * Consecutive bytes that are read as-is and not specially interpreted.
  * <p>
  * Length of RAW sequences should be specified with either positive
  * {@link #value() value} property or an additional {@link Length} annotation on
  * the same field. If neither of them is present, an exception will be thrown
  * during initial parsing.
  * <p>
- * This data type can be "converted" from/to a byte array or an
- * <code>int</code> array.
+ * Convertible from/to a byte array or an <code>int</code> array. The latter
+ * dataType can be used to store unsigned one-byte values to avoid ambiguity in Java
+ * codes.
  * 
  * @author dzh
  */

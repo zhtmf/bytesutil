@@ -16,7 +16,7 @@ public class CharConverter implements Converter<Character> {
 	@Override
 	public void serialize(Character value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case CHAR:{
 			Utils.serializeAsCHAR(value.toString(), dest, ctx, self);
 			break;
@@ -28,7 +28,7 @@ public class CharConverter implements Converter<Character> {
 	@Override
 	public Character deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
-		switch(ctx.type) {
+		switch(ctx.dataType) {
 		case CHAR:{
 			Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
