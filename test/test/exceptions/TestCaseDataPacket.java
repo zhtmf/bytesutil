@@ -17,7 +17,6 @@ import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
 import org.dzh.bytesutil.converters.CharConverter;
 import org.dzh.bytesutil.converters.DataPacketConverter;
-import org.dzh.bytesutil.converters.DataPacketListConverter;
 import org.dzh.bytesutil.converters.IntArrayConverter;
 import org.dzh.bytesutil.converters.ListConverter;
 import org.dzh.bytesutil.converters.auxiliary.AbstractListConverter;
@@ -269,7 +268,7 @@ public class TestCaseDataPacket {
 			entity.deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacketListConverter.class, 15);
+			TestUtils.assertExactException(e, DataPacketConverter.class, 11);
 		}
 	}
 	
@@ -338,7 +337,7 @@ public class TestCaseDataPacket {
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
-			TestUtils.assertExactException(e, DataPacketListConverter.class, -2);
+			TestUtils.assertExactException(e, ListConverter.class, -1);
 		}
 	}
 	

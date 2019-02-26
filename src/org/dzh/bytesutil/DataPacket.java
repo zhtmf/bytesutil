@@ -265,6 +265,10 @@ public abstract class DataPacket {
 				}
 				break;
 			}
+			case USER_DEFINED:
+				int size = Utils.lengthForSerializingUserDefinedType(fi, this);
+				ret += size * length;
+				break;
 			}
 		}
 		return ret;

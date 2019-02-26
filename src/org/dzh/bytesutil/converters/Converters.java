@@ -10,9 +10,9 @@ public class Converters {
 	//all built-in converters that are initialized on startup
 	//this map is made unmodifiable to ensure thread safety
 	public static final Map<Class<?>,Converter<?>> converters;
-	public static final DataPacketListConverter dataPacketListConverter = new DataPacketListConverter();
 	public static final ListConverter listConverter = new ListConverter();
 	public static final DataPacketConverter dataPacketConverter = new DataPacketConverter();
+	public static final UserDefinedTypeConverter userDefinedTypeConverter = new UserDefinedTypeConverter();
 	static {
 		Map<Class<?>,Converter<?>> tmp = new HashMap<>();
 		tmp.put(Byte.class, new ByteConverter());

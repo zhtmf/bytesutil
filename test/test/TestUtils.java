@@ -70,6 +70,11 @@ public class TestUtils {
 	public static InputStream newInputStream(byte[] arr) {
 		return new ByteArrayInputStream(arr);
 	}
+	public static byte[] serializeAndGetBytes(DataPacket src) throws IllegalArgumentException, ConversionException {
+		ByteArrayOutputStream baos = newByteArrayOutputStream();
+		src.serialize(baos);
+		return baos.toByteArray();
+	}
 	public static InputStream serializeAndGetBytesAsInputStream(DataPacket src) throws IllegalArgumentException, ConversionException {
 		ByteArrayOutputStream baos = newByteArrayOutputStream();
 		src.serialize(baos);
@@ -83,9 +88,9 @@ public class TestUtils {
 		restored.deserialize(newInputStream(data));
 		Assert.assertTrue(equalsOrderFields(entity, restored));
 	}
-	public static void serializeMultipleTimesAndRestore(DataPacket entity) throws Exception {
+	public static void serializeMultipleTimesAndRestore(DataPacket entity, int times) throws Exception {
 		ByteArrayOutputStream os = newByteArrayOutputStream();
-		for(int i=0;i<10;++i) {
+		for(int i=0;i<times;++i) {
 			entity.serialize(os);
 		}
 		byte[] data = os.toByteArray();
@@ -95,6 +100,9 @@ public class TestUtils {
 			restored.deserialize(is);
 			Assert.assertTrue(equalsOrderFields(entity, restored));
 		}
+	}
+	public static void serializeMultipleTimesAndRestore(DataPacket entity) throws Exception {
+		serializeMultipleTimesAndRestore(entity,10);
 	}
 	public static boolean equalsOrderFields(Object o1, Object o2) {
 		if(o1==o2) {

@@ -21,6 +21,7 @@ import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
+import org.dzh.bytesutil.annotations.types.UserDefined;
 
 import static org.dzh.bytesutil.converters.auxiliary.Utils.forContext;
 
@@ -142,7 +143,8 @@ public class ClassInfo {
 						.withSiteAndOrdinal(ClassInfo.class, 4);
 				}
 				if(((fi.dataType == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
-						|| (fi.dataType == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0))
+				|| (fi.dataType == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0)
+				|| (fi.dataType == DataType.USER_DEFINED && fi.localAnnotation(UserDefined.class).length()<0))
 						&& fi.localAnnotation(ListLength.class)==null) {
 					throw forContext(cls, name, "this field is a list of Data Type that supports dynamic length, "
 							+ "to avoid ambiguity, use ListLength but not Length to specify the list length")
@@ -167,6 +169,14 @@ public class ClassInfo {
 					throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
 							+ " and a Length annotation is not present on it")
 						.withSiteAndOrdinal(ClassInfo.class, 7);
+			}
+			
+			UserDefined ud = fi.localAnnotation(UserDefined.class);
+			if(ud!=null && ud.length()<0) {
+				if( ! fi.lengthDefined)
+					throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
+							+ " and a Length annotation is not present on it")
+						.withSiteAndOrdinal(ClassInfo.class, 9);
 			}
 			
 			fieldInfoByField.put(name, fi);

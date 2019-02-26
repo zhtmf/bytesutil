@@ -9,8 +9,8 @@ import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 
 public interface Converter<T> {
 	void serialize(T value, OutputStream dest
-			, FieldInfo fi, Object self) 
+			, FieldInfo ctx, Object self) 
 			throws IOException,ConversionException;
-	T deserialize(MarkableInputStream is, FieldInfo fi, Object self)
+	T deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException,ConversionException;
 }

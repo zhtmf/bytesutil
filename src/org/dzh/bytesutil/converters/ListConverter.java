@@ -38,7 +38,7 @@ public class ListConverter extends AbstractListConverter implements Converter<Li
 							.withSiteAndOrdinal(ListConverter.class, -1);
 				}
 				@SuppressWarnings("unchecked")
-				Converter<Object> cv = (Converter<Object>) Converters.converters.get(fi.listComponentClass);
+				Converter<Object> cv = (Converter<Object>)fi.innerConverter;
 				cv.serialize(elem, dest, fi, self);
 			}
 		} catch(ConversionException e) {
@@ -56,7 +56,7 @@ public class ListConverter extends AbstractListConverter implements Converter<Li
 		//cv cannot be null as we lifted checking for validity of DataType<>JavaType mapping
 		//to constructor of FieldInfo
 		@SuppressWarnings("unchecked")
-		Converter<Object> cv = (Converter<Object>) Converters.converters.get(fi.listComponentClass);
+		Converter<Object> cv = (Converter<Object>)fi.innerConverter;
 		try {
 			tmp = new ArrayList<>(length);
 			while(length-->0) {

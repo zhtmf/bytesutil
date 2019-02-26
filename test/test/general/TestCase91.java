@@ -56,44 +56,44 @@ public class TestCase91{
 	public static final class Entity extends DataPacket{
 		@Order(-2)
 		@INT
-		public int i;
+		public int i = 5;
 		@Order(-1)
 		@CHAR
 		@Length
-		public String str;
+		public String str = "ddd";
 		@Order(1)
 		@CHAR(9)
-		public String str2;
+		public String str2 = "呵呵呵";
 		@Order(2)
 		@CHAR
 		@Length
 		@ListLength(3)
-		public List<String> strList1;
+		public List<String> strList1 = Arrays.asList("ttt","qwert","哈哈哈");
 		@Order(3)
 		@RAW
 		@Length
 		@ListLength(2)
-		public List<byte[]> byteArrayList;
+		public List<byte[]> byteArrayList = Arrays.asList(new byte[] {1,2,3},new byte[] {0,1,2});;
 		@Order(6)
 		@RAW
 		@Length
-		public byte[] tail2;
+		public byte[] tail2 = new byte[] {1,2,3};
 		@Order(7)
 		@CHAR
 		@Length
 		@ListLength(2)
-		public List<Byte> bytes;
+		public List<Byte> bytes = Arrays.asList(Byte.valueOf((byte)13),Byte.valueOf((byte)14));
 		@Order(8)
 		@BCD(2)
-		public byte bcd;
+		public byte bcd = 100;
 		@Order(9)
 		@BYTE
 		@Signed
-		public byte byteSigned;
+		public byte byteSigned = 120;
 		@Order(10)
 		@BYTE
 		@Unsigned
-		public byte byteUnsigned;
+		public byte byteUnsigned = 119;
 		@Order(11)
 		@CHAR
 		@Length
@@ -101,10 +101,10 @@ public class TestCase91{
 		@Order(12)
 		@CHAR
 		@Length
-		public Short short2;
+		public Short short2 = 32344;
 		@Order(13)
 		@BCD(2)
-		public short short3;
+		public short short3 = 1919;
 		@Order(14)
 		@BYTE
 		@Signed
@@ -307,7 +307,7 @@ public class TestCase91{
 		@Order(52)
 		@BigEndian
 		@LONG
-		public Date dateb = new Date(System.currentTimeMillis());
+		public Date dateb = new Date(1293894059333L);
 		
 		@Order(53)
 		@CHAR(27)
@@ -329,28 +329,14 @@ public class TestCase91{
 		public Long longa3 = Long.MIN_VALUE;
 	}
 	
-	
 	@Test
 	public void test() throws Exception {
-		Entity entity = new Entity();
-		entity.i = 5;
-		entity.str = "ccc";
-		entity.str2 = "呵呵呵";
-		entity.strList1 = Arrays.asList("ttt","qwert","哈哈哈");
-		entity.byteArrayList = Arrays.asList(new byte[] {1,2,3},new byte[] {0,1,2});
-		entity.tail2 = new byte[] {1,2,3};
-		entity.bytes = Arrays.asList(Byte.valueOf((byte)13),Byte.valueOf((byte)14));
-		entity.bcd = 100;
-		entity.byteSigned = 120;
-		entity.byteUnsigned = 119;
-		entity.short2 = 32344;
-		entity.short3 = 1919;
-		
+		final Entity entity = new Entity();
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		entity.serialize(baos);
 		Assert.assertEquals(baos.size(), entity.length());
 		Entity restored = new Entity();
-		byte[] arr1 = baos.toByteArray();
+		final byte[] arr1 = baos.toByteArray();
 		restored.deserialize(new ByteArrayInputStream(arr1));
 		Assert.assertTrue(TestUtils.equalsOrderFields(entity, restored));
 		baos.reset();
@@ -358,5 +344,30 @@ public class TestCase91{
 		Assert.assertArrayEquals(arr1, baos.toByteArray());
 		
 		TestUtils.serializeMultipleTimesAndRestore(entity);
+	}
+	
+	@Test
+	public void testConcurrency() throws Exception {
+		final Entity entity = new Entity();
+		Thread[] ts = new Thread[10];
+		for(int i=0;i<10;++i) {
+			Thread t = new Thread() {
+				@Override
+				public void run() {
+					try {
+						TestUtils.serializeMultipleTimesAndRestore(entity,5000);
+					} catch (Exception e) {
+					    throw new Error(e);
+					}
+				}
+			};
+			ts[i] = t;
+		}
+		for(Thread thread:ts) {
+			thread.start();
+		}
+		for(Thread thread:ts) {
+			thread.join();
+		}
 	}
 }

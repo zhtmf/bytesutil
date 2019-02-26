@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.dzh.bytesutil.DataPacket;
+import org.dzh.bytesutil.TypeConverter;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
@@ -24,6 +25,7 @@ import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.modifiers.Variant;
+import org.dzh.bytesutil.annotations.types.UserDefined;
 import org.dzh.bytesutil.converters.Converter;
 import org.dzh.bytesutil.converters.Converters;
 
@@ -39,6 +41,7 @@ public class FieldInfo{
 	private final Class<?> fieldClass;
 	
 	public final Converter<?> converter;
+	public final Converter<?> innerConverter;
 	
 	public final String name;
 	public final DataType dataType;
@@ -90,6 +93,7 @@ public class FieldInfo{
 	 */
 	public final ModifierHandler<Integer> lengthHandler;
 	public final ModifierHandler<Integer> listLengthHandler;
+	public final TypeConverter userDefinedConverter;
 	/**
 	 * Charset of this field, null if not defined
 	 */
@@ -108,6 +112,8 @@ public class FieldInfo{
 	 * Whether Length/ListLength annotation is present, used only by ClassInfo
 	 */
 	final boolean lengthDefined;
+	
+	public final TypeConverter.Context context;
 	
 	FieldInfo(Field field, DataType type, ClassInfo base) {
 		this.base = base;
@@ -263,18 +269,44 @@ public class FieldInfo{
 			}
 		}
 		
+		TypeConverter udc = null;
+		UserDefined ud = annotation(UserDefined.class);
+		if(ud!=null) {
+			if(lengthDefined && length<0) {
+				throw forContext(base.entityClass, name, "user defined type does not support dynamic length")
+					.withSiteAndOrdinal(FieldInfo.class, 23);
+			}
+			try {
+				udc = annotation(UserDefined.class).value().newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw forContext(base.entityClass, name, "user defined converter type cannot be instantiated")
+					.withSiteAndOrdinal(FieldInfo.class, 24);
+			}
+			
+			this.context = new _Context();
+			
+		}else {
+			udc = null;
+			this.context = null;
+		}
+		this.userDefinedConverter = udc;
+		
 		if(isEntityList) {
 			//class of list elements is another DataPacket
-			this.converter = Converters.dataPacketListConverter;
-		}else if(listComponentClass!=null) {
-			//component class is a pre-defined data dataType
 			this.converter = Converters.listConverter;
+			this.innerConverter = Converters.dataPacketConverter;
+		}else if(listComponentClass!=null) {
+			this.converter = Converters.listConverter;
+			//component class is a pre-defined data dataType or a user-defined type
+			this.innerConverter = udc!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(listComponentClass);
 		}else if(isEntity) {
 			//class of field is a DataPacket
 			this.converter = Converters.dataPacketConverter;
+			this.innerConverter = null;
 		}else {
 			//a plain field
-			this.converter = Converters.converters.get(getFieldType());
+			this.converter = udc!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(getFieldType());
+			this.innerConverter = null;
 		}
 	}
 	/**
@@ -403,6 +435,53 @@ public class FieldInfo{
 			} catch (InstantiationException | IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}
+		}
+	}
+	
+	private class _Context implements TypeConverter.Context{
+		@Override
+		public boolean isUnsigned() {
+			return FieldInfo.this.unsigned;
+		}
+		
+		@Override
+		public boolean isSigned() {
+			return FieldInfo.this.signed;
+		}
+		
+		@Override
+		public boolean isLittleEndian() {
+			return FieldInfo.this.littleEndian;
+		}
+		
+		@Override
+		public boolean isBigEndian() {
+			return FieldInfo.this.bigEndian;
+		}
+		
+		@Override
+		public String getName() {
+			return FieldInfo.this.name;
+		}
+		
+		@Override
+		public Class<?> getFieldClass() {
+			return FieldInfo.this.fieldClass;
+		}
+		
+		@Override
+		public Class<?> getEntityClass() {
+			return FieldInfo.this.base.entityClass;
+		}
+		
+		@Override
+		public String getDatePattern() {
+			return FieldInfo.this.datePattern;
+		}
+		
+		@Override
+		public Charset getCharset() {
+			return FieldInfo.this.charset;
 		}
 	}
 	

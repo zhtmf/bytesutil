@@ -47,6 +47,8 @@ public class TestClassParsing {
 			deserialized = baos.toByteArray();
 			
 			TestUtils.serializeMultipleTimesAndRestore(clazz);
+			
+			Assert.assertEquals(original.length, clazz.length());
 		}
 		Assert.assertArrayEquals(original, deserialized);
 	}

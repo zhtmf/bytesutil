@@ -3,6 +3,8 @@ package org.dzh.bytesutil.converters.auxiliary;
 import java.lang.annotation.Annotation;
 import java.math.BigInteger;
 
+import org.dzh.bytesutil.annotations.types.UserDefined;
+
 public enum DataType{
 	BYTE {
 		@Override
@@ -236,6 +238,20 @@ public enum DataType{
 			return (val.compareTo(SIGNED_LONG_MIN)>=0 && val.compareTo(SIGNED_LONG_MAX)<=0) ? null : 
 				String.format("val [%s] cannot be stored as signed 8-byte integer value",val.toString());
 		}
+	}
+	,USER_DEFINED{
+
+		@Override
+		public Class<? extends Annotation> annotationClassOfThisType() {
+			return UserDefined.class;
+		}
+
+		@Override
+		boolean supports(Class<?> javaType) {
+			//always true for user-defined types
+			return true;
+		}
+		
 	}
 	;
 	private static final BigInteger SIGNED_LONG_MIN = new BigInteger(Long.MIN_VALUE+"");

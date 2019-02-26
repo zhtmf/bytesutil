@@ -12,6 +12,7 @@ import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.annotations.types.BCD;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.annotations.types.RAW;
+import org.dzh.bytesutil.annotations.types.UserDefined;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
@@ -43,6 +44,22 @@ public class Utils {
 	
 	public static int lengthForDeserializingCHAR(FieldInfo ctx,Object self, MarkableInputStream bis){
 		int length = ctx.annotation(CHAR.class).value();
+		if(length<0) {
+			length = lengthForDeserializingLength(ctx,self,bis);
+		}
+		return length;
+	}
+	
+	public static int lengthForSerializingUserDefinedType(FieldInfo ctx,Object self){
+		int length = ctx.annotation(UserDefined.class).length();
+		if(length<0) {
+			length = lengthForSerializingLength(ctx, self);
+		}
+		return length;
+	}
+	
+	public static int lengthForDeserializingUserDefinedType(FieldInfo ctx,Object self, MarkableInputStream bis) {
+		int length = ctx.annotation(UserDefined.class).length();
 		if(length<0) {
 			length = lengthForDeserializingLength(ctx,self,bis);
 		}
