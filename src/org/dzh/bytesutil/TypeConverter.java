@@ -52,20 +52,6 @@ public abstract class TypeConverter {
 		 */
 		public void writeBytes(byte[] array) throws IOException;
 		/**
-		 * Write a string to the underlying stream, the string is encoded using the char
-		 * set indicated by {@linkplain Context#getCharset()} method of corresponding
-		 * <code>Context</code> object.<br>
-		 * If you want to write the string encoded otherwise, encode it yourself and
-		 * output it using {@link #writeBytes(byte[])}.
-		 * <p>
-		 * This method throws an exception if client code tries to write more bytes than
-		 * {@link Context#length()} indicates.
-		 * 
-		 * @param str
-		 */
-		public void writeString(String str) throws IOException;
-
-		/**
 		 * Write a short value with the same endianness indicated by
 		 * {@link Context#isLittleEndian()} and {@link Context#isBigEndian()}.<br>
 		 * If you want the integer be encoded otherwise, output it manually

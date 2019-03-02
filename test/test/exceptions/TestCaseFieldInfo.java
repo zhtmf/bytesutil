@@ -12,6 +12,7 @@ import java.util.List;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
+import org.dzh.bytesutil.TypeConverter;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
@@ -26,6 +27,7 @@ import org.dzh.bytesutil.annotations.types.INT;
 import org.dzh.bytesutil.annotations.types.LONG;
 import org.dzh.bytesutil.annotations.types.RAW;
 import org.dzh.bytesutil.annotations.types.SHORT;
+import org.dzh.bytesutil.annotations.types.UserDefined;
 import org.dzh.bytesutil.converters.auxiliary.DataType;
 import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
@@ -88,6 +90,34 @@ public class TestCaseFieldInfo {
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, FieldInfo.class, 1);
+		}
+		try {
+			class MyConverter extends TypeConverter{
+				public void serialize(Object obj, Output output) throws IOException {
+				}
+				public Object deserialize(Input input) throws IOException {
+					return null;
+				}}
+			class Entity extends DataPacket{@Order(0)@UserDefined(MyConverter.class)@Length public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 23);
+		}
+		try {
+			class MyConverter extends TypeConverter{
+				@SuppressWarnings("unused")
+				public MyConverter() {throw new IllegalStateException();}
+				public void serialize(Object obj, Output output) throws IOException {
+				}
+				public Object deserialize(Input input) throws IOException {
+					return null;
+				}}
+			class Entity extends DataPacket{@Order(0)@UserDefined(MyConverter.class)@Length(8) public Timestamp ts;}
+			new Entity().serialize(new ByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 24);
 		}
 	}
 	

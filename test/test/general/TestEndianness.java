@@ -10,13 +10,14 @@ import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
+import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.types.INT;
 import org.dzh.bytesutil.annotations.types.LONG;
 import org.dzh.bytesutil.annotations.types.SHORT;
 import org.junit.Assert;
 import org.junit.Test;
 
-public class TestCase2 {
+public class TestEndianness {
 	
 	@Test
 	public void testShort() throws ConversionException, IOException {
@@ -82,6 +83,27 @@ public class TestCase2 {
 	public void testBigInteger() throws ConversionException, IOException {
 		class Entity extends DataPacket{
 			@LittleEndian @Signed @LONG @Order(0)public BigInteger s1 = BigInteger.valueOf(Long.MIN_VALUE);}
+		byte[] b1;
+		byte[] b2;
+		Entity entity = new Entity();
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			entity.serialize(baos);
+			b1 = baos.toByteArray();
+		}
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			dos.writeLong(Long.reverseBytes(entity.s1.longValue()));
+			b2 = baos.toByteArray();
+		}
+		Assert.assertArrayEquals(b1, b2);
+	}
+	
+	@Test
+	public void testBigInteger2() throws ConversionException, IOException {
+		class Entity extends DataPacket{
+			@LittleEndian @Unsigned @LONG @Order(0)public BigInteger s1 = BigInteger.valueOf(Long.MAX_VALUE).multiply(new BigInteger("2"));}
 		byte[] b1;
 		byte[] b2;
 		Entity entity = new Entity();

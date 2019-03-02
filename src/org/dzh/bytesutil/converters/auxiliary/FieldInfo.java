@@ -270,8 +270,8 @@ public class FieldInfo{
 		TypeConverter typeConverter = null;
 		UserDefined userDefined = annotation(UserDefined.class);
 		if(userDefined!=null) {
-			if(lengthDefined && length<0) {
-				throw forContext(base.entityClass, name, "user defined type does not support dynamic length")
+			if(lengthDefined && length<0 && lengthHandler==null) {
+				throw forContext(base.entityClass, name, "user defined type does not support write-ahead length")
 					.withSiteAndOrdinal(FieldInfo.class, 23);
 			}
 			try {

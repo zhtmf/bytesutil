@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 
 import org.dzh.bytesutil.TypeConverter;
-import org.dzh.bytesutil.TypeConverter.Output;
+import org.dzh.bytesutil.TypeConverter.Input;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedIOException;
@@ -33,7 +33,7 @@ public class InputImpl implements TypeConverter.Input{
 	private void checkBytesToRead(int n) throws IOException {
 		if(read+n>fastLength) {
 			throw new UnsatisfiedIOException("attempting to read more than "+length()+" bytes")
-					.withSiteAndOrdinal(Output.class, 1);
+					.withSiteAndOrdinal(Input.class, 1);
 		}
 		read += n;
 	}

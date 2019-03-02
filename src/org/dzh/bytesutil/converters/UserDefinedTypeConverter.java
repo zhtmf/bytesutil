@@ -8,6 +8,7 @@ import org.dzh.bytesutil.TypeConverter.Output;
 import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
+import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
 public class UserDefinedTypeConverter implements Converter<Object> {
 	@Override
@@ -17,9 +18,9 @@ public class UserDefinedTypeConverter implements Converter<Object> {
 				ctx, dest, Utils.lengthForSerializingUserDefinedType(ctx, self));
 		ctx.userDefinedConverter.serialize(value,output);
 		if(output.written()!=output.length()) {
-			//detect underflow
-			//TODO:
-			throw new RuntimeException();
+			throw new ExtendedConversionException(ctx,
+					"should write exactly "+output.length()+" bytes to output for this user defined type")
+						.withSiteAndOrdinal(UserDefinedTypeConverter.class, 1);
 		}
 	}
 
@@ -29,7 +30,9 @@ public class UserDefinedTypeConverter implements Converter<Object> {
 		Object ret = ctx.userDefinedConverter.deserialize(
 				InputImpl.getThreadLocalInstance(ctx, is, Utils.lengthForDeserializingUserDefinedType(ctx, self, is)));
 		if(ret==null) {
-			throw new RuntimeException();
+			throw new ExtendedConversionException(ctx,
+					"should return non-null value from custom TypeConverters")
+						.withSiteAndOrdinal(UserDefinedTypeConverter.class, 2);
 		}
 		return ret;
 	}

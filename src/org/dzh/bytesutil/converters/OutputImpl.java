@@ -106,13 +106,6 @@ class OutputImpl implements TypeConverter.Output {
 	}
 
 	@Override
-	public void writeString(String str) throws IOException {
-		byte[] array = str.getBytes(getCharset());
-		checkBytesToWrite(array.length);
-		StreamUtils.writeBytes(dest, array);
-	}
-
-	@Override
 	public void writeShort(short n) throws IOException {
 		checkBytesToWrite(2);
 		StreamUtils.writeSHORT(dest, n, isBigEndian());
