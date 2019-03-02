@@ -28,6 +28,9 @@ public class TestCaseArrayConverters {
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
+			ConversionException ce = (ConversionException)e;
+			Assert.assertEquals(ce.getEntityClassName(), Entity0.class.getName());
+			Assert.assertEquals(ce.getFieldName(), "arr");
 			TestUtils.assertExactException(e, IntArrayConverter.class, 1);
 		}
 		try {
@@ -36,6 +39,9 @@ public class TestCaseArrayConverters {
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {
+			ConversionException ce = (ConversionException)e;
+			Assert.assertEquals(ce.getEntityClassName(), Entity0.class.getName());
+			Assert.assertEquals(ce.getFieldName(), "arr2");
 			TestUtils.assertExactException(e, ByteArrayConverter.class, 1);
 		}
 	}
