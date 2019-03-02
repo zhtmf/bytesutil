@@ -61,7 +61,7 @@ public class DateConverter implements Converter<Date>{
 							.parse(StreamUtils.readStringBCD(
 									is,ctx.annotation(BCD.class).value()));
 			case INT:{
-				long val = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
+				long val = StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
 				return new Date(val*1000);
 			}
 			case LONG:{

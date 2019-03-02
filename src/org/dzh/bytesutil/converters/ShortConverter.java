@@ -44,11 +44,10 @@ public class ShortConverter implements Converter<Short> {
 			throws IOException,ConversionException {
 		switch(ctx.dataType) {
 		case BYTE:{
-			return (short)(ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
+			return (short)StreamUtils.readByte(is, ctx.signed);
 		}
 		case SHORT:{
-			int val = ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
-			return (short)val;
+			return (short)StreamUtils.readShort(is, ctx.signed, ctx.bigEndian);
 		}
 		case CHAR:{
 			return (short)Utils.deserializeAsCHAR(is, ctx, self, DataType.SHORT);

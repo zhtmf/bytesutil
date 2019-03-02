@@ -35,7 +35,7 @@ public class StackMapTable extends DataPacket{
 		@Override
 		public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
 			//read frame_type ahead
-			int frameType = StreamUtils.readUnsignedByte(is);
+			int frameType = StreamUtils.readByte(is, false);
 			if(frameType>=0 && frameType<=63) {
 				return new SameFrame();
 			}else if(frameType >=64 && frameType<=127) {

@@ -50,7 +50,7 @@ public class TestUtils {
 			}
 		}
 		throw new IllegalArgumentException(
-				original+" "+((ExactException)original).getSite()+" "+((ExactException)original).getOrdinal()+" not expected");
+				original+" "+((ExactException)original).getSite()+" "+((ExactException)original).getOrdinal()+" not expected",original);
 	}
 	public static ByteArrayOutputStream newByteArrayOutputStream() {
 		return new ByteArrayOutputStream();

@@ -42,7 +42,7 @@ public class BigIntegerConverter implements Converter<BigInteger>{
 			if(ctx.signed) {
 				ret = BigInteger.valueOf(StreamUtils.readLong(is, ctx.bigEndian));
 			}else {
-				ret = new BigInteger(1,StreamUtils.readBytes(is, 8));
+				ret = StreamUtils.readUnsignedLong(is, ctx.bigEndian);
 			}
 			String error = null;
 			if((error = DataType.LONG.checkRange(ret, ctx.unsigned))!=null) {

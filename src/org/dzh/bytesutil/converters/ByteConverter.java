@@ -44,7 +44,7 @@ public class ByteConverter implements Converter<Byte> {
 			throws IOException,ConversionException {
 		switch(ctx.dataType) {
 		case BYTE:{
-			return (byte)(ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
+			return (byte)(StreamUtils.readByte(is, ctx.signed));
 		}
 		case CHAR:{
 			return (byte)Utils.deserializeAsCHAR(is, ctx, self, DataType.BYTE);

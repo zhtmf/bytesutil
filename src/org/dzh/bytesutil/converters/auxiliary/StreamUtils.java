@@ -4,6 +4,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 
 import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedIOException;
 
@@ -97,26 +98,25 @@ public class StreamUtils {
 	
 	//---------------------------------
 	
-	public static int readUnsignedByte(InputStream is) throws IOException{
-		return read(is);
+	public static int readByte(InputStream is,boolean signed) throws IOException{
+		return signed ? (byte)read(is) : read(is);
 	}
-	public static int readSignedByte(InputStream is) throws IOException{
-		return (byte)readUnsignedByte(is);
-	}
-	public static int readSignedShort(InputStream is, boolean bigendian) throws IOException{
-		return (short)readUnsignedShort(is,bigendian);
-	}
-	public static int readUnsignedShort(InputStream is, boolean bigendian) throws IOException{
+	
+	public static int readShort(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+		int ret = 0;
 		int b1 = read(is);
 		int b2 = read(is);
-		return bigendian ? ((b1<<8) | b2) : ((b2<<8) | b1);
+		if(bigEndian) {
+			ret = ((b1<<8) | b2);
+		}else {
+			ret = ((b2<<8) | b1);
+		}
+		return signed ? (short)ret : ret;
 	}
-	public static long readSignedInt(InputStream is, boolean bigendian) throws IOException{
-		return (int)readUnsignedInt(is,bigendian);
-	}
-	public static long readUnsignedInt(InputStream is, boolean bigendian) throws IOException{
+	
+	public static long readInt(InputStream is,boolean signed, boolean bigEndian) throws IOException{
 		int ret = 0;
-		if(bigendian) {
+		if(bigEndian) {
 			ret |= (read(is)<<24);
 			ret |= (read(is) << 16);
 			ret |= (read(is) << 8);
@@ -127,11 +127,13 @@ public class StreamUtils {
 			ret |= (read(is) << 16);
 			ret |= (read(is)<<24);
 		}
-		return (((long)ret) & 0xFFFFFFFFL);
+		long tmp = (((long)ret) & 0xFFFFFFFFL);
+		return signed ? (int)tmp : tmp;
 	}
-	public static long readLong(InputStream is, boolean bigendian) throws IOException{
+	
+	public static long readLong(InputStream is, boolean bigEndian) throws IOException{
 		long ret = 0;
-		if(bigendian) {
+		if(bigEndian) {
 			ret |= (((long)read(is)) << 56);
 			ret |= (((long)read(is)) << 48);
 			ret |= (((long)read(is)) << 40);
@@ -151,6 +153,22 @@ public class StreamUtils {
 			ret |= (((long)read(is)) << 56);
 		}
 		return ret;
+	}
+	
+	public static BigInteger readUnsignedLong(InputStream is, boolean bigEndian) throws IOException{
+		byte[] array = readBytes(is, 8);
+		if(!bigEndian) {
+			swap(array,0,7);
+			swap(array,1,6);
+			swap(array,2,5);
+			swap(array,3,4);
+		}
+		return new BigInteger(1, array);
+	}
+	private static void swap(byte[] array, int left, int right) {
+		byte tmp = array[left];
+		array[left] = array[right];
+		array[right] = tmp;
 	}
 	public static final String readStringBCD(InputStream is, int len) throws IOException {
 		byte[] arr = readBytes(is, len);
@@ -191,13 +209,13 @@ public class StreamUtils {
 		int length = 0;
 		switch(type) {
 		case BYTE:
-			length = StreamUtils.readUnsignedByte(src);
+			length = StreamUtils.readByte(src, false);
 			break;
 		case SHORT:
-			length = StreamUtils.readUnsignedShort(src, bigEndian);
+			length = StreamUtils.readShort(src, false, bigEndian);
 			break;
 		case INT:
-			long _length = StreamUtils.readUnsignedInt(src, bigEndian);
+			long _length = StreamUtils.readInt(src, false, bigEndian);
 			String error;
 			//array or list length in Java cannot exceed signed 32-bit integer
 			if((error = DataType.INT.checkRange(_length, false))!=null) {
@@ -216,7 +234,7 @@ public class StreamUtils {
 	private static int read(InputStream bis) throws IOException {
 		int b = bis.read();
 		if(b==-1) {
-			throw new EOFException(b+"");
+			throw new EOFException();
 		}
 		return b;
 	}

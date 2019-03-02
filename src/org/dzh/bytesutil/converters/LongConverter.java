@@ -53,13 +53,13 @@ public class LongConverter implements Converter<Long> {
 			throws IOException, ConversionException {
 		switch(ctx.dataType) {
 		case BYTE:{
-			return (long) (ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is));
+			return (long)StreamUtils.readByte(is, ctx.signed);
 		}
 		case SHORT:{
-			return (long) (ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian));
+			return (long)StreamUtils.readShort(is, ctx.signed, ctx.bigEndian);
 		}
 		case INT:{
-			return ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
+			return StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
 		}
 		case LONG:{
 			return StreamUtils.readLong(is, ctx.bigEndian);

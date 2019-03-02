@@ -113,8 +113,6 @@ public class FieldInfo{
 	 */
 	final boolean lengthDefined;
 	
-	public final TypeConverter.Context context;
-	
 	FieldInfo(Field field, DataType type, ClassInfo base) {
 		this.base = base;
 		this.field = field;
@@ -269,27 +267,23 @@ public class FieldInfo{
 			}
 		}
 		
-		TypeConverter udc = null;
-		UserDefined ud = annotation(UserDefined.class);
-		if(ud!=null) {
+		TypeConverter typeConverter = null;
+		UserDefined userDefined = annotation(UserDefined.class);
+		if(userDefined!=null) {
 			if(lengthDefined && length<0) {
 				throw forContext(base.entityClass, name, "user defined type does not support dynamic length")
 					.withSiteAndOrdinal(FieldInfo.class, 23);
 			}
 			try {
-				udc = annotation(UserDefined.class).value().newInstance();
+				typeConverter = annotation(UserDefined.class).value().newInstance();
 			} catch (InstantiationException | IllegalAccessException e) {
 				throw forContext(base.entityClass, name, "user defined converter type cannot be instantiated")
 					.withSiteAndOrdinal(FieldInfo.class, 24);
 			}
-			
-			this.context = new _Context();
-			
 		}else {
-			udc = null;
-			this.context = null;
+			typeConverter = null;
 		}
-		this.userDefinedConverter = udc;
+		this.userDefinedConverter = typeConverter;
 		
 		if(isEntityList) {
 			//class of list elements is another DataPacket
@@ -298,14 +292,14 @@ public class FieldInfo{
 		}else if(listComponentClass!=null) {
 			this.converter = Converters.listConverter;
 			//component class is a pre-defined data dataType or a user-defined type
-			this.innerConverter = udc!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(listComponentClass);
+			this.innerConverter = typeConverter!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(listComponentClass);
 		}else if(isEntity) {
 			//class of field is a DataPacket
 			this.converter = Converters.dataPacketConverter;
 			this.innerConverter = null;
 		}else {
 			//a plain field
-			this.converter = udc!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(getFieldType());
+			this.converter = typeConverter!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(getFieldType());
 			this.innerConverter = null;
 		}
 	}
@@ -355,6 +349,10 @@ public class FieldInfo{
 	 */
 	public Class<?> getFieldType(){
 		return fieldClass;
+	}
+	
+	public Class<?> getEntityType(){
+		return base.entityClass;
 	}
 	
 	/**
@@ -435,53 +433,6 @@ public class FieldInfo{
 			} catch (InstantiationException | IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}
-		}
-	}
-	
-	private class _Context implements TypeConverter.Context{
-		@Override
-		public boolean isUnsigned() {
-			return FieldInfo.this.unsigned;
-		}
-		
-		@Override
-		public boolean isSigned() {
-			return FieldInfo.this.signed;
-		}
-		
-		@Override
-		public boolean isLittleEndian() {
-			return FieldInfo.this.littleEndian;
-		}
-		
-		@Override
-		public boolean isBigEndian() {
-			return FieldInfo.this.bigEndian;
-		}
-		
-		@Override
-		public String getName() {
-			return FieldInfo.this.name;
-		}
-		
-		@Override
-		public Class<?> getFieldClass() {
-			return FieldInfo.this.fieldClass;
-		}
-		
-		@Override
-		public Class<?> getEntityClass() {
-			return FieldInfo.this.base.entityClass;
-		}
-		
-		@Override
-		public String getDatePattern() {
-			return FieldInfo.this.datePattern;
-		}
-		
-		@Override
-		public Charset getCharset() {
-			return FieldInfo.this.charset;
 		}
 	}
 	

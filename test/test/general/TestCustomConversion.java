@@ -1,7 +1,5 @@
 package test.general;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
@@ -60,41 +58,13 @@ public class TestCustomConversion {
 	public static class Converter1 extends TypeConverter{
 
 		@Override
-		public byte[] serialize(Object obj, Context context) {
-			long n = ((Timestamp)obj).getTime();
-			byte[] bytes = new byte[8];
-			bytes[0] = (byte) (n>>56 & 0xFF);
-			bytes[1] = (byte) (n>>48 & 0xFF);
-			bytes[2] = (byte) (n>>40 & 0xFF);
-			bytes[3] = (byte) (n>>32 & 0xFF);
-			bytes[4] = (byte) (n>>24 & 0xFF);
-			bytes[5] = (byte) (n>>16 & 0xFF);
-			bytes[6] = (byte) (n>>8 & 0xFF);
-			bytes[7] = (byte) (n & 0xFF);
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			DataOutputStream dos = new DataOutputStream(baos);
-			try {
-				dos.writeLong(n);
-				byte[] temp = baos.toByteArray();
-				System.out.println(temp);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return bytes;
+		public void serialize(Object obj, TypeConverter.Output context) throws IOException {
+			context.writeLong(((Timestamp)obj).getTime());
 		}
 
 		@Override
-		public Object deserialize(byte[] data, Context context) {
-			long ret = 0;
-			ret |= (((long)data[0] & 0xFF) << 56);
-			ret |= (((long)data[1] & 0xFF) << 48);
-			ret |= (((long)data[2] & 0xFF) << 40);
-			ret |= (((long)data[3] & 0xFF) << 32);
-			ret |= (((long)data[4] & 0xFF) << 24);
-			ret |= (((long)data[5] & 0xFF) << 16);
-			ret |= (((long)data[6] & 0xFF) << 8);
-			ret |= ((long)data[7] & 0xFF);
-			return new Timestamp(ret);
+		public Object deserialize(Input input) throws IOException{
+			return new Timestamp(input.readLong());
 		}
 		
 	}

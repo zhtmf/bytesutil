@@ -48,14 +48,13 @@ public class IntegerConverter implements Converter<Integer> {
 			throws IOException, ConversionException {
 		switch(ctx.dataType) {
 		case BYTE:{
-			return ctx.signed ? StreamUtils.readSignedByte(is) : StreamUtils.readUnsignedByte(is);
+			return StreamUtils.readByte(is, ctx.signed);
 		}
 		case SHORT:{
-			return ctx.signed ? StreamUtils.readSignedShort(is, ctx.bigEndian) : StreamUtils.readUnsignedShort(is, ctx.bigEndian);
+			return StreamUtils.readShort(is, ctx.signed, ctx.bigEndian);
 		}
 		case INT:{
-			long val = ctx.signed ? StreamUtils.readSignedInt(is, ctx.bigEndian) : StreamUtils.readUnsignedInt(is, ctx.bigEndian);
-			return (int)val;
+			return (int)StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
 		}
 		case CHAR:{
 			return (int)Utils.deserializeAsCHAR(is, ctx, self, DataType.INT);

@@ -12,7 +12,7 @@ public class EntityHandler1 extends EntityHandler{
 	@Override
 	public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
 		//dataType
-		int b = StreamUtils.readUnsignedByte(is);
+		int b = StreamUtils.readByte(is, true);
 		if(b==1) {
 			return new Sub1();
 		}else if(b==2) {
