@@ -1,50 +1,101 @@
 package test.general;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.math.BigInteger;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.BigEndian;
+import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.junit.Before;
-import org.junit.Test;
-
+import org.dzh.bytesutil.annotations.types.INT;
+import org.dzh.bytesutil.annotations.types.LONG;
+import org.dzh.bytesutil.annotations.types.SHORT;
 import org.junit.Assert;
+import org.junit.Test;
 
 public class TestCase2 {
 	
-	private Entity2 entity = new Entity2();
-	
-	@Before
-	public void setValues() {
-		entity.b1 = 1;
-		entity.b2 = 2;
-		entity.b3 = 3;
-	}
-	
-	@Signed
-	@BigEndian
-	public static final class Entity2 extends DataPacket{
-		@Order(0)
-		@BYTE
-		public byte b1;
-		@Order(1)
-		@BYTE
-		public byte b2;
-		@Order(2)
-		@BYTE
-		public byte b3;
+	@Test
+	public void testShort() throws ConversionException, IOException {
+		class Entity extends DataPacket{@LittleEndian @SHORT @Order(0)public short s1 = Short.MIN_VALUE;}
+		byte[] b1;
+		byte[] b2;
+		Entity entity = new Entity();
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			entity.serialize(baos);
+			b1 = baos.toByteArray();
+		}
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			dos.writeShort(Short.reverseBytes(entity.s1));
+			b2 = baos.toByteArray();
+		}
+		Assert.assertArrayEquals(b1, b2);
 	}
 	
 	@Test
-	public void testOrder() throws ConversionException {
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		entity.serialize(baos);
-		byte[] arr = baos.toByteArray();
-		Assert.assertEquals(arr[0], 1);
-		Assert.assertEquals(arr[1], 2);
-		Assert.assertEquals(arr[2], 3);
+	public void testInt() throws ConversionException, IOException {
+		class Entity extends DataPacket{@LittleEndian @INT @Order(0)public int s1 = Integer.MIN_VALUE;}
+		byte[] b1;
+		byte[] b2;
+		Entity entity = new Entity();
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			entity.serialize(baos);
+			b1 = baos.toByteArray();
+		}
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			dos.writeInt(Integer.reverseBytes(entity.s1));
+			b2 = baos.toByteArray();
+		}
+		Assert.assertArrayEquals(b1, b2);
+	}
+	
+	@Test
+	public void testLong() throws ConversionException, IOException {
+		class Entity extends DataPacket{@LittleEndian @LONG @Order(0)public long s1 = Long.MIN_VALUE;}
+		byte[] b1;
+		byte[] b2;
+		Entity entity = new Entity();
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			entity.serialize(baos);
+			b1 = baos.toByteArray();
+		}
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			dos.writeLong(Long.reverseBytes(entity.s1));
+			b2 = baos.toByteArray();
+		}
+		Assert.assertArrayEquals(b1, b2);
+	}
+	
+	@Test
+	public void testBigInteger() throws ConversionException, IOException {
+		class Entity extends DataPacket{
+			@LittleEndian @Signed @LONG @Order(0)public BigInteger s1 = BigInteger.valueOf(Long.MIN_VALUE);}
+		byte[] b1;
+		byte[] b2;
+		Entity entity = new Entity();
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			entity.serialize(baos);
+			b1 = baos.toByteArray();
+		}
+		{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			DataOutputStream dos = new DataOutputStream(baos);
+			dos.writeLong(Long.reverseBytes(entity.s1.longValue()));
+			b2 = baos.toByteArray();
+		}
+		Assert.assertArrayEquals(b1, b2);
 	}
 }
