@@ -7,6 +7,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
@@ -28,13 +29,13 @@ import org.junit.Test;
 import test.TestUtils;
 
 public class TestCustomConversion {
-	public static class Converter1 extends TypeConverter{
+	public static class Converter1 extends TypeConverter<Timestamp>{
 		@Override
-		public void serialize(Object obj, TypeConverter.Output context) throws IOException {
+		public void serialize(Timestamp obj, TypeConverter.Output context) throws IOException {
 			context.writeLong(((Timestamp)obj).getTime());
 		}
 		@Override
-		public Object deserialize(Input input) throws IOException{
+		public Timestamp deserialize(Input input) throws IOException{
 			return new Timestamp(input.readLong());
 		}
 	}
@@ -99,9 +100,9 @@ public class TestCustomConversion {
 		public Timestamp ts;
 	}
 	
-	public static class Converter2 extends TypeConverter{
+	public static class Converter2 extends TypeConverter<Timestamp>{
 		@Override
-		public void serialize(Object obj, TypeConverter.Output context) throws IOException {
+		public void serialize(Timestamp obj, TypeConverter.Output context) throws IOException {
 			Assert.assertEquals(context.getName(), "ts");
 			Assert.assertEquals(context.isUnsigned(), false);
 			Assert.assertEquals(context.isSigned(), true);
@@ -117,7 +118,7 @@ public class TestCustomConversion {
 			Assert.assertEquals(context.written(), 8);
 		}
 		@Override
-		public Object deserialize(Input context) throws IOException{
+		public Timestamp deserialize(Input context) throws IOException{
 			Assert.assertEquals(context.getName(), "ts");
 			Assert.assertEquals(context.isUnsigned(), false);
 			Assert.assertEquals(context.isSigned(), true);
@@ -149,14 +150,29 @@ public class TestCustomConversion {
 		@Order(0)
 		@UserDefined(Converter3.class)
 		@Length(1+1+2+2+4+4+8+8+3)
+		@CHARSET(handler=CharsetHandler.class)
 		public byte[] customData;
 	}
 	
-	public static class Converter3 extends TypeConverter{
+	public static final class CharsetHandler extends ModifierHandler<Charset>{
+
 		@Override
-		public void serialize(Object obj, TypeConverter.Output context) throws IOException {
-			byte[] orig = (byte[])obj;
-			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(orig));
+		public Charset handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+			return StandardCharsets.UTF_16;
+		}
+
+		@Override
+		public Charset handleSerialize0(String fieldName, Object entity) {
+			return StandardCharsets.UTF_16;
+		}
+		
+	}
+	
+	public static class Converter3 extends TypeConverter<byte[]>{
+		@Override
+		public void serialize(byte[] obj, TypeConverter.Output context) throws IOException {
+			Assert.assertEquals(context.getCharset(), StandardCharsets.UTF_16);
+			DataInputStream dis = new DataInputStream(new ByteArrayInputStream(obj));
 			context.writeByte(dis.readByte());
 			context.writeByte(dis.readByte());
 			context.writeShort(dis.readShort());
@@ -165,11 +181,12 @@ public class TestCustomConversion {
 			context.writeInt(dis.readInt());
 			context.writeLong(dis.readLong());
 			context.writeLong(dis.readLong());
-			context.writeBytes(Arrays.copyOfRange(orig, orig.length-3, orig.length));
+			context.writeBytes(Arrays.copyOfRange(obj, obj.length-3, obj.length));
 			Assert.assertEquals(context.written(), context.length());
 		}
 		@Override
-		public Object deserialize(Input context) throws IOException{
+		public byte[] deserialize(Input context) throws IOException{
+			Assert.assertEquals(context.getCharset(), StandardCharsets.UTF_16);
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			DataOutputStream dos = new DataOutputStream(baos);
 			dos.writeByte(context.readUnsignedByte());
@@ -201,5 +218,53 @@ public class TestCustomConversion {
 		dos.write("abc".getBytes());
 		entity.customData = baos.toByteArray();
 		TestUtils.serializeMultipleTimesAndRestore(entity);
+	}
+	
+	@Signed
+	@BigEndian
+	public static final class Entity4 extends DataPacket{
+		@Order(0)
+		@UserDefined(Converter4.class)
+		@CHARSET("UTF-8")
+		@Length(2)
+		public byte[] customData;
+		@Order(1)
+		@UserDefined(Converter4.class)
+		@CHARSET("GBK")
+		@Length(8)
+		public Timestamp customData2;
+	}
+	
+	public static class Converter4 extends TypeConverter<Object>{
+		@Override
+		public void serialize(Object obj, TypeConverter.Output context) throws IOException {
+			String name = context.getName();
+			if("customData".equals(name)) {
+				Assert.assertEquals(context.getCharset(), Charset.forName("UTF-8"));
+				context.writeBytes((byte[])obj);
+			}else {
+				Assert.assertEquals(context.getCharset(), Charset.forName("GBK"));
+				context.writeLong(((Timestamp)obj).getTime());
+			}
+		}
+		@Override
+		public Object deserialize(Input context) throws IOException{
+			String name = context.getName();
+			if("customData".equals(name)) {
+				Assert.assertEquals(context.getCharset(), Charset.forName("UTF-8"));
+				return context.readBytes(context.length());
+			}else {
+				Assert.assertEquals(context.getCharset(), Charset.forName("GBK"));
+				return new Timestamp(context.readLong());
+			}
+		}
+	}
+	
+	@Test
+	public void test4() throws Exception {
+		Entity4 entity4 = new Entity4();
+		entity4.customData = new byte[] {1,2};
+		entity4.customData2 = new Timestamp(System.currentTimeMillis());
+		TestUtils.serializeMultipleTimesAndRestoreConcurrently(entity4, 1500);
 	}
 }

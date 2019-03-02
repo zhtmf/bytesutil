@@ -348,26 +348,6 @@ public class TestCase91{
 	
 	@Test
 	public void testConcurrency() throws Exception {
-		final Entity entity = new Entity();
-		Thread[] ts = new Thread[10];
-		for(int i=0;i<10;++i) {
-			Thread t = new Thread() {
-				@Override
-				public void run() {
-					try {
-						TestUtils.serializeMultipleTimesAndRestore(entity,5000);
-					} catch (Exception e) {
-					    throw new Error(e);
-					}
-				}
-			};
-			ts[i] = t;
-		}
-		for(Thread thread:ts) {
-			thread.start();
-		}
-		for(Thread thread:ts) {
-			thread.join();
-		}
+		TestUtils.serializeMultipleTimesAndRestoreConcurrently(new Entity(), 5000);
 	}
 }

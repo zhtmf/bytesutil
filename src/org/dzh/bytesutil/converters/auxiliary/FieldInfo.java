@@ -93,6 +93,7 @@ public class FieldInfo{
 	 */
 	public final ModifierHandler<Integer> lengthHandler;
 	public final ModifierHandler<Integer> listLengthHandler;
+	@SuppressWarnings("rawtypes")
 	public final TypeConverter userDefinedConverter;
 	/**
 	 * Charset of this field, null if not defined
@@ -267,7 +268,7 @@ public class FieldInfo{
 			}
 		}
 		
-		TypeConverter typeConverter = null;
+		TypeConverter<?> typeConverter = null;
 		UserDefined userDefined = annotation(UserDefined.class);
 		if(userDefined!=null) {
 			if(lengthDefined && length<0 && lengthHandler==null) {

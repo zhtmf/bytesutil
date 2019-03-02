@@ -92,10 +92,10 @@ public class TestCaseFieldInfo {
 			TestUtils.assertExactException(e, FieldInfo.class, 1);
 		}
 		try {
-			class MyConverter extends TypeConverter{
-				public void serialize(Object obj, Output output) throws IOException {
+			class MyConverter extends TypeConverter<Timestamp>{
+				public void serialize(Timestamp obj, Output output) throws IOException {
 				}
-				public Object deserialize(Input input) throws IOException {
+				public Timestamp deserialize(Input input) throws IOException {
 					return null;
 				}}
 			class Entity extends DataPacket{@Order(0)@UserDefined(MyConverter.class)@Length public Timestamp ts;}
@@ -105,12 +105,12 @@ public class TestCaseFieldInfo {
 			TestUtils.assertExactException(e, FieldInfo.class, 23);
 		}
 		try {
-			class MyConverter extends TypeConverter{
+			class MyConverter extends TypeConverter<Timestamp>{
 				@SuppressWarnings("unused")
 				public MyConverter() {throw new IllegalStateException();}
-				public void serialize(Object obj, Output output) throws IOException {
+				public void serialize(Timestamp obj, Output output) throws IOException {
 				}
-				public Object deserialize(Input input) throws IOException {
+				public Timestamp deserialize(Input input) throws IOException {
 					return null;
 				}}
 			class Entity extends DataPacket{@Order(0)@UserDefined(MyConverter.class)@Length(8) public Timestamp ts;}

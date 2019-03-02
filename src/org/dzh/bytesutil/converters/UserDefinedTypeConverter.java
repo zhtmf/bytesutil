@@ -11,11 +11,15 @@ import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
 public class UserDefinedTypeConverter implements Converter<Object> {
+	@SuppressWarnings("unchecked")
 	@Override
 	public void serialize(Object value, OutputStream dest, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
 		Output output = OutputImpl.getThreadLocalInstance(
-				ctx, dest, Utils.lengthForSerializingUserDefinedType(ctx, self));
+				ctx, dest
+				, Utils.lengthForSerializingUserDefinedType(ctx, self)
+				, Utils.charsetForSerializingCHAR(ctx, self)
+				);
 		ctx.userDefinedConverter.serialize(value,output);
 		if(output.written()!=output.length()) {
 			throw new ExtendedConversionException(ctx,
@@ -28,7 +32,10 @@ public class UserDefinedTypeConverter implements Converter<Object> {
 	public Object deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
 			throws IOException, ConversionException {
 		Object ret = ctx.userDefinedConverter.deserialize(
-				InputImpl.getThreadLocalInstance(ctx, is, Utils.lengthForDeserializingUserDefinedType(ctx, self, is)));
+				InputImpl.getThreadLocalInstance(ctx, is
+						, Utils.lengthForDeserializingUserDefinedType(ctx, self, is)
+						, Utils.charsetForDeserializingCHAR(ctx, self, is)
+						));
 		if(ret==null) {
 			throw new ExtendedConversionException(ctx,
 					"should return non-null value from custom TypeConverters")

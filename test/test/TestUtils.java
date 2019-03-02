@@ -12,6 +12,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
@@ -99,6 +100,39 @@ public class TestUtils {
 			DataPacket restored = entity.getClass().newInstance();
 			restored.deserialize(is);
 			Assert.assertTrue(equalsOrderFields(entity, restored));
+		}
+	}
+	public static void serializeMultipleTimesAndRestoreConcurrently(final DataPacket entity, final int times) throws Exception {
+		Thread[] ts = new Thread[10];
+		final ArrayBlockingQueue<Throwable> errors = new ArrayBlockingQueue<>(10);
+		for(int i=0;i<10;++i) {
+			Thread t = new Thread() {
+				@Override
+				public void run() {
+					try {
+						TestUtils.serializeMultipleTimesAndRestore(entity,times);
+					} catch (Exception e) {
+						try {
+							errors.put(e);
+						} catch (InterruptedException e1) {
+							System.exit(1);
+						}
+					}
+				}
+			};
+			ts[i] = t;
+		}
+		for(Thread thread:ts) {
+			thread.start();
+		}
+		for(Thread thread:ts) {
+			thread.join();
+		}
+		if( ! errors.isEmpty()) {
+			for(Throwable t:errors) {
+				t.printStackTrace();
+			}
+			Assert.fail(errors.toString());
 		}
 	}
 	public static void serializeMultipleTimesAndRestore(DataPacket entity) throws Exception {

@@ -13,6 +13,7 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedIOException;
 class OutputImpl implements TypeConverter.Output {
 	private FieldInfo fieldInfo;
 	private OutputStream dest;
+	private Charset fastCharset;
 	private int written;
 	private int fastLength;
 	private static final ThreadLocal<OutputImpl> threadLocal = new ThreadLocal<OutputImpl>() {
@@ -23,11 +24,12 @@ class OutputImpl implements TypeConverter.Output {
 	
 	private OutputImpl() {}
 	
-	private void reset(FieldInfo fieldInfo,OutputStream dest, int length) {
+	private void reset(FieldInfo fieldInfo,OutputStream dest, int length, Charset cs) {
 		this.fieldInfo = fieldInfo;
 		this.dest = dest;
 		this.written = 0;
 		this.fastLength = length;
+		this.fastCharset = cs;
 	}
 	private void checkBytesToWrite(int n) throws IOException {
 		if(written+n>fastLength) {
@@ -37,9 +39,9 @@ class OutputImpl implements TypeConverter.Output {
 		written += n;
 	}
 	
-	public static OutputImpl getThreadLocalInstance(FieldInfo fieldInfo,OutputStream dest, int length) {
+	public static OutputImpl getThreadLocalInstance(FieldInfo fieldInfo,OutputStream dest, int length, Charset cs) {
 		OutputImpl ret = threadLocal.get();
-		ret.reset(fieldInfo, dest, length);
+		ret.reset(fieldInfo, dest, length, cs);
 		return ret;
 	}
 
@@ -85,7 +87,7 @@ class OutputImpl implements TypeConverter.Output {
 	
 	@Override
 	public Charset getCharset() {
-		return fieldInfo.charset;
+		return fastCharset;
 	}
 
 	@Override

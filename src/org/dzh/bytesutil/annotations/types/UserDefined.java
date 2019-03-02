@@ -11,6 +11,7 @@ import org.dzh.bytesutil.TypeConverter;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface UserDefined {
+	@SuppressWarnings("rawtypes")
 	Class<? extends TypeConverter> value();
 	int length() default -1;
 }

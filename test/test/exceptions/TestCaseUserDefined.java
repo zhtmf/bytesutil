@@ -32,15 +32,15 @@ public class TestCaseUserDefined {
 		public Timestamp ts;
 	}
 	
-	public static class Converter extends TypeConverter{
+	public static class Converter extends TypeConverter<Timestamp>{
 		@Override
-		public void serialize(Object obj, TypeConverter.Output context) throws IOException {
+		public void serialize(Timestamp obj, TypeConverter.Output context) throws IOException {
 			context.writeLong(Long.MAX_VALUE);
 			Assert.assertEquals(context.written(), 8);
 			context.writeLong(8);
 		}
 		@Override
-		public Object deserialize(Input context) throws IOException{
+		public Timestamp deserialize(Input context) throws IOException{
 			Assert.assertEquals(context.available(), 8);
 			context.readLong();
 			Assert.assertEquals(context.available(), 0);
@@ -79,14 +79,14 @@ public class TestCaseUserDefined {
 		public Timestamp ts;
 	}
 	
-	public static class Converter2 extends TypeConverter{
+	public static class Converter2 extends TypeConverter<Timestamp>{
 		@Override
-		public void serialize(Object obj, TypeConverter.Output context) throws IOException {
+		public void serialize(Timestamp obj, TypeConverter.Output context) throws IOException {
 			context.writeInt(3);
 			Assert.assertEquals(context.written(), 4);
 		}
 		@Override
-		public Object deserialize(Input context) throws IOException{
+		public Timestamp deserialize(Input context) throws IOException{
 			Assert.assertEquals(context.available(), 8);
 			return null;
 		}

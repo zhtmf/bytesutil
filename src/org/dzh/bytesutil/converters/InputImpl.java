@@ -14,6 +14,7 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedIOException;
 public class InputImpl implements TypeConverter.Input{
 	private FieldInfo fieldInfo;
 	private InputStream src;
+	private Charset fastCharset;
 	private int read;
 	private int fastLength;
 	private static final ThreadLocal<InputImpl> threadLocal = new ThreadLocal<InputImpl>() {
@@ -24,11 +25,12 @@ public class InputImpl implements TypeConverter.Input{
 	
 	private InputImpl() {}
 	
-	private void reset(FieldInfo fieldInfo,InputStream src, int length) {
+	private void reset(FieldInfo fieldInfo,InputStream src, int length, Charset cs) {
 		this.fieldInfo = fieldInfo;
 		this.src = src;
 		this.read = 0;
 		this.fastLength = length;
+		this.fastCharset = cs;
 	}
 	private void checkBytesToRead(int n) throws IOException {
 		if(read+n>fastLength) {
@@ -37,9 +39,9 @@ public class InputImpl implements TypeConverter.Input{
 		}
 		read += n;
 	}
-	public static InputImpl getThreadLocalInstance(FieldInfo fieldInfo,InputStream src, int length) {
+	public static InputImpl getThreadLocalInstance(FieldInfo fieldInfo,InputStream src, int length, Charset cs) {
 		InputImpl ret = threadLocal.get();
-		ret.reset(fieldInfo, src, length);
+		ret.reset(fieldInfo, src, length, cs);
 		return ret;
 	}
 
@@ -85,7 +87,7 @@ public class InputImpl implements TypeConverter.Input{
 	
 	@Override
 	public Charset getCharset() {
-		return fieldInfo.charset;
+		return fastCharset;
 	}
 
 	@Override
@@ -94,9 +96,9 @@ public class InputImpl implements TypeConverter.Input{
 	}
 
 	@Override
-	public int readByte() throws IOException {
+	public byte readByte() throws IOException {
 		checkBytesToRead(1);
-		return StreamUtils.readByte(src, true);
+		return (byte) StreamUtils.readByte(src, true);
 	}
 
 	@Override
