@@ -94,6 +94,7 @@ public class TestCaseUserDefined {
 	@Test
 	public void test3() throws Exception {
 		Entity2 entity = new Entity2();
+		entity.ts = Timestamp.valueOf("2011-1-1 23:00:59.333");
 		try {
 			TestUtils.serializeMultipleTimesAndRestore(entity);
 		} catch (Exception e) {

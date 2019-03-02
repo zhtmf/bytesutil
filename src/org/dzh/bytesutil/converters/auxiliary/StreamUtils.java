@@ -224,8 +224,6 @@ public class StreamUtils {
 			}
 			length = (int)_length;
 			break;
-		case LONG:
-			
 		default:throw new Error("cannot happen");
 		}
 		return length;

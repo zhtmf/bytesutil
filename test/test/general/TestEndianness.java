@@ -17,6 +17,8 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 import org.junit.Assert;
 import org.junit.Test;
 
+import test.TestUtils;
+
 public class TestEndianness {
 	
 	@Test
@@ -101,9 +103,10 @@ public class TestEndianness {
 	}
 	
 	@Test
-	public void testBigInteger2() throws ConversionException, IOException {
+	public void testBigInteger2() throws Exception {
 		class Entity extends DataPacket{
-			@LittleEndian @Unsigned @LONG @Order(0)public BigInteger s1 = BigInteger.valueOf(Long.MAX_VALUE).multiply(new BigInteger("2"));}
+			@LittleEndian @Unsigned @LONG @Order(0)
+			public BigInteger s1 = BigInteger.valueOf(Long.MAX_VALUE).multiply(new BigInteger("2"));}
 		byte[] b1;
 		byte[] b2;
 		Entity entity = new Entity();
@@ -119,5 +122,9 @@ public class TestEndianness {
 			b2 = baos.toByteArray();
 		}
 		Assert.assertArrayEquals(b1, b2);
+		Entity restored = new Entity();
+		restored.s1 = null;
+		restored.deserialize(TestUtils.newInputStream(b2));
+		Assert.assertTrue(TestUtils.equalsOrderFields(entity, restored));
 	}
 }
