@@ -146,8 +146,8 @@ public class ClassInfo {
 				|| (fi.dataType == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0)
 				|| (fi.dataType == DataType.USER_DEFINED && fi.localAnnotation(UserDefined.class).length()<0))
 						&& fi.localAnnotation(ListLength.class)==null) {
-					throw forContext(cls, name, "this field is a list of Data Type that supports dynamic length, "
-							+ "to avoid ambiguity, use ListLength but not Length to specify the list length")
+					throw forContext(cls, name, "this field is a list of type that utilizes @Length, "
+							+ "to avoid ambiguity, use @ListLength but not @Length to specify the list length")
 						.withSiteAndOrdinal(ClassInfo.class, 5);
 				}
 			}

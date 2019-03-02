@@ -14,7 +14,7 @@ import org.dzh.bytesutil.annotations.types.UserDefined;
 
 /**
  * Interface for custom converters used in processing fields marked with
- * {@code UserDefined}
+ * {@link UserDefined}
  * 
  * @author dzh
  */

@@ -76,8 +76,8 @@ public abstract class DataPacket {
 			if(value==null) {
 				/*
 				 * null values shall not be permitted as it may be impossible 
-				 * to deserialize the byte sequence generated using the same scheme
-				 * Note: this modification causes incompatibility with former versions
+				 * to deserialize the byte sequence generated
+				 * Note: this modification causes incompatibility with former releases
 				 */
 				throw new ExtendedConversionException(this.getClass(),fi.name,
 						"this field is intended to be processed but its value is null")
