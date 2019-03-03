@@ -102,6 +102,13 @@ public class TestUtils {
 			Assert.assertTrue(equalsOrderFields(entity, restored));
 		}
 	}
+	public static byte[] randomArray(int size) {
+		byte[] array = new byte[size];
+		for(int i=0;i<array.length;++i) {
+			array[i] = (byte) (Math.random()*127);
+		}
+		return array;
+	}
 	public static void serializeMultipleTimesAndRestoreConcurrently(final DataPacket entity, final int times) throws Exception {
 		Thread[] ts = new Thread[10];
 		final ArrayBlockingQueue<Throwable> errors = new ArrayBlockingQueue<>(10);

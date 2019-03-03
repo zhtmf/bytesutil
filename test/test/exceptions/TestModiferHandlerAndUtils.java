@@ -126,4 +126,28 @@ public class TestModiferHandlerAndUtils {
 			TestUtils.assertExactExceptionInHierarchy(e, ModifierHandler.class, 3);
 		}
 	}
+	
+	public static class Handler4 extends ModifierHandler<Integer>{
+		@Override
+		public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+			for(int i=0;i<ModifierHandler.HANDLER_READ_BUFFER_SIZE*2;++i) {
+				is.read();
+			}
+			return 1;
+		}
+		@Override
+		public Integer handleSerialize0(String fieldName, Object entity) {
+			return 1;
+		}
+	};
+	@Test
+	public void test4() throws ConversionException {
+		try {
+			class Entity extends DataPacket{@Order(0)@RAW @Length(handler=Handler4.class) public byte[] ts;}
+			new Entity().deserialize(TestUtils.newInputStream(TestUtils.randomArray(248)));
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactExceptionInHierarchy(e, ModifierHandler.class, 4);
+		}
+	}
 }

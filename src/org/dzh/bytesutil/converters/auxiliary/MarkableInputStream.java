@@ -9,25 +9,22 @@ import java.util.Arrays;
  * <tt>reset()</tt> operations but does not maintain any internal buffer.
  * <p>
  * Due to the way how this library is used, the <tt>InputStream</tt> object
- * passed in by client code will continue to be used again by client code after
- * we finish our work. Classes like {@link java.io.BufferedInputStream
- * BufferedInputStream} effectively prevent such use
- * because of their internal buffering mechanics, which reads more data than
- * needed and those data are "detained" by them and cannot be "put back" to the
- * original stream.
+ * passed in by client code may be used again by client code thereafter. Classes
+ * like {@link java.io.BufferedInputStream BufferedInputStream} effectively
+ * prevent such use because of their internal buffering mechanics, which reads
+ * more data than needed and those data cannot be put back to the original
+ * stream.
  * 
  * @author dzh
  */
 public final class MarkableInputStream extends InputStream implements AutoCloseable{
 	
-	private static final int MAX_BUFFER_SIZE = Integer.MAX_VALUE-8;
-	private static final int INITIAL_BUFFER_SIZE = 8;
 	private static final int[] SHARED_EMPTY_BUFFER = new int[0];
 	private InputStream in;
-	private int[] buffer;
-	private int max;
-	private int pos;
-	private int cur;
+	private int[] buffer = SHARED_EMPTY_BUFFER;
+	private int bufferUpperLimit;
+	private int bufferReadPos;
+	private int bufferFillPos;
 	
 	public MarkableInputStream(InputStream is) {
 		if(is==null) {
@@ -42,7 +39,7 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
 		checkClosed();
 		if(!marked())
 			return in.read();
-		if( ! expandIfNeeded()) {
+		if(bufferReadPos>=bufferUpperLimit) {
 			/*
 			 * throw away all bytes recorded after last call to mark() 
 			 * because more data than readlimit has been read
@@ -50,15 +47,15 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
 			reset0();
 			return in.read();
 		}else {
-			if(pos<cur) {
-				return buffer[pos++];
+			if(bufferReadPos<bufferFillPos) {
+				return buffer[bufferReadPos++];
 			}
 			int b = in.read();
 			if(b==-1) {
 				return b;
 			}
-			buffer[pos++] = b;
-			++cur;
+			buffer[bufferReadPos++] = b;
+			++bufferFillPos;
 			return b;
 		}
 	}
@@ -66,77 +63,59 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
 	@Override
 	public void mark(int readlimit) {
 		checkClosed();
-		if(readlimit<INITIAL_BUFFER_SIZE) {
-			readlimit = INITIAL_BUFFER_SIZE;
+		if(readlimit<=0) {
+			throw new IllegalArgumentException("invalid mark limit "+readlimit);
 		}
 		if(marked()) {
 			/*
-			 * mark again, throw away bytes before pos 
+			 * mark again, throw away bytes before bufferReadPos 
 			 * and copy the remaining data to the beginning of buffer
 			 */
-			if(readlimit<buffer.length) {
-				readlimit = buffer.length;
+			if(readlimit>buffer.length) {
+				this.buffer = Arrays.copyOf(buffer, readlimit);
 			}
-			max = readlimit;
-			System.arraycopy(buffer, pos, buffer, 0, buffer.length-pos);
-			cur -= pos;
-			pos = 0;
+			System.arraycopy(this.buffer, bufferReadPos, buffer, 0, bufferUpperLimit - bufferReadPos);
+			bufferUpperLimit = readlimit;
+			bufferFillPos -= bufferReadPos;
+			bufferFillPos = Math.min(bufferFillPos, bufferUpperLimit);
+			bufferReadPos = 0;
 			return;
 		}
-		max = readlimit;
-		buffer = Arrays.copyOf(buffer, INITIAL_BUFFER_SIZE);
-		pos = 0;
-		cur = 0;
+		bufferUpperLimit = readlimit;
+		buffer = Arrays.copyOf(buffer, readlimit);
+		bufferReadPos = 0;
+		bufferFillPos = 0;
 	}
 
 	@Override
 	public void reset() throws IOException {
 		if(marked()) {
-			pos = 0;
+			bufferReadPos = 0;
 		}else {
 			throw new IOException("not marked or already depleted buffer");
 		}
 	}
-
-	@Override
-	public int available() throws IOException {
-		checkClosed();
-		return marked() ? max-pos : 0;
-	}
-	
-	private void reset0() {
-		buffer = SHARED_EMPTY_BUFFER;
-		max = -1;
-		pos = -1;
-		cur = -1;
+	public int remaining() {
+		return marked() ? bufferFillPos - bufferReadPos : 0;
 	}
 	public boolean marked() {
-		return pos>=0;
+		return bufferReadPos>=0;
 	}
-	private boolean expandIfNeeded() {
-		int pos = this.pos;
-		int length = buffer.length;
-		if(pos>=length) {
-			if(length == max) {
-				return false;
-			}
-			length = length*2;
-			if(length<0 || length>=MAX_BUFFER_SIZE) {
-				throw new OutOfMemoryError();
-			}
-			length = Math.min(length, max);
-			buffer = Arrays.copyOf(buffer, length);
-		}
-		return true;
+
+	private void reset0() {
+		bufferUpperLimit = -1;
+		bufferReadPos = -1;
+		bufferFillPos = -1;
 	}
 	private void checkClosed() {
 		if(in==null)
-			throw new IllegalStateException("Stream Closed");
+			throw new IllegalStateException("stream closed");
 	}
 	public void close() throws IOException {
 		reset0();
-		in = null;
+		in = null;//intended
 	}
+	public int available() throws IOException {return in.available();}
 	public int read(byte[] b) throws IOException {return super.read(b);}
 	public int read(byte[] b, int off, int len) throws IOException {return super.read(b, off, len);}
 	public boolean markSupported() {return true;}
@@ -145,12 +124,13 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
 		if(n<=0) {
 			return 0;
 		}
-		do{
+		long tmp = n;
+		while(n-->0){
 			int b = read();
 			if(b==-1) {
 				break;
 			}
-		}while(n-->0);
-		return n;
+		}
+		return tmp - n - 1;
 	}
 }

@@ -1,22 +1,22 @@
 package org.dzh.bytesutil.converters.auxiliary;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
-/** * Helper class which is called during runtime to obtain dynamic values such as
+/**
+ * Helper class which is called during runtime to obtain dynamic values such as
  * length of list, charset of strings etc.
  * <p>
- * Within the handler method, typically users can refer to another property of
- * the half-constructed entity class object passed as the second parameter, or
- * read ahead in the input stream during deserialization for some
- * values.
+ * Within the handler method, users can refer to another property of the
+ * half-constructed entity class object passed as the second parameter, or read
+ * from input stream if they need to look ahead to make some decisions.
  * <p>
- * The input stream object passed as the third parameter is a special one that
- * any reads will be undone after the method returns, so it is OK to read within
- * the method, however there is a limit on how many bytes users can read.
+ * The input stream passed as the third parameter is a special one that any
+ * reads will be undone after handler method returns, however users cannot read
+ * more than {@link #HANDLER_READ_BUFFER_SIZE} bytes. An exception will be
+ * thrown <b>after</b> the handler method returns if they do.
  * 
  * @author dzh
  *
@@ -27,10 +27,9 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintEx
 public abstract class ModifierHandler<E> {
 	
 	/**
-	 * buffer size of {@link BufferedInputStream} when calling 
-	 * custom handlers
+	 * limit of buffer
 	 */
-	static final int HANDLER_READ_BUFFER_SIZE = 256;
+	public static final int HANDLER_READ_BUFFER_SIZE = 32;
 	
 	boolean checkLength = false;
 	
@@ -40,6 +39,17 @@ public abstract class ModifierHandler<E> {
 		try {
 			ret = handleDeserialize0(fieldName, entity, is);
 			checkReturnValue(ret);
+			/*
+			 * There is still a chance for errors that are hard to detect: remaining
+			 * processing of this entity does not use up all bytes marked after this
+			 * handler method returns, then some bytes in the original stream passed to
+			 * deserialize() are forever lost. But at least we limit the buffer size to a
+			 * quite small value and thus reduce the chance for such errors.
+			 */
+			if( ! is.marked()) {
+				throw new UnsatisfiedConstraintException("should not read more than  "+HANDLER_READ_BUFFER_SIZE+" in the handler")
+					.withSiteAndOrdinal(ModifierHandler.class, 4);
+			}
 			is.reset();
 		} catch (IOException e) {
 			throw new UnsatisfiedConstraintException(e)

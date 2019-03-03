@@ -119,7 +119,7 @@ public class Utils {
 		return length;
 	}
 	
-	public static int lengthForDeserializingListLength(FieldInfo ctx,Object self, MarkableInputStream bis) throws ConversionException {
+	public static int lengthForDeserializingListLength(FieldInfo ctx,Object self, MarkableInputStream bis){
 		Integer length = ctx.listLength;
 		if(length<0 && ctx.listLengthHandler!=null) {
 			length = ctx.listLengthHandler.handleDeserialize(ctx.name, self, bis);
