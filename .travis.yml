@@ -1,7 +1,12 @@
 language: java
 
-script: mvn clean package -DrepoToken=${COVERALLS_REPO_TOKEN}
-
 branches:
   only:
   - master
+
+install:
+  - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+script:
+  - mvn test jacoco:report
+after_success:
+  - mvn coveralls:report
