@@ -33,11 +33,11 @@ public class TestClassParsing {
 			JavaClass clazz = new JavaClass();
 			try {
 				clazz.deserialize(inputStream);
-				System.out.println(clazz);
+//				System.out.println(clazz);
 			} catch (Exception e) {
 				e.printStackTrace();
 				try {
-					System.out.println(clazz);
+//					System.out.println(clazz);
 				} catch (Exception e1) {
 				}
 				Assert.fail();
