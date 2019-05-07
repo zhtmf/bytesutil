@@ -1,6 +1,5 @@
 language: java
 
 branches:
-  master
-
-after_success: "sbt coveralls"
+  only:
+  - master
