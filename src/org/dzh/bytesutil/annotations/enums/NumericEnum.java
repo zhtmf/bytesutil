@@ -1,8 +1,8 @@
 package org.dzh.bytesutil.annotations.enums;
 
 /**
- * "Marker" interface used to enable an enum-typed field be mapped to numeric
- * values.
+ * Marker interface used to make an enum-typed field eligible to mapped to
+ * numeric values.
  * <p>
  * The enum class implementing this interface should return distinct value for
  * each enum member and those values should be within the defined range of
@@ -11,6 +11,8 @@ package org.dzh.bytesutil.annotations.enums;
  * If for some reason the enum class cannot implement this interface, it should
  * return that numeric value as a string in {@link #toString()} methods for each
  * enum member.
+ * 
+ * @author dzh
  */
 public interface NumericEnum {
 	/**

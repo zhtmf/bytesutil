@@ -28,7 +28,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 @Target({ TYPE, FIELD })
 public @interface CHARSET {
 	/**
-	 * Name of the charset, which must be a valid charset for the current platform.
+	 * Name of the charset, which must be a valid charset name.
 	 * 
 	 * @return
 	 */
@@ -37,7 +37,7 @@ public @interface CHARSET {
 	/**
 	 * <p>
 	 * Implementation class of {@link ModifierHandler} to be referred to when the
-	 * charset of current target cannot be determined during initial parsing.
+	 * charset of current target cannot be determined statically.
 	 * <p>
 	 * If this property is set, {@link #value() value} is ignored.
 	 * 

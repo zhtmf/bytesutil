@@ -34,8 +34,8 @@ public class DataPacketConverter implements Converter<DataPacket> {
 				throw new ExtendedConversionException(
 						self.getClass(),fi.name,
 						String.format("field value is null and"
-								+ " instance of the entity class [%s] cannot be created"
-								, fi.name, fi.getFieldType()),e)
+								+ " entity class [%s] cannot be instantiated"
+								, fi.name, fi.isEntityList ? fi.listComponentClass : fi.getFieldType()),e)
 						.withSiteAndOrdinal(DataPacketConverter.class, 11);
 			}
 		}

@@ -9,8 +9,8 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Specifies that a single integral field or all integral fields in a class
- * should be interpreted as little-endian.
+ * Specifies that a single integral-typed field or all integral-typed fields in
+ * a class should be interpreted as little-endian.
  * <p>
  * Annotations on a specific field always override annotation at the class
  * level.

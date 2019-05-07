@@ -15,9 +15,9 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * {@link List} field.
  * <p>
  * To achieve backwards compatibility, {@link Length} can also be used to
- * specify length of a list but only when the component class is not a data dataType
- * that can be used together with a {@link Length} annotation to indicate dynamic
- * length. To avoid ambiguity, an exception will be thrown in this case.
+ * specify length of a list but only when the component class is not a data type
+ * that utilizes {@link Length} annotation. To avoid ambiguity, an exception
+ * will be thrown in such case.
  * 
  * @author dzh
  *

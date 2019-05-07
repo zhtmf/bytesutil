@@ -23,11 +23,11 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * property is not preferred.</li>
  * </ul>
  * <p>
- * And it is used in 3 different flavors:
+ * And it is used in three different flavors:
  * <ul>
  * <li>If {@link #value() value} is greater than 0, it is used to declare a
  * static length. In this case, it is the same as the <tt>value</tt> property of
- * <tt>CHAR</tt> or <tt>RAW</tt>.</li>
+ * <tt>CHAR</tt>, <tt>RAW</tt> etc.</li>
  * <li>If {@link #value() value} is left unassigned or assigned to a negative
  * value and {@link #handler() handler} is set to a class other than
  * {@link PlaceHolderHandler}, it is used to specify a handler class which
