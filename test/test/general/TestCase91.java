@@ -327,6 +327,19 @@ public class TestCase91{
 		@BigEndian
 		@LONG
 		public Long longa3 = Long.MIN_VALUE;
+		
+		@Order(57)
+		@BYTE
+		public boolean bool1 = false;
+		@Order(58)
+		@BYTE
+		public boolean bool2 = true;
+		@Order(59)
+		@BYTE
+		public Boolean bool3 = Boolean.TRUE;
+		@Order(60)
+		@BYTE
+		public Boolean bool4 = Boolean.FALSE;
 	}
 	
 	@Test

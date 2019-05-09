@@ -29,6 +29,8 @@ public class Converters {
 		tmp.put(Long.class, new LongConverter());
 		tmp.put(long.class, tmp.get(Long.class));
 		tmp.put(BigInteger.class, new BigIntegerConverter());
+		tmp.put(Boolean.class, new BooleanConverter());
+		tmp.put(boolean.class, tmp.get(Boolean.class));
 		converters = Collections.unmodifiableMap(tmp);
 	}
 }

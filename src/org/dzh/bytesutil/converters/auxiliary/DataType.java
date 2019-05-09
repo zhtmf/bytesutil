@@ -42,10 +42,12 @@ public enum DataType{
 				|| javaType == short.class
 				|| javaType == int.class
 				|| javaType == long.class
+				|| javaType == boolean.class
 				|| javaType == Byte.class
 				|| javaType == Short.class
 				|| javaType == Integer.class
 				|| javaType == Long.class
+				|| javaType == Boolean.class
 				/*
 				 * checking for validity of this enum class 
 				 * is done in EnumFieldInfo, not here.
