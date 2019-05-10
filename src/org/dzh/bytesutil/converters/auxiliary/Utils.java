@@ -184,17 +184,20 @@ public class Utils {
 			throws ConversionException, IOException {
 		Charset cs = Utils.charsetForSerializingCHAR(ctx, self);
 		byte[] bytes = str.getBytes(cs);
+		byte[] ending = ctx.endsWith;
 		int length = Utils.lengthForSerializingCHAR(ctx, self);
 		if(length<0) {
 			length = bytes.length;
 			StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
+			if(ending!=null) {
+				StreamUtils.writeBytes(dest, ending);
+			}
 		}else if(length!=bytes.length) {
 			throw new ExtendedConversionException(ctx,
 					String.format("length of string representation [%s] does not equals with declared CHAR length [%d]"
 								,str,length))
 						.withSiteAndOrdinal(Utils.class, 2);
 		}
-		StreamUtils.writeBytes(dest, bytes);
 	}
 	
 	public static final void serializeAsCHAR(long val, OutputStream dest, FieldInfo ctx, Object self)

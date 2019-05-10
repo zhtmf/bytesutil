@@ -19,6 +19,7 @@ import org.dzh.bytesutil.TypeConverter;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
+import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
@@ -51,6 +52,7 @@ public class FieldInfo{
 	
 	public final EntityHandler entityCreator;
 	
+	public final byte[] endsWith;
 	/**
 	 * Entity class that declares this field
 	 */
@@ -231,6 +233,18 @@ public class FieldInfo{
 				}
 				
 				lengthDefined = true;
+			}
+		}
+		{
+			EndsWith ew = localAnnotation(EndsWith.class);
+			if(ew==null) {
+				endsWith = null;
+			}else {
+				endsWith = ew.value();
+				if(endsWith.length==0) {
+					throw forContext(base.entityClass, name, "EndsWith array should be non-empty")
+						.withSiteAndOrdinal(FieldInfo.class, 11);
+				}
 			}
 		}
 		{
