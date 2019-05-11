@@ -37,8 +37,9 @@ public class StringConverter implements Converter<String> {
 		case CHAR:{
 			Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);
 			int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
-			if(length<0) {
+			if(length<0 && ctx.endsWith==null) {
 				length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+				return new String(StreamUtils.readBytes(is, length),cs);
 			}
 			if(length>=0) {
 				return new String(StreamUtils.readBytes(is, length),cs);
@@ -52,10 +53,11 @@ public class StringConverter implements Converter<String> {
 			while((b = is.read())!=-1) {
 				if(b==ew[ptr]) {
 					if(++ptr==ew.length) {
-						return new String(baos.toByteArray(),0,baos.size()-ew.length-1);
+						return new String(baos.toByteArray(),0,baos.size()-ew.length+1,cs);
 					}
+				}else {
+					ptr = 0;
 				}
-				ptr = 0;
 				baos.write(b);
 			}
 			throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name,

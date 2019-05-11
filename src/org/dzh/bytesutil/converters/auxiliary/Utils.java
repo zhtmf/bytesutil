@@ -187,9 +187,12 @@ public class Utils {
 		byte[] ending = ctx.endsWith;
 		int length = Utils.lengthForSerializingCHAR(ctx, self);
 		if(length<0) {
-			length = bytes.length;
-			StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
-			if(ending!=null) {
+			if(ending==null) {
+				length = bytes.length;
+				StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
+				StreamUtils.writeBytes(dest, bytes);
+			}else {
+				StreamUtils.writeBytes(dest, bytes);
 				StreamUtils.writeBytes(dest, ending);
 			}
 		}else if(length!=bytes.length) {
@@ -197,6 +200,8 @@ public class Utils {
 					String.format("length of string representation [%s] does not equals with declared CHAR length [%d]"
 								,str,length))
 						.withSiteAndOrdinal(Utils.class, 2);
+		}else {
+			StreamUtils.writeBytes(dest, bytes);
 		}
 	}
 	

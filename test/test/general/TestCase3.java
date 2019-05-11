@@ -82,6 +82,7 @@ public class TestCase3{
 		public List<SubSubEntity> entityList;
 	}
 	
+	//1+1+2+4+2+5+1+3+1
 	@Signed
 	@BigEndian
 	public static final class Entity2 extends DataPacket{

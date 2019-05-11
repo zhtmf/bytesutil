@@ -29,12 +29,6 @@ import org.dzh.bytesutil.annotations.types.CHAR;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface EndsWith {
-	
-	/**
-	 * TODO:
-	 */
-	public static final byte[] EOF = new byte[] {-1};
-
 	/**
 	 * Byte sequence used which indicates termination of a string. 
 	 * <p>

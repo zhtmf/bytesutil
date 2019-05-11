@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
@@ -158,53 +157,31 @@ public class ClassInfo {
 			{
 				CHAR ch = fi.localAnnotation(CHAR.class);
 				if(ch!=null) {
-					int val = ch.value();
-					boolean lengthDefined = fi.lengthDefined;
-					byte[] ew = fi.endsWith;
-					if(val<0 && !lengthDefined && ew==null) {
+					if(ch.value()<0 &&  ! fi.lengthDefined && fi.endsWith==null) {
 						throw forContext(cls, name, "this field is defined as CHAR, but its value property is negative"
-								+ " ,a Length annotation is not present and not annotated with EndsWith")
+								+ " and a Length annotation is not present on it")
 						.withSiteAndOrdinal(ClassInfo.class, 6);
 					}
-					if(ew!=null && (val>=0 || lengthDefined)) {
-						throw forContext(cls, name, "length of CHAR field should only be specified with either value property, "
-								+ "Length or EndsWith")
-						.withSiteAndOrdinal(ClassInfo.class, 10);
+					if(fi.endsWith!=null) {
+						if(ch.value()>0 || fi.lengthDefined) {
+							//TODO:
+							throw forContext(cls, name, "")
+							.withSiteAndOrdinal(ClassInfo.class, 10);
+						}
 					}
-					if(val>=0 && (ew!=null || lengthDefined)) {
-						throw forContext(cls, name, "length of CHAR field should only be specified with either value property, "
-								+ "Length or EndsWith")
+					if(fi.listComponentClass==null && (ch.value()>=0 && fi.customLengthDefined)) {
+						throw forContext(cls, name, "")
 						.withSiteAndOrdinal(ClassInfo.class, 11);
-					}
-					if(lengthDefined && (ew!=null || val>=0)) {
-						throw forContext(cls, name, "length of CHAR field should only be specified with either value property, "
-								+ "Length or EndsWith")
-						.withSiteAndOrdinal(ClassInfo.class, 12);
-					}
-					if(Arrays.equals(ew, EndsWith.EOF) && i!=fieldList.size()-1) {
-						throw forContext(cls, name, "ending array indicates that this is the last field in the stream"
-								+ " but it is not the last one in class declaration")
-						.withSiteAndOrdinal(ClassInfo.class, 14);
 					}
 				}
 			}
 			
-			{
-				RAW raw = fi.localAnnotation(RAW.class);
-				if(raw!=null) {
-					int val = raw.value();
-					boolean lengthDefined = fi.lengthDefined;
-					if(val<0 && !lengthDefined) {
-						throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
-								+ " and a Length annotation is not present on it")
+			RAW raw = fi.localAnnotation(RAW.class);
+			if(raw!=null && raw.value()<0) {
+				if( ! fi.lengthDefined)
+					throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
+							+ " and a Length annotation is not present on it")
 						.withSiteAndOrdinal(ClassInfo.class, 7);
-					}
-					if(val>=0 && lengthDefined) {
-						throw forContext(cls, name, "length of CHAR field should only be specified with"
-								+ " either value property or Length")
-						.withSiteAndOrdinal(ClassInfo.class, 13);
-					}
-				}
 			}
 			
 			UserDefined ud = fi.localAnnotation(UserDefined.class);

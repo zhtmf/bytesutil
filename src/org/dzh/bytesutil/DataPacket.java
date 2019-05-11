@@ -225,30 +225,35 @@ public abstract class DataPacket {
 				if(size>=0) {
 					//explicitly declared size
 					ret += size * length;
-				}else if(fi.endsWith!=null) {
-					ret += size * length;
-					ret += fi.endsWith.length * length;
 				}else {
-					//dynamic length that is written to stream prior to serializing value
+					//dynamic length written to stream prior to serializing
+					//or strings terminated by specific sequence of bytes
 					//size should be retrieved by inspecting the value itself
 					//or in case of a list, inspecting values for EACH element
 					size = 0;
-					DataType lengthType = fi.annotation(Length.class).type();
-					Charset cs = Utils.charsetForSerializingCHAR(fi, this);
-					if(value instanceof List) {
-						@SuppressWarnings("rawtypes")
-						List lst = (List)value;
-						for(int i=0;i<lst.size();++i) {
-							value = lst.get(i);
-							size += lengthType.size();
-							size += value.toString().getBytes(cs).length;
-						}
-					}else if(value instanceof Date) {
-						size += lengthType.size();
+					if(value instanceof Date) {
+						size += fi.annotation(Length.class).type().size();
 						size += Utils.getThreadLocalDateFormatter(fi.datePattern).format((Date)value).length();
 					}else {
-						size += lengthType.size();
-						size += value.toString().getBytes(cs).length;
+						Charset cs = Utils.charsetForSerializingCHAR(fi, this);
+						int fixedOverHead;
+						if(fi.endsWith!=null) {
+							fixedOverHead = fi.endsWith.length;
+						}else {
+							fixedOverHead = fi.annotation(Length.class).type().size();
+						}
+						if(value instanceof List) {
+							@SuppressWarnings("rawtypes")
+							List lst = (List)value;
+							int lstSize = lst.size();
+							size += fixedOverHead*lstSize;
+							for(int i=0;i<lstSize;++i) {
+								size += lst.get(i).toString().getBytes(cs).length;
+							}
+						}else {
+							size += fixedOverHead;
+							size += value.toString().getBytes(cs).length;
+						}
 					}
 					ret += size;
 				}

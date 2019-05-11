@@ -115,6 +115,8 @@ public class FieldInfo{
 	 * Whether Length/ListLength annotation is present, used only by ClassInfo
 	 */
 	final boolean lengthDefined;
+	//TODO:
+	final boolean customLengthDefined;
 	
 	FieldInfo(Field field, DataType type, ClassInfo base) {
 		this.base = base;
@@ -208,6 +210,7 @@ public class FieldInfo{
 				lengthHandler = null;
 				lengthType = null;
 				lengthDefined = false;
+				customLengthDefined = false;
 			}else {
 				this.length = len.value();
 				if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
@@ -233,6 +236,7 @@ public class FieldInfo{
 				}
 				
 				lengthDefined = true;
+				customLengthDefined = length>=0 || lengthHandler!=null;
 			}
 		}
 		{

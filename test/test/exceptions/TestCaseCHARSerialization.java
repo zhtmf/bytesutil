@@ -2,9 +2,13 @@ package test.exceptions;
 
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
+import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.CHAR;
+import org.dzh.bytesutil.converters.StringConverter;
+import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
+import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
 import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -85,6 +89,87 @@ public class TestCaseCHARSerialization {
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, Utils.class, 3);
+		}
+	}
+	@Test
+	public void test3() throws ConversionException {
+		class EntityX extends DataPacket{
+			@CHAR(3)
+			@Order(0)
+			@Length(3)
+			public String str;
+		}
+		try {
+			new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, ClassInfo.class, 11);
+			return;
+		}
+	}
+	@Test
+	public void test4() throws ConversionException {
+		class EntityX extends DataPacket{
+			@CHAR(3)
+			@Order(0)
+			@EndsWith({0x0})
+			public String str;
+		}
+		try {
+			new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, ClassInfo.class, 10);
+			return;
+		}
+	}
+	@Test
+	public void test5() throws ConversionException {
+		class EntityX extends DataPacket{
+			@CHAR
+			@Order(0)
+			@Length(3)
+			@EndsWith({0x0})
+			public String str;
+		}
+		try {
+			new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, ClassInfo.class, 10);
+			return;
+		}
+	}
+	@Test
+	public void test6() throws ConversionException {
+		class EntityX extends DataPacket{
+			@CHAR
+			@Order(0)
+			@EndsWith({})
+			public String str;
+		}
+		try {
+			new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, FieldInfo.class, 11);
+			return;
+		}
+	}
+	@Test
+	public void test7() throws ConversionException {
+		class EntityX extends DataPacket{
+			@CHAR
+			@Order(0)
+			@EndsWith({0x0})
+			public String str;
+		}
+		try {
+			new EntityX().deserialize(TestUtils.newInputStream(new byte[] {0x20,0x30,0x40}));
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, StringConverter.class, 1);
+			return;
 		}
 	}
 }

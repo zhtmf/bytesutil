@@ -25,7 +25,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * <p>
  * And it is used in three different flavors:
  * <ul>
- * <li>If {@link #value() value} is greater than 0, it is used to declare a
+ * <li>If {@link #value() value} is equal to or greater than 0, it is used to declare a
  * static length. In this case, it is the same as the <tt>value</tt> property of
  * <tt>CHAR</tt>, <tt>RAW</tt> etc.</li>
  * <li>If {@link #value() value} is left unassigned or assigned to a negative
@@ -39,11 +39,6 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * this case, the {@link #dataType() dataType} property is also referred to for
  * determining how the length value is stored in the stream.</li>
  * </ul>
- * <p>
- * It is necessary that this annotation be used with care, because if all
- * property are left unassigned, the library will try to read from/write to the
- * stream the actual length, which may or may not suit with the protocol you are
- * trying to implement.
  * 
  * @author dzh
  *

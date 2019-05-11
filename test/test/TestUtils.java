@@ -89,12 +89,31 @@ public class TestUtils {
 		restored.deserialize(newInputStream(data));
 		Assert.assertTrue(equalsOrderFields(entity, restored));
 	}
+	public static interface Provider<T>{
+		T newInstance();
+	}
+	public static <T extends DataPacket> 
+	void serializeMultipleTimesAndRestore(DataPacket entity, int times, Provider<T> t) throws Exception {
+		ByteArrayOutputStream os = newByteArrayOutputStream();
+		for(int i=0;i<times;++i) {
+			entity.serialize(os);
+		}
+		byte[] data = os.toByteArray();
+		Assert.assertEquals(data.length,entity.length()*times);
+		InputStream is = newInputStream(data);
+		for(int i=0;i<10;++i) {
+			DataPacket restored = t.newInstance();
+			restored.deserialize(is);
+			Assert.assertTrue(equalsOrderFields(entity, restored));
+		}
+	}
 	public static void serializeMultipleTimesAndRestore(DataPacket entity, int times) throws Exception {
 		ByteArrayOutputStream os = newByteArrayOutputStream();
 		for(int i=0;i<times;++i) {
 			entity.serialize(os);
 		}
 		byte[] data = os.toByteArray();
+		Assert.assertEquals(data.length,entity.length()*times);
 		InputStream is = newInputStream(data);
 		for(int i=0;i<10;++i) {
 			DataPacket restored = entity.getClass().newInstance();

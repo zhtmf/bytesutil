@@ -31,6 +31,7 @@ public abstract class ModifierHandler<E> {
 	 */
 	public static final int HANDLER_READ_BUFFER_SIZE = 32;
 	
+	//only set when this class is used as LengthHandler
 	boolean checkLength = false;
 	
 	public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is) throws IllegalArgumentException{
