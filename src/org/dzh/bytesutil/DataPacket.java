@@ -225,9 +225,12 @@ public abstract class DataPacket {
 				if(size>=0) {
 					//explicitly declared size
 					ret += size * length;
+				}else if(fi.endsWith!=null) {
+					ret += size * length;
+					ret += fi.endsWith.length * length;
 				}else {
 					//dynamic length that is written to stream prior to serializing value
-					//size should be retrieved inspecting the value itself
+					//size should be retrieved by inspecting the value itself
 					//or in case of a list, inspecting values for EACH element
 					size = 0;
 					DataType lengthType = fi.annotation(Length.class).type();
