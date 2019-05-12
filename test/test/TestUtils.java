@@ -129,9 +129,9 @@ public class TestUtils {
 		return array;
 	}
 	public static void serializeMultipleTimesAndRestoreConcurrently(final DataPacket entity, final int times) throws Exception {
-		Thread[] ts = new Thread[10];
+		Thread[] ts = new Thread[7];
 		final ArrayBlockingQueue<Throwable> errors = new ArrayBlockingQueue<>(10);
-		for(int i=0;i<times;++i) {
+		for(int i=0;i<ts.length;++i) {
 			Thread t = new Thread() {
 				@Override
 				public void run() {
