@@ -178,8 +178,4 @@ public class TestCaseClassInfo {
 			TestUtils.assertExactException(e, ClassInfo.class, 8);
 		}
 	}
-	/*
-	 * TODO:
-	 * 8.ew在流里找不到时的序列化/反序列化
-	 */
 }

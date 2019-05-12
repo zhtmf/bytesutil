@@ -53,6 +53,8 @@ public class FieldInfo{
 	public final EntityHandler entityCreator;
 	
 	public final byte[] endsWith;
+	//auxiliary array for KMP searching
+	public final int[] endingArrayAux;
 	/**
 	 * Entity class that declares this field
 	 */
@@ -243,12 +245,14 @@ public class FieldInfo{
 			EndsWith ew = localAnnotation(EndsWith.class);
 			if(ew==null) {
 				endsWith = null;
+				endingArrayAux = null;
 			}else {
 				endsWith = ew.value();
 				if(endsWith.length==0) {
 					throw forContext(base.entityClass, name, "EndsWith array should be non-empty")
 						.withSiteAndOrdinal(FieldInfo.class, 11);
 				}
+				endingArrayAux = createAuxArray(endsWith);
 			}
 		}
 		{
@@ -454,6 +458,28 @@ public class FieldInfo{
 			}
 		}
 	}
+	
+	private static final int[] createAuxArray(byte[] src){ 
+		int[] ret = new int[src.length];
+        int len = 0; 
+        int i = 1; 
+        ret[0] = 0;
+        while (i < src.length) { 
+            if (src[i] == src[len]) { 
+                len++; 
+                ret[i] = len; 
+                i++; 
+            }else{ 
+                if (len != 0) { 
+                    len = ret[len - 1]; 
+                }else{ 
+                    ret[i] = len; 
+                    i++; 
+                } 
+            } 
+        }
+        return ret;
+    } 
 	
 	@Override
 	public String toString() {

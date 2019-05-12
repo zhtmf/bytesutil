@@ -1,9 +1,12 @@
 package test.exceptions;
 
+import java.util.List;
+
 import org.dzh.bytesutil.ConversionException;
 import org.dzh.bytesutil.DataPacket;
 import org.dzh.bytesutil.annotations.modifiers.EndsWith;
 import org.dzh.bytesutil.annotations.modifiers.Length;
+import org.dzh.bytesutil.annotations.modifiers.ListLength;
 import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.annotations.types.CHAR;
 import org.dzh.bytesutil.converters.StringConverter;
@@ -166,6 +169,24 @@ public class TestCaseCHARSerialization {
 		}
 		try {
 			new EntityX().deserialize(TestUtils.newInputStream(new byte[] {0x20,0x30,0x40}));
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, StringConverter.class, 1);
+			return;
+		}
+	}
+	@Test
+	public void test8() throws ConversionException {
+		class EntityX extends DataPacket{
+			@CHAR
+			@Order(0)
+			@ListLength(3)
+			@EndsWith({0x0})
+			public List<String> strs;
+		}
+		EntityX x = new EntityX();
+		try {
+			x.deserialize(TestUtils.newInputStream(new byte[] {0x20,0x0,0x20,0x30,0x0,0x40,0x50}));
 			Assert.fail();
 		} catch (Exception e) {
 			TestUtils.assertExactException(e, StringConverter.class, 1);

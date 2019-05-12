@@ -101,7 +101,7 @@ public class TestUtils {
 		byte[] data = os.toByteArray();
 		Assert.assertEquals(data.length,entity.length()*times);
 		InputStream is = newInputStream(data);
-		for(int i=0;i<10;++i) {
+		for(int i=0;i<times;++i) {
 			DataPacket restored = t.newInstance();
 			restored.deserialize(is);
 			Assert.assertTrue(equalsOrderFields(entity, restored));
@@ -115,7 +115,7 @@ public class TestUtils {
 		byte[] data = os.toByteArray();
 		Assert.assertEquals(data.length,entity.length()*times);
 		InputStream is = newInputStream(data);
-		for(int i=0;i<10;++i) {
+		for(int i=0;i<times;++i) {
 			DataPacket restored = entity.getClass().newInstance();
 			restored.deserialize(is);
 			Assert.assertTrue(equalsOrderFields(entity, restored));
@@ -131,7 +131,7 @@ public class TestUtils {
 	public static void serializeMultipleTimesAndRestoreConcurrently(final DataPacket entity, final int times) throws Exception {
 		Thread[] ts = new Thread[10];
 		final ArrayBlockingQueue<Throwable> errors = new ArrayBlockingQueue<>(10);
-		for(int i=0;i<10;++i) {
+		for(int i=0;i<times;++i) {
 			Thread t = new Thread() {
 				@Override
 				public void run() {

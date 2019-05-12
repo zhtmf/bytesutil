@@ -2,6 +2,7 @@ package org.dzh.bytesutil.converters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
@@ -46,19 +47,9 @@ public class StringConverter implements Converter<String> {
 			}
 			
 			//EndsWith
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			byte[] ew = ctx.endsWith;
-			int ptr = 0;
-			int b;
-			while((b = is.read())!=-1) {
-				if(b==ew[ptr]) {
-					if(++ptr==ew.length) {
-						return new String(baos.toByteArray(),0,baos.size()-ew.length+1,cs);
-					}
-				}else {
-					ptr = 0;
-				}
-				baos.write(b);
+			byte[] found = KMPSearch(ctx.endsWith,ctx.endingArrayAux,is);
+			if(found!=null) {
+				return new String(found,0,found.length-ctx.endsWith.length+1,cs);
 			}
 			throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name,
 						"cannot find ending array in the stream")
@@ -69,4 +60,29 @@ public class StringConverter implements Converter<String> {
 		default:throw new Error("cannot happen");
 		}
 	}
+	
+	private static byte[] KMPSearch(byte[] ending, int[] aux, InputStream txt) throws IOException 
+    { 
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        int len1 = ending.length;
+        int j = 0;
+        int b = txt.read();
+        while (b!=-1) { 
+            if (ending[j] == b) { 
+                if(++j==len1) {
+                	return baos.toByteArray();
+                }
+                baos.write(b);
+                b = txt.read();
+            }else{ 
+                if (j != 0) {
+                	j = aux[j - 1]; 
+                }else {
+                	baos.write(b);
+                	b = txt.read();
+                }
+            } 
+        } 
+        return null;
+    } 
 }
