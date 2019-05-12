@@ -117,7 +117,10 @@ public class FieldInfo{
 	 * Whether Length/ListLength annotation is present, used only by ClassInfo
 	 */
 	final boolean lengthDefined;
-	//TODO:
+	/**
+	 * Whether Length/ListLength annotation is present and used to define 
+	 * a concrete length (not dynamic length)
+	 */
 	final boolean customLengthDefined;
 	
 	FieldInfo(Field field, DataType type, ClassInfo base) {

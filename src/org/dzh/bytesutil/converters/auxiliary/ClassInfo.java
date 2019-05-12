@@ -164,13 +164,15 @@ public class ClassInfo {
 					}
 					if(fi.endsWith!=null) {
 						if(ch.value()>0 || fi.lengthDefined) {
-							//TODO:
-							throw forContext(cls, name, "")
+							throw forContext(cls, name, "length of CHAR fields can only be specified by"
+									+ "one of value property, Length annotation or EndsWith")
 							.withSiteAndOrdinal(ClassInfo.class, 10);
 						}
 					}
-					if(fi.listComponentClass==null && (ch.value()>=0 && fi.customLengthDefined)) {
-						throw forContext(cls, name, "")
+					if(fi.listComponentClass==null
+				   && (ch.value()>=0 && fi.customLengthDefined)) {
+						throw forContext(cls, name, "length of CHAR fields can only be specified by"
+									+ " one of value property, Length annotation or EndsWith")
 						.withSiteAndOrdinal(ClassInfo.class, 11);
 					}
 				}
