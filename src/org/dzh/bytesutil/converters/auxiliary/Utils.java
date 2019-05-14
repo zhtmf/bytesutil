@@ -18,6 +18,8 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedConstraintEx
 
 public class Utils {
 	
+	private Utils() {}
+	
 	public static Charset charsetForSerializingCHAR(FieldInfo ctx,Object self) {
 		Charset cs = ctx.charset;
 		if(cs==null) {

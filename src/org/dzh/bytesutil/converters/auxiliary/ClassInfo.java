@@ -134,7 +134,10 @@ public class ClassInfo {
 				}
 			}
 			
-			FieldInfo fi = f.getType().isEnum() ? new EnumFieldInfo(f, type, this) : new FieldInfo(f,type,this);
+			FieldInfo fi = f.getType().isEnum()
+					&& f.getAnnotation(UserDefined.class)==null
+					? new EnumFieldInfo(f, type, this)
+					: new FieldInfo(f,type,this);
 			
 			if(fi.listComponentClass!=null) {
 				if(fi.localAnnotation(Length.class)==null
@@ -189,7 +192,8 @@ public class ClassInfo {
 			UserDefined ud = fi.localAnnotation(UserDefined.class);
 			if(ud!=null && ud.length()<0) {
 				if( ! fi.lengthDefined)
-					throw forContext(cls, name, "this field is defined as RAW, but its value property is negative"
+					throw forContext(cls, name, "this field is defined as UserDefined"
+							+ ", but its value property is negative"
 							+ " and a Length annotation is not present on it")
 						.withSiteAndOrdinal(ClassInfo.class, 9);
 			}

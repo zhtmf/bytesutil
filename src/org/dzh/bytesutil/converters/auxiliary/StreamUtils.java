@@ -10,6 +10,8 @@ import org.dzh.bytesutil.converters.auxiliary.exceptions.UnsatisfiedIOException;
 
 public class StreamUtils {
 	
+	private StreamUtils() {}
+	
 	public static void writeBYTE(OutputStream os, byte value) throws IOException {
 		os.write(value);
 	}

@@ -15,9 +15,6 @@ public class UnsatisfiedIOException extends IOException implements ExactExceptio
 	public UnsatisfiedIOException(String s) {
 		this(s,null);
 	}
-	public UnsatisfiedIOException(Throwable cause) {
-		this(null,cause);
-	}
 	public UnsatisfiedIOException(String message, Throwable cause) {
 		super(message, cause);
 	}

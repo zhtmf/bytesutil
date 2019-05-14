@@ -26,9 +26,6 @@ public class ExtendedConversionException extends ConversionException implements 
 	public ExtendedConversionException(FieldInfo ctx, String msg) {
 		super(ctx, msg);
 	}
-	public ExtendedConversionException(FieldInfo ctx, Throwable cause) {
-		super(ctx, cause);
-	}
 	public ConversionException withSiteAndOrdinal(Class<?> site, int ordinal) {
 		this.site = site;
 		this.ordinal = ordinal;

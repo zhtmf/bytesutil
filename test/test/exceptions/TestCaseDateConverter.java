@@ -16,16 +16,46 @@ import org.junit.Test;
 import test.TestUtils;
 
 public class TestCaseDateConverter{
-	public static class Entity0 extends DataPacket{
-		@Order(0)
-		@BCD(1)
-		@DatePattern("G")
-		public Date date = new Date();
-	}
 	@Test
 	public void test0() throws ConversionException {
-		Entity0 entity = new Entity0();
+		class Entity0 extends DataPacket{
+			@Order(0)
+			@BCD(1)
+			@DatePattern("G")
+			public Date date = new Date();
+		}
 		try {
+			Entity0 entity = new Entity0();
+			entity.serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, Utils.class, 4);
+		}
+		
+		//totally nonsense, only to make jacoco happy
+		@SuppressWarnings("hiding")
+		class Entity1 extends DataPacket{
+			@Order(0)
+			@BCD(1)
+			@DatePattern("'/''/'")
+			public Date date = new Date();
+		}
+		try {
+			Entity1 entity = new Entity1();
+			entity.serialize(TestUtils.newByteArrayOutputStream());
+			Assert.fail();
+		} catch (Exception e) {
+			TestUtils.assertExactException(e, Utils.class, 4);
+		}
+		@SuppressWarnings("hiding")
+		class Entity2 extends DataPacket{
+			@Order(0)
+			@BCD(1)
+			@DatePattern("':'':'")
+			public Date date = new Date();
+		}
+		try {
+			Entity2 entity = new Entity2();
 			entity.serialize(TestUtils.newByteArrayOutputStream());
 			Assert.fail();
 		} catch (Exception e) {

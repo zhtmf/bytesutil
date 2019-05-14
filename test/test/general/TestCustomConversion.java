@@ -89,6 +89,10 @@ public class TestCustomConversion {
 		Assert.assertEquals(entity.length(), TestUtils.serializeAndGetBytes(entity).length);
 	}
 	
+	private static enum MyEnum333{
+		A,B;
+	}
+	
 	@Signed
 	@BigEndian
 	@CHARSET("UTF-8")
@@ -98,6 +102,10 @@ public class TestCustomConversion {
 		@DatePattern("yyyy-MM-dd")
 		@Length(8)
 		public Timestamp ts;
+		@Order(1)
+		@UserDefined(ConverterX.class)
+		@Length(1)
+		public MyEnum333 enum1;
 	}
 	
 	public static class Converter2 extends TypeConverter<Timestamp>{
@@ -109,6 +117,7 @@ public class TestCustomConversion {
 			Assert.assertEquals(context.isBigEndian(), true);
 			Assert.assertEquals(context.isLittleEndian(), false);
 			Assert.assertEquals(context.getDatePattern(), "yyyy-MM-dd");
+			Assert.assertEquals(context.getFieldClass(), Timestamp.class);
 			Assert.assertEquals(context.getFieldClass(), Timestamp.class);
 			Assert.assertEquals(context.getEntityClass(), Entity2.class);
 			Assert.assertEquals(context.getCharset(), Charset.forName("UTF-8"));
@@ -135,11 +144,31 @@ public class TestCustomConversion {
 			return ret;
 		}
 	}
+	
+	public static class ConverterX extends TypeConverter<MyEnum333>{
+
+		@Override
+		public void serialize(MyEnum333 obj, Output output) throws IOException {
+			output.getFieldClass();//make jacoco happy
+			output.getFieldClass();
+			output.writeByte((byte) 1);
+		}
+
+		@Override
+		public MyEnum333 deserialize(Input input) throws IOException {
+			input.getFieldClass();
+			input.getFieldClass();
+			input.readByte();
+			return MyEnum333.A;
+		}
+		
+	}
 	@Test
 	public void test2() throws Exception {
 		Entity2 entity = new Entity2();
 		Timestamp ts = Timestamp.valueOf("2011-1-1 23:00:59.333");
 		entity.ts = ts;
+		entity.enum1 = MyEnum333.A;
 		TestUtils.serializeMultipleTimesAndRestore(entity);
 	}
 	
