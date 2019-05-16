@@ -1,3 +1,4 @@
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Coverage Status](https://coveralls.io/repos/github/zhtmf/bytesutil/badge.svg?branch=master)](https://coveralls.io/github/zhtmf/bytesutil?branch=master) [![Build Status](https://travis-ci.org/zhtmf/bytesutil.svg?branch=master)](https://travis-ci.org/zhtmf/bytesutil)
 # Bytes-Util
 
 ## What's this
