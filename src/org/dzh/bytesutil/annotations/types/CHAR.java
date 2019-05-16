@@ -29,7 +29,7 @@ import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 @Target(FIELD)
 public @interface CHAR {
 	/**
-	 * Specifies length of this block of byte stream.
+	 * Specifies length of this string.
 	 * 
 	 * @return number of bytes
 	 */
