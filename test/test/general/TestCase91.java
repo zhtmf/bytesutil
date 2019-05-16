@@ -361,6 +361,6 @@ public class TestCase91{
 	
 	@Test
 	public void testConcurrency() throws Exception {
-		TestUtils.serializeMultipleTimesAndRestoreConcurrently(new Entity(), 5000);
+		TestUtils.serializeMultipleTimesAndRestoreConcurrently(new Entity(), 250);
 	}
 }
