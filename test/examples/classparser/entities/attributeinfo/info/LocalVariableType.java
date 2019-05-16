@@ -7,19 +7,19 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class LocalVariableType extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int startPc;
-	@Order(1)
-	@SHORT
-	public int length;
-	@Order(2)
-	@SHORT
-	public int nameIndex;
-	@Order(3)
-	@SHORT
-	public int signatureIndex;
-	@Order(4)
-	@SHORT
-	public int index;
+    @Order(0)
+    @SHORT
+    public int startPc;
+    @Order(1)
+    @SHORT
+    public int length;
+    @Order(2)
+    @SHORT
+    public int nameIndex;
+    @Order(3)
+    @SHORT
+    public int signatureIndex;
+    @Order(4)
+    @SHORT
+    public int index;
 }

@@ -8,10 +8,10 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class ElementValuePair extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int elementNameIndex;
-	@Order(1)
-	@Variant(ElementValueHandler.class)
-	public ElementValue elementValue;
+    @Order(0)
+    @SHORT
+    public int elementNameIndex;
+    @Order(1)
+    @Variant(ElementValueHandler.class)
+    public ElementValue elementValue;
 }

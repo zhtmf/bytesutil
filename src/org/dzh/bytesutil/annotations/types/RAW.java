@@ -26,10 +26,10 @@ import org.dzh.bytesutil.annotations.modifiers.Length;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface RAW {
-	/**
-	 * Specifies length of this block of byte stream.
-	 * 
-	 * @return number of bytes
-	 */
-	int value() default -1;
+    /**
+     * Specifies length of this block of byte stream.
+     * 
+     * @return number of bytes
+     */
+    int value() default -1;
 }

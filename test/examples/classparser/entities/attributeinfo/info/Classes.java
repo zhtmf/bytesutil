@@ -7,16 +7,16 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class Classes extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int innerClassInfoIndex;
-	@Order(1)
-	@SHORT
-	public int outerClassInfoIndex;
-	@Order(2)
-	@SHORT
-	public int innerNameIndex;
-	@Order(3)
-	@SHORT
-	public int innerClassAccessFlags;
+    @Order(0)
+    @SHORT
+    public int innerClassInfoIndex;
+    @Order(1)
+    @SHORT
+    public int outerClassInfoIndex;
+    @Order(2)
+    @SHORT
+    public int innerNameIndex;
+    @Order(3)
+    @SHORT
+    public int innerClassAccessFlags;
 }

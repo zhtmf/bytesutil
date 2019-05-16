@@ -6,10 +6,10 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class EnumConstantElementValue extends ElementValue{
-	@Order(0)
-	@SHORT
-	public int typeNameIndex;
-	@Order(1)
-	@SHORT
-	public int constNameIndex;
+    @Order(0)
+    @SHORT
+    public int typeNameIndex;
+    @Order(1)
+    @SHORT
+    public int constNameIndex;
 }

@@ -18,16 +18,16 @@ import org.dzh.bytesutil.annotations.modifiers.Variant;
  */
 public abstract class EntityHandler extends ModifierHandler<DataPacket> {
 
-	@Override
-	public DataPacket handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException{
-		return handle0(fieldName, entity, is);
-	}
+    @Override
+    public DataPacket handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException{
+        return handle0(fieldName, entity, is);
+    }
 
-	@Override
-	public DataPacket handleSerialize0(String fieldName, Object entity) {
-		throw new UnsupportedOperationException("should not be called during serializing");
-	}
-	
-	public abstract DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException;
+    @Override
+    public DataPacket handleSerialize0(String fieldName, Object entity) {
+        throw new UnsupportedOperationException("should not be called during serializing");
+    }
+    
+    public abstract DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException;
 
 }

@@ -7,7 +7,7 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class CONSTANT_MethodType_info extends DataPacket {
-	@Order(1)
-	@SHORT
-	public int descriptorIndex;
+    @Order(1)
+    @SHORT
+    public int descriptorIndex;
 }

@@ -12,15 +12,15 @@ import examples.classparser.entities.attributeinfo.info.stackmapframe.verificati
 
 @Unsigned
 public class FullFrame extends StackMapFrame{
-	@Order(0)
-	@SHORT
-	public int offsetDelta;
-	@Order(1)
-	@Length(type=DataType.SHORT)
-	//number_of_locals implicitly in this declaration
-	public List<VerificationTypeInfo> locals;
-	@Order(2)
-	@Length(type=DataType.SHORT)
-	//number_of_stack_items implicitly in this declaration
-	public List<VerificationTypeInfo> stack;
+    @Order(0)
+    @SHORT
+    public int offsetDelta;
+    @Order(1)
+    @Length(type=DataType.SHORT)
+    //number_of_locals implicitly in this declaration
+    public List<VerificationTypeInfo> locals;
+    @Order(2)
+    @Length(type=DataType.SHORT)
+    //number_of_stack_items implicitly in this declaration
+    public List<VerificationTypeInfo> stack;
 }

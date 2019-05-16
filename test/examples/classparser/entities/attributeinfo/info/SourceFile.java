@@ -7,7 +7,7 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class SourceFile extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int sourceFileIndex;
+    @Order(0)
+    @SHORT
+    public int sourceFileIndex;
 }

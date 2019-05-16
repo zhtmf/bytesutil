@@ -8,10 +8,10 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class CONSTANT_MethodHandle_info extends DataPacket {
-	@Order(0)
-	@BYTE
-	public ReferenceKind kind;
-	@Order(1)
-	@SHORT
-	public int referenceIndex;
+    @Order(0)
+    @BYTE
+    public ReferenceKind kind;
+    @Order(1)
+    @SHORT
+    public int referenceIndex;
 }

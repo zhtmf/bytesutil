@@ -7,7 +7,7 @@ import org.dzh.bytesutil.annotations.types.INT;
 
 @Unsigned
 public class CONSTANT_Float_info extends DataPacket {
-	@Order(0)
-	@INT
-	public long bytes;
+    @Order(0)
+    @INT
+    public long bytes;
 }

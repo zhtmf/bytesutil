@@ -5,6 +5,6 @@ import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 
 @Unsigned
 public class AnnotationElementValue extends ElementValue{
-	@Order(0)
-	public Annotation annotationValue;
+    @Order(0)
+    public Annotation annotationValue;
 }

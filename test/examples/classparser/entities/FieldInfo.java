@@ -20,43 +20,43 @@ import examples.classparser.entities.cpinfo.info.CONSTANT_Utf8_info;
 
 @Unsigned
 public class FieldInfo extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int accessFlags;
-	@Order(1)
-	@SHORT
-	public long nameIndex;
-	@Order(2)
-	@SHORT
-	public long descriptorIndex;
-	@Order(3)
-	@Length(type=DataType.SHORT)
-	@Variant(AttributeInfoHandler.class)
-	public List<AttributeInfo> attributes;
-	
-	private List<CpInfo> constantPool;
-	public FieldInfo(List<CpInfo> constantPool) {
-		this.constantPool = constantPool;
-	}
-	
-	public static class AttributeInfoHandler extends EntityHandler{
-		@Override
-		public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-			FieldInfo info = (FieldInfo)entity;
-			return new AttributeInfo(Collections.unmodifiableList(info.constantPool));
-		}
-		
-	}
-	
-	@Override
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		String name = ((CONSTANT_Utf8_info)constantPool.get((int)nameIndex-1).info).bytes;
-		sb.append(">>"+name+"\n");
-		sb.append("accessFlags:"+Long.toBinaryString(accessFlags));sb.append("\n");
-		sb.append("descriptorIndex:").append(descriptorIndex);sb.append("\n");
-		sb.append("attributes:");sb.append("\n");
-		sb.append(attributes);
-		return sb.toString();
-	}
+    @Order(0)
+    @SHORT
+    public int accessFlags;
+    @Order(1)
+    @SHORT
+    public long nameIndex;
+    @Order(2)
+    @SHORT
+    public long descriptorIndex;
+    @Order(3)
+    @Length(type=DataType.SHORT)
+    @Variant(AttributeInfoHandler.class)
+    public List<AttributeInfo> attributes;
+    
+    private List<CpInfo> constantPool;
+    public FieldInfo(List<CpInfo> constantPool) {
+        this.constantPool = constantPool;
+    }
+    
+    public static class AttributeInfoHandler extends EntityHandler{
+        @Override
+        public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+            FieldInfo info = (FieldInfo)entity;
+            return new AttributeInfo(Collections.unmodifiableList(info.constantPool));
+        }
+        
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        String name = ((CONSTANT_Utf8_info)constantPool.get((int)nameIndex-1).info).bytes;
+        sb.append(">>"+name+"\n");
+        sb.append("accessFlags:"+Long.toBinaryString(accessFlags));sb.append("\n");
+        sb.append("descriptorIndex:").append(descriptorIndex);sb.append("\n");
+        sb.append("attributes:");sb.append("\n");
+        sb.append(attributes);
+        return sb.toString();
+    }
 }

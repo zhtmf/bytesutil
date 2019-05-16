@@ -6,7 +6,7 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class SameFrameExtended extends StackMapFrame{
-	@Order(0)
-	@SHORT
-	public int offsetDelta;
+    @Order(0)
+    @SHORT
+    public int offsetDelta;
 }

@@ -10,8 +10,8 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 @Unsigned
 public class ArrayElementValue extends ElementValue{
-	@Order(0)
-	@Length(type=DataType.SHORT)
-	@Variant(ElementValueHandler.class)
-	public List<ElementValue> values;
+    @Order(0)
+    @Length(type=DataType.SHORT)
+    @Variant(ElementValueHandler.class)
+    public List<ElementValue> values;
 }

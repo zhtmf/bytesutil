@@ -10,7 +10,7 @@ import examples.classparser.entities.attributeinfo.info.annotation.ElementValueH
 
 @Unsigned
 public class AnnotationDefault extends DataPacket{
-	@Order(1)
-	@Variant(ElementValueHandler.class)
-	public ElementValue elementValue;
+    @Order(1)
+    @Variant(ElementValueHandler.class)
+    public ElementValue elementValue;
 }

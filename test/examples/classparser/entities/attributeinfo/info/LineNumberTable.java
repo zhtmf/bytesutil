@@ -10,7 +10,7 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 @Unsigned
 public class LineNumberTable extends DataPacket{
-	@Order(0)
-	@Length(type=DataType.SHORT)
-	public List<LineNumber> lineNumberTable;
+    @Order(0)
+    @Length(type=DataType.SHORT)
+    public List<LineNumber> lineNumberTable;
 }

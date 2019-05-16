@@ -45,14 +45,14 @@ import org.dzh.bytesutil.DataPacket;
 @Target(FIELD)
 public @interface Order {
 
-	/**
-	 * Specify the order value
-	 * @return
-	 */
-	int value();
-	
-	/**
-	 * Convenient value for the last field
-	 */
-	public static final int LAST = Integer.MAX_VALUE;
+    /**
+     * Specify the order value
+     * @return
+     */
+    int value();
+    
+    /**
+     * Convenient value for the last field
+     */
+    public static final int LAST = Integer.MAX_VALUE;
 }

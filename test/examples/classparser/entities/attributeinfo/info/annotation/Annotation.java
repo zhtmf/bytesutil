@@ -11,10 +11,10 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 @Unsigned
 public class Annotation extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int typeIndex;
-	@Order(1)
-	@Length(type=DataType.SHORT)
-	public List<ElementValuePair> elementValuePairs;
+    @Order(0)
+    @SHORT
+    public int typeIndex;
+    @Order(1)
+    @Length(type=DataType.SHORT)
+    public List<ElementValuePair> elementValuePairs;
 }

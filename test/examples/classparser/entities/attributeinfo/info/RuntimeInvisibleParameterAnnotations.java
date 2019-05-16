@@ -8,7 +8,7 @@ import org.dzh.bytesutil.annotations.modifiers.Order;
 import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 public class RuntimeInvisibleParameterAnnotations extends DataPacket{
-	@Order(0)
-	@Length(type=DataType.BYTE)
-	public List<AnnotationList> parameters;
+    @Order(0)
+    @Length(type=DataType.BYTE)
+    public List<AnnotationList> parameters;
 }

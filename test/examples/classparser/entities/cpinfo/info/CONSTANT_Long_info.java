@@ -7,8 +7,8 @@ import org.dzh.bytesutil.annotations.types.RAW;
 
 @Unsigned
 public class CONSTANT_Long_info extends DataPacket {
-	@Order(0)
-	@RAW(8)
-	//combined high-bytes and low-bytes
-	public byte[] bytes;
+    @Order(0)
+    @RAW(8)
+    //combined high-bytes and low-bytes
+    public byte[] bytes;
 }

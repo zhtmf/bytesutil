@@ -11,9 +11,9 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 @Unsigned
 public class Exceptions extends DataPacket{
-	@Order(1)
-	@SHORT
-	@Length(type=DataType.SHORT)
-	//number_of_exceptions implicitly in this declaration
-	public List<Integer> exceptionIndexTable;	
+    @Order(1)
+    @SHORT
+    @Length(type=DataType.SHORT)
+    //number_of_exceptions implicitly in this declaration
+    public List<Integer> exceptionIndexTable;    
 }

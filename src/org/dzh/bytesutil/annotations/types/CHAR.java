@@ -28,10 +28,10 @@ import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface CHAR {
-	/**
-	 * Specifies length of this string.
-	 * 
-	 * @return number of bytes
-	 */
-	int value() default -1;
+    /**
+     * Specifies length of this string.
+     * 
+     * @return number of bytes
+     */
+    int value() default -1;
 }

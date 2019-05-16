@@ -11,11 +11,11 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 @Unsigned
 public class BootstrapMethod extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int bootstrapMethodRef;
-	@Order(1)
-	@SHORT
-	@Length(type=DataType.SHORT)
-	public List<Integer> bootstrapArguments;
+    @Order(0)
+    @SHORT
+    public int bootstrapMethodRef;
+    @Order(1)
+    @SHORT
+    @Length(type=DataType.SHORT)
+    public List<Integer> bootstrapArguments;
 }

@@ -26,17 +26,17 @@ import org.dzh.bytesutil.TypeConverter;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface UserDefined {
-	/**
-	 * Implementation class of {@code TypeConverter} used in
-	 * serializing/desrializing of this field.
-	 * 
-	 * @return	class object of {@code TypeConverter} implementing class.
-	 */
-	@SuppressWarnings("rawtypes")
-	Class<? extends TypeConverter> value();
-	/**
-	 * Length in bytes of this user defined object
-	 * @return	length in bytes
-	 */
-	int length() default -1;
+    /**
+     * Implementation class of {@code TypeConverter} used in
+     * serializing/desrializing of this field.
+     * 
+     * @return    class object of {@code TypeConverter} implementing class.
+     */
+    @SuppressWarnings("rawtypes")
+    Class<? extends TypeConverter> value();
+    /**
+     * Length in bytes of this user defined object
+     * @return    length in bytes
+     */
+    int length() default -1;
 }

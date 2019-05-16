@@ -20,7 +20,7 @@ import examples.classparser.entities.attributeinfo.info.annotation.Annotation;
  */
 @Unsigned
 public class AnnotationList extends DataPacket{
-	@Order(0)
-	@Length(type=DataType.SHORT)
-	public List<Annotation> annotations;
+    @Order(0)
+    @Length(type=DataType.SHORT)
+    public List<Annotation> annotations;
 }

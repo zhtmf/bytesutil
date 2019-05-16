@@ -28,11 +28,11 @@ import org.dzh.bytesutil.annotations.modifiers.DatePattern;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface BCD {
-	/**
-	 * Specifies how many <b>bytes</b> that make up of this BCD data, which is half of the
-	 * digits of the number it represents.
-	 * 
-	 * @return number of bytes
-	 */
-	int value();
+    /**
+     * Specifies how many <b>bytes</b> that make up of this BCD data, which is half of the
+     * digits of the number it represents.
+     * 
+     * @return number of bytes
+     */
+    int value();
 }

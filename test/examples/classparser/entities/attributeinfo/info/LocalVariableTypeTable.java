@@ -10,7 +10,7 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 @Unsigned
 public class LocalVariableTypeTable extends DataPacket{
-	@Order(0)
-	@Length(type=DataType.SHORT)
-	public List<LocalVariableType> localVariableTypeTable;
+    @Order(0)
+    @Length(type=DataType.SHORT)
+    public List<LocalVariableType> localVariableTypeTable;
 }

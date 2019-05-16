@@ -6,8 +6,8 @@ import org.dzh.bytesutil.annotations.modifiers.Unsigned;
 import org.dzh.bytesutil.annotations.types.BYTE;
 
 public abstract class ElementValue extends DataPacket{
-	@Order(0)
-	@BYTE
-	@Unsigned
-	public int tag;
+    @Order(0)
+    @BYTE
+    @Unsigned
+    public int tag;
 }

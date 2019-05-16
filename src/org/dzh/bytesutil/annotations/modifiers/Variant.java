@@ -33,11 +33,11 @@ import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface Variant {
-	/**
-	 * Class of the {@link EntityHandler} whose instance be created during parsing
-	 * and called during deserialization to initiate this field.
-	 * 
-	 * @return
-	 */
-	Class<? extends EntityHandler> value();
+    /**
+     * Class of the {@link EntityHandler} whose instance be created during parsing
+     * and called during deserialization to initiate this field.
+     * 
+     * @return
+     */
+    Class<? extends EntityHandler> value();
 }

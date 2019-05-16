@@ -8,9 +8,9 @@ import examples.classparser.entities.attributeinfo.info.stackmapframe.verificati
 
 @Unsigned
 public class SameLocals1StackItemFrameExtended extends StackMapFrame{
-	@Order(0)
-	@SHORT
-	public int offsetDelta;
-	@Order(1)
-	public VerificationTypeInfo stack;
+    @Order(0)
+    @SHORT
+    public int offsetDelta;
+    @Order(1)
+    public VerificationTypeInfo stack;
 }

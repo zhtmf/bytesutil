@@ -27,23 +27,23 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD })
 public @interface CHARSET {
-	/**
-	 * Name of the charset, which must be a valid charset name.
-	 * 
-	 * @return
-	 */
-	String value() default "UTF-8";
+    /**
+     * Name of the charset, which must be a valid charset name.
+     * 
+     * @return
+     */
+    String value() default "UTF-8";
 
-	/**
-	 * <p>
-	 * Implementation class of {@link ModifierHandler} to be referred to when the
-	 * charset of current target cannot be determined statically.
-	 * <p>
-	 * If this property is set, {@link #value() value} is ignored.
-	 * 
-	 * @return Implementation class of ModifierHandler
-	 */
-	Class<? extends ModifierHandler<Charset>> handler() default PlaceHolderHandler.DefaultCharsetHandler.class;
-	
-	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    /**
+     * <p>
+     * Implementation class of {@link ModifierHandler} to be referred to when the
+     * charset of current target cannot be determined statically.
+     * <p>
+     * If this property is set, {@link #value() value} is ignored.
+     * 
+     * @return Implementation class of ModifierHandler
+     */
+    Class<? extends ModifierHandler<Charset>> handler() default PlaceHolderHandler.DefaultCharsetHandler.class;
+    
+    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 }

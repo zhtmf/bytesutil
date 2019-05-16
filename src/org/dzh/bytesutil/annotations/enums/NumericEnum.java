@@ -15,10 +15,10 @@ package org.dzh.bytesutil.annotations.enums;
  * @author dzh
  */
 public interface NumericEnum {
-	/**
-	 * Return the numeric value which logically an enum member is mapped to.
-	 * 
-	 * @return return the numeric value
-	 */
-	long getValue();
+    /**
+     * Return the numeric value which logically an enum member is mapped to.
+     * 
+     * @return return the numeric value
+     */
+    long getValue();
 }

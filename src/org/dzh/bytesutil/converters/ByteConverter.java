@@ -19,42 +19,42 @@ import org.dzh.bytesutil.converters.auxiliary.Utils;
  */
 public class ByteConverter implements Converter<Byte> {
 
-	@Override
-	public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
-			throws IOException,ConversionException {
-		byte val = (byte)value;
-		switch(ctx.dataType) {
-		case BYTE:
-			StreamUtils.writeBYTE(dest, val);
-			return;
-		case CHAR:
-			Utils.serializeAsCHAR(val, dest, ctx, self);
-			return;
-		case BCD:{
-			StreamUtils.writeBCD(
-					dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
-			return;
-		}
-		default:throw new Error("cannot happen");
-		}
-	}
+    @Override
+    public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
+            throws IOException,ConversionException {
+        byte val = (byte)value;
+        switch(ctx.dataType) {
+        case BYTE:
+            StreamUtils.writeBYTE(dest, val);
+            return;
+        case CHAR:
+            Utils.serializeAsCHAR(val, dest, ctx, self);
+            return;
+        case BCD:{
+            StreamUtils.writeBCD(
+                    dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
+            return;
+        }
+        default:throw new Error("cannot happen");
+        }
+    }
 
-	@Override
-	public Byte deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
-			throws IOException,ConversionException {
-		switch(ctx.dataType) {
-		case BYTE:{
-			return (byte)(StreamUtils.readByte(is, ctx.signed));
-		}
-		case CHAR:{
-			return (byte)Utils.deserializeAsCHAR(is, ctx, self, DataType.BYTE);
-		}
-		case BCD:{
-			long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
-			Utils.checkRangeInContext(DataType.BYTE, val, ctx);
-			return (byte)val;
-		}
-		default:throw new Error("cannot happen");
-		}
-	}
+    @Override
+    public Byte deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+            throws IOException,ConversionException {
+        switch(ctx.dataType) {
+        case BYTE:{
+            return (byte)(StreamUtils.readByte(is, ctx.signed));
+        }
+        case CHAR:{
+            return (byte)Utils.deserializeAsCHAR(is, ctx, self, DataType.BYTE);
+        }
+        case BCD:{
+            long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+            Utils.checkRangeInContext(DataType.BYTE, val, ctx);
+            return (byte)val;
+        }
+        default:throw new Error("cannot happen");
+        }
+    }
 }

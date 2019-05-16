@@ -7,10 +7,10 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class EnclosingMethod extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int classIndex;
-	@Order(1)
-	@SHORT
-	public int methodIndex;
+    @Order(0)
+    @SHORT
+    public int classIndex;
+    @Order(1)
+    @SHORT
+    public int methodIndex;
 }

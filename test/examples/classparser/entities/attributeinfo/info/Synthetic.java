@@ -7,7 +7,7 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class Synthetic extends DataPacket{
-	@Order(0)
-	@SHORT
-	public int signatureIndex;
+    @Order(0)
+    @SHORT
+    public int signatureIndex;
 }

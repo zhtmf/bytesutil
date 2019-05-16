@@ -7,7 +7,7 @@ import org.dzh.bytesutil.annotations.types.BYTE;
 
 @Unsigned
 public class StackMapFrame extends DataPacket{
-	@Order(0)
-	@BYTE
-	public int frameType;
+    @Order(0)
+    @BYTE
+    public int frameType;
 }

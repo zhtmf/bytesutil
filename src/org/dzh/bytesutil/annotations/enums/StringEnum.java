@@ -15,10 +15,10 @@ package org.dzh.bytesutil.annotations.enums;
  * @author dzh
  */
 public interface StringEnum {
-	/**
-	 * Return the string value which logically an enum member is mapped to.
-	 * 
-	 * @return return the numeric value
-	 */
-	String getValue();
+    /**
+     * Return the string value which logically an enum member is mapped to.
+     * 
+     * @return return the numeric value
+     */
+    String getValue();
 }

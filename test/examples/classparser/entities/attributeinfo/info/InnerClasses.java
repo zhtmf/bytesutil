@@ -10,7 +10,7 @@ import org.dzh.bytesutil.converters.auxiliary.DataType;
 
 @Unsigned
 public class InnerClasses extends DataPacket{
-	@Order(0)
-	@Length(type=DataType.SHORT)
-	List<Classes> classes;
+    @Order(0)
+    @Length(type=DataType.SHORT)
+    List<Classes> classes;
 }

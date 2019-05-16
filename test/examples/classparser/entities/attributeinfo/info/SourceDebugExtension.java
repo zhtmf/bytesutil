@@ -11,24 +11,24 @@ import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 public class SourceDebugExtension extends DataPacket{
-	public int attributeLength;
-	@Order(0)
-	@SHORT
-	@Length
-	public byte[] debugExtension;
-	
-	public SourceDebugExtension(int attributeLength) {
-		this.attributeLength = attributeLength;
-	}
-	
-	public static final class DebugExtensionHandler extends ModifierHandler<Integer>{
-		@Override
-		public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
-			return ((SourceDebugExtension)entity).attributeLength;
-		}
-		@Override
-		public Integer handleSerialize0(String fieldName, Object entity) {
-			return ((SourceDebugExtension)entity).attributeLength;
-		}
-	}
+    public int attributeLength;
+    @Order(0)
+    @SHORT
+    @Length
+    public byte[] debugExtension;
+    
+    public SourceDebugExtension(int attributeLength) {
+        this.attributeLength = attributeLength;
+    }
+    
+    public static final class DebugExtensionHandler extends ModifierHandler<Integer>{
+        @Override
+        public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
+            return ((SourceDebugExtension)entity).attributeLength;
+        }
+        @Override
+        public Integer handleSerialize0(String fieldName, Object entity) {
+            return ((SourceDebugExtension)entity).attributeLength;
+        }
+    }
 }

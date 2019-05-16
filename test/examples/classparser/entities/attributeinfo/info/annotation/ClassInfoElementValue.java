@@ -6,7 +6,7 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class ClassInfoElementValue extends ElementValue{
-	@Order(0)
-	@SHORT
-	public int classInfoIndex;
+    @Order(0)
+    @SHORT
+    public int classInfoIndex;
 }

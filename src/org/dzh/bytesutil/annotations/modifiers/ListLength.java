@@ -25,23 +25,23 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface ListLength {
-	/**
-	 * Specify static length value
-	 * @return
-	 */
-	int value() default -1;
-	/**
-	 * How the length value itself is stored in the stream.<br/>
-	 * by default it is treated as a single byte value.
-	 * @return	the data dataType which describes how the length value itself is stored in the stream
-	 */
-	DataType type() default DataType.BYTE;
-	
-	/**
-	 * Specify a handler class which should be referred to at runtime to retrieve
-	 * the length value
-	 * 
-	 * @return
-	 */
-	Class<? extends ModifierHandler<Integer>> handler() default PlaceHolderHandler.DefaultLengthHandler.class;
+    /**
+     * Specify static length value
+     * @return
+     */
+    int value() default -1;
+    /**
+     * How the length value itself is stored in the stream.<br/>
+     * by default it is treated as a single byte value.
+     * @return    the data dataType which describes how the length value itself is stored in the stream
+     */
+    DataType type() default DataType.BYTE;
+    
+    /**
+     * Specify a handler class which should be referred to at runtime to retrieve
+     * the length value
+     * 
+     * @return
+     */
+    Class<? extends ModifierHandler<Integer>> handler() default PlaceHolderHandler.DefaultLengthHandler.class;
 }

@@ -29,12 +29,12 @@ import org.dzh.bytesutil.annotations.types.CHAR;
 @Retention(RUNTIME)
 @Target(FIELD)
 public @interface EndsWith {
-	/**
-	 * Byte sequence used which indicates termination of a string. 
-	 * <p>
-	 * A zero-length array is treated as an error.
-	 * 
-	 * @return
-	 */
-	byte[] value();
+    /**
+     * Byte sequence used which indicates termination of a string. 
+     * <p>
+     * A zero-length array is treated as an error.
+     * 
+     * @return
+     */
+    byte[] value();
 }

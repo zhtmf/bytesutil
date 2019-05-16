@@ -7,7 +7,7 @@ import org.dzh.bytesutil.annotations.types.SHORT;
 
 @Unsigned
 public class CONSTANT_String_info extends DataPacket {
-	@Order(0)
-	@SHORT
-	public int stringIndex;
+    @Order(0)
+    @SHORT
+    public int stringIndex;
 }
