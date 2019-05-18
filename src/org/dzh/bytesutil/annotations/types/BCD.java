@@ -22,7 +22,6 @@ import org.dzh.bytesutil.annotations.modifiers.DatePattern;
  * <li>Integral types</li>
  * </ul>
  * 
- * @see https://en.wikipedia.org/wiki/Binary-coded_decimal
  * @author dzh
  */
 @Retention(RUNTIME)

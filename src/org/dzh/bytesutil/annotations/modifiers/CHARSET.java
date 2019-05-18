@@ -30,7 +30,7 @@ public @interface CHARSET {
     /**
      * Name of the charset, which must be a valid charset name.
      * 
-     * @return
+     * @return  name of the charset
      */
     String value() default "UTF-8";
 

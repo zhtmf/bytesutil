@@ -1,5 +1,7 @@
 package org.dzh.bytesutil.annotations.enums;
 
+import org.dzh.bytesutil.annotations.modifiers.Length;
+
 /**
  * Marker interface used to make an enum-typed field eligible to be mapped to
  * string values (byte sequences interpreted as human-readable text).
@@ -9,7 +11,7 @@ package org.dzh.bytesutil.annotations.enums;
  * also restricted by annotations like {@link Length}.
  * <p>
  * If for some reason the enum class cannot implement this interface, it should
- * return numbers as string values in {@link #toString()} methods for each enum
+ * return numbers as string values in <code>toString</code> methods for each enum
  * member.
  * 
  * @author dzh

@@ -18,7 +18,7 @@ import org.dzh.bytesutil.annotations.modifiers.Unsigned;
  * annotation. Endianness is specified with {@link BigEndian} / {@link LittleEndian}
  * annotation.
  * <p>
- * Convertible with <code>byte</code> and its wrapper class.<br/>
+ * Convertible with <code>byte</code> and its wrapper class.<br>
  * Convertible with <code>boolean</code> and its wrapper class. 
  * <p>
  * It is not an error to store an {@link Unsigned} value in such a field,

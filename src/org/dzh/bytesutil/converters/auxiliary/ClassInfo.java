@@ -204,7 +204,7 @@ public class ClassInfo {
     
     /**
      * Get a <b>copy</b> of FieldInfo list
-     * @return
+     * @return  a <b>copy</b> of FieldInfo list
      */
     public List<FieldInfo> fieldInfoList() {
         return new ArrayList<>(fieldInfoByField.values());

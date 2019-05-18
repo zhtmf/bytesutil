@@ -30,11 +30,11 @@ import org.dzh.bytesutil.annotations.types.CHAR;
 @Target(FIELD)
 public @interface EndsWith {
     /**
-     * Byte sequence used which indicates termination of a string. 
+     * Byte sequence which indicates termination of a string. 
      * <p>
      * A zero-length array is treated as an error.
      * 
-     * @return
+     * @return  byte sequence which indicates termination of a string
      */
     byte[] value();
 }

@@ -47,7 +47,7 @@ public @interface Order {
 
     /**
      * Specify the order value
-     * @return
+     * @return  numeric order value
      */
     int value();
     

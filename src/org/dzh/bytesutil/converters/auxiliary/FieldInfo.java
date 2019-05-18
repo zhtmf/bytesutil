@@ -332,7 +332,7 @@ public class FieldInfo{
     /**
      * Wrapper of {@link Field#get(Object)}
      * @param self this object
-     * @return
+     * @return  field value
      */
     public Object get(Object self) {
         try {
@@ -346,8 +346,8 @@ public class FieldInfo{
     }
     /**
      * Wrapper of {@link Field#set(Object, Object)}
-     * @param self
-     * @param val
+     * @param self  this object
+     * @param val   value to set
      */
     public void set(Object self, Object val) {
         try {
@@ -362,7 +362,7 @@ public class FieldInfo{
     
     /**
      * Returns lengthType or listLengthType
-     * @return
+     * @return  lengthType or listLengthType
      */
     public DataType lengthType() {
         return lengthType!=null ? lengthType : listLengthType;
@@ -371,7 +371,7 @@ public class FieldInfo{
     /**
      * Get class of this field,
      * intended to be overridden by sub-classes
-     * @return
+     * @return  class of this field
      */
     public Class<?> getFieldType(){
         return fieldClass;
@@ -385,7 +385,8 @@ public class FieldInfo{
      * Annotation of specific class for this field, if the same annotation is
      * present on both field and class, the one on the field always take precedence.
      * 
-     * @param annoCls
+     * @param annoCls   class of annotation
+     * @param <T>   class of annotation
      * @return null if it is not present both on the field or on the class
      */
     public <T extends Annotation> T annotation(Class<T> annoCls) {
@@ -399,7 +400,8 @@ public class FieldInfo{
     /**
      * Annotation of specific class present on the field.
      * 
-     * @param annoCls
+     * @param annoCls   class of annotation
+     * @param <T>   class of annotation
      * @return returns null if it is not present on the field, even it is present on
      *         the class
      */
@@ -411,7 +413,8 @@ public class FieldInfo{
     /**
      * Annotation of specific class present on the class definition of this field.
      * 
-     * @param annoCls
+     * @param annoCls   class of annotation
+     * @param <T>   class of annotation
      * @return    returns null if it is not present
      */
     public <T extends Annotation> T globalAnnotation(Class<T> annoCls) {

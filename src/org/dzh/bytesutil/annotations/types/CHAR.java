@@ -7,6 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
+import org.dzh.bytesutil.annotations.modifiers.Length;
 
 /**
  * <p>

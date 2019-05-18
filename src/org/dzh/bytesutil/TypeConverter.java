@@ -7,6 +7,7 @@ import java.nio.charset.Charset;
 import org.dzh.bytesutil.annotations.modifiers.BigEndian;
 import org.dzh.bytesutil.annotations.modifiers.CHARSET;
 import org.dzh.bytesutil.annotations.modifiers.DatePattern;
+import org.dzh.bytesutil.annotations.modifiers.Length;
 import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
 import org.dzh.bytesutil.annotations.modifiers.Signed;
 import org.dzh.bytesutil.annotations.modifiers.Unsigned;
@@ -85,14 +86,16 @@ public abstract class TypeConverter<T> {
          * Write a byte to the underlying stream.<br>
          * This method throws an exception if user attempts to write more bytes than 
          * {@link Context#length()} indicates.
-         * @param n
+         * @param b byte to write
+         * @throws IOException  I/O exception while writing to the stream
          */
-        public void writeByte(byte n) throws IOException;
+        public void writeByte(byte b) throws IOException;
         /**
          * Write an array of bytes to the underlying stream.<br>
          * This method throws an exception if user attempts to write more bytes than 
          * {@link Context#length()} indicates.
-         * @param array
+         * @param array array of bytes to wirte
+         * @throws IOException  I/O exception while writing to the stream
          */
         public void writeBytes(byte[] array) throws IOException;
         /**
@@ -104,7 +107,8 @@ public abstract class TypeConverter<T> {
          * This method throws an exception if user attempts to write more bytes than
          * {@link Context#length()} indicates.
          * 
-         * @param array
+         * @param n short value to write 
+         * @throws IOException  I/O exception while writing to the stream
          */
         public void writeShort(short n) throws IOException;
         
@@ -117,7 +121,8 @@ public abstract class TypeConverter<T> {
          * This method throws an exception if user attempts to write more bytes than
          * {@link Context#length()} indicates.
          * 
-         * @param array
+         * @param n int value to write
+         * @throws IOException  I/O exception while writing to the stream
          */
         public void writeInt(int n) throws IOException;
         
@@ -130,12 +135,14 @@ public abstract class TypeConverter<T> {
          * This method throws an exception if user attempts to write more bytes than
          * {@link Context#length()} indicates.
          * 
-         * @param array
+         * @param n long value to write
+         * @throws IOException  I/O exception while writing to the stream
          */
         public void writeLong(long n) throws IOException;
         
         /**
          * Returns number of bytes already written by client code
+         * @return  number of bytes already written
          */
         public long written();
     }
@@ -155,56 +162,56 @@ public abstract class TypeConverter<T> {
         /**
          * Read a signed byte value
          * @return    a signed byte value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public byte readByte() throws IOException;
         /**
          * Read {@code n} number of bytes as an array
          * @param n    number of bytes to read
-         * @return
-         * @throws IOException
+         * @return  {@code n} number of bytes as an array
+         * @throws IOException  I/O error while reading the stream
          */
         public byte[] readBytes(int n) throws IOException;
         /**
          * Read a signed short value
          * @return    a signed short value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public short readShort() throws IOException;
         /**
          * Read a signed int value
          * @return    a signed int value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public int readInt() throws IOException;
         /**
          * Read a signed long value
          * @return    a signed long value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public long readLong() throws IOException;
         /**
          * Read a single byte and interpret it as an unsigned byte value
          * @return    an unsigned byte value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public int readUnsignedByte() throws IOException;
         /**
          * Read 2 bytes and interpret it as an unsigned short value
          * @return    an unsigned short value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public int readUnsignedShort() throws IOException;
         /**
          * Read 4 bytes and interpret it as an unsigned int value
          * @return    an unsigned int value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public long readUnsignedInt() throws IOException;
         /**
          * Read 8 bytes and interpret it as an unsigned long value
          * @return    an unsigned long value
-         * @throws IOException
+         * @throws IOException  I/O error while reading the stream
          */
         public BigInteger readUnsignedLong() throws IOException;
 
@@ -213,7 +220,6 @@ public abstract class TypeConverter<T> {
          * methods are called.
          * 
          * @return number of bytes
-         * @throws IOException
          */
         public long available();
     }

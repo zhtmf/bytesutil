@@ -12,7 +12,7 @@ import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.dzh.bytesutil.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
- * Wrapper class for eliminating branches in {@link DataPacket} when converting
+ * Wrapper class for eliminating branches in {@link org.dzh.bytesutil.DataPacket} when converting
  * List values
  * 
  * @author dzh

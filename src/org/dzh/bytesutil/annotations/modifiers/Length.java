@@ -14,7 +14,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * Annotation used to specify length of various data dataType. It is used in the
  * following cases:
  * <ul>
- * <li>Specify length of a field declared as a {@link List}.</li>
+ * <li>Specify length of a field declared as a {@link java.util.List}.</li>
  * <li>Specify length of a {@link org.dzh.bytesutil.annotations.types.CHAR CHAR}
  * field, if using {@link org.dzh.bytesutil.annotations.types.CHAR#value value}
  * property is not preferred.</li>
@@ -36,7 +36,7 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
  * value and {@link #handler() handler} is set to {@link PlaceHolderHandler}
  * (left unassigned), it serves as a marker annotation that instructs the
  * library to dynamically read from/write to the stream the actual length. In
- * this case, the {@link #dataType() dataType} property is also referred to for
+ * this case, the {@link #type() type} property is also referred to for
  * determining how the length value is stored in the stream.</li>
  * </ul>
  * 
@@ -48,11 +48,11 @@ import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
 public @interface Length {
     /**
      * Specify static length value
-     * @return
+     * @return  static length value
      */
     int value() default -1;
     /**
-     * how the length value itself is stored in the stream.<br/>
+     * How the length value itself is stored in the stream.<br>
      * by default it is treated as a single byte value.
      * @return    the data dataType which describes how the length value itself is stored in the stream
      */
@@ -62,7 +62,7 @@ public @interface Length {
      * Specify a handler class which should be referred to at runtime to retrieve
      * the length value
      * 
-     * @return
+     * @return  handler class
      */
     Class<? extends ModifierHandler<Integer>> handler() default PlaceHolderHandler.DefaultLengthHandler.class;
 }

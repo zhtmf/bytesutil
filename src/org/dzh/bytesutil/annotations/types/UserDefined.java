@@ -7,6 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import org.dzh.bytesutil.TypeConverter;
+import org.dzh.bytesutil.annotations.modifiers.Length;
 
 /**
  * A special type which is serialized/deserialized entirely by the user.
