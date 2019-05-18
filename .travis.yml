@@ -5,8 +5,8 @@ branches:
   - master
 
 install:
-  - mvn test-compile -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn test-compile -B -V
 script:
-  - mvn test jacoco:report
+  - mvn test verify jacoco:report
 after_success:
   - mvn coveralls:report

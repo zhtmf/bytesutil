@@ -5,6 +5,26 @@
 	<artifactId>bytes-util</artifactId>
 	<version>1.1.1</version>
 	<name>bytes-util</name>
+	<description>A Java library that handles serialization/deserialization between Java classes and byte streams defined by arbitrary binary protocols</description>
+	<url>https://github.com/zhtmf/bytesutil</url>
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+	<developers>
+		<developer>
+			<name>Edgar Deng</name>
+			<email>bytes.util@gmail.com</email>
+			<url>https://github.com/zhtmf/bytesutil</url>
+		</developer>
+	</developers>
+	<scm>
+		<connection>scm:git:https://github.com/zhtmf/bytesutil.git</connection>
+		<developerConnection>scm:git:https://github.com/zhtmf/bytesutil.git</developerConnection>
+		<url>https://github.com/zhtmf/bytesutil</url>
+	</scm>
 
 	<properties>
 		<jdk.version>1.7</jdk.version>
@@ -60,7 +80,7 @@
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
 				<configuration>
-				    <keyname>${gpg.keyname}</keyname>
+					<keyname>${gpg.keyname}</keyname>
 				</configuration>
 				<executions>
 					<execution>
@@ -123,8 +143,8 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.1.0</version>
 				<configuration>
-				    <charset>UTF-8</charset>
-				    <locale>en_US</locale>
+					<charset>UTF-8</charset>
+					<locale>en_US</locale>
 				</configuration>
 				<executions>
 					<execution>
