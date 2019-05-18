@@ -7,6 +7,6 @@ branches:
 install:
   - mvn test-compile -B -V
 script:
-  - mvn test verify jacoco:report
+  - mvn test jacoco:report
 after_success:
   - mvn coveralls:report
