@@ -2,20 +2,20 @@ package test.exceptions;
 
 import java.util.List;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.EndsWith;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.ListLength;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.converters.StringConverter;
-import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
-import org.dzh.bytesutil.converters.auxiliary.FieldInfo;
-import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.EndsWith;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.ListLength;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.converters.StringConverter;
+import io.github.zhtmf.converters.auxiliary.ClassInfo;
+import io.github.zhtmf.converters.auxiliary.FieldInfo;
+import io.github.zhtmf.converters.auxiliary.Utils;
 import test.TestUtils;
 
 public class TestCaseCHARSerialization {

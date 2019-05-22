@@ -4,17 +4,17 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.CHARSET;
-import org.dzh.bytesutil.annotations.modifiers.EndsWith;
-import org.dzh.bytesutil.annotations.modifiers.ListLength;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.annotations.types.SHORT;
 import org.junit.Test;
 
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.EndsWith;
+import io.github.zhtmf.annotations.modifiers.ListLength;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.annotations.types.SHORT;
 import test.TestUtils;
 import test.TestUtils.Provider;
 

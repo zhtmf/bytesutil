@@ -5,19 +5,19 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.SHORT;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.LittleEndian;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import test.TestUtils;
 
 /*

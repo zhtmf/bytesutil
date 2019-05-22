@@ -1,9 +1,9 @@
 package test.general.entities;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.types.BYTE;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.types.BYTE;
 
 public class ListEntity extends DataPacket{
     public static final int DEFAULT_TEMP = 3;

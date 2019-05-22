@@ -3,7 +3,7 @@ package test.general.entities;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class PropertyHandler1 extends ModifierHandler<Charset> {
 

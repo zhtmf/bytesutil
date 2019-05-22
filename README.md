@@ -19,11 +19,11 @@ Consider the following definition of a data packet:
  
 And declaration of the following Java class:
 ````
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.annotations.types.SHORT;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.SHORT;
 
 @Unsigned
 public class MyPacket extends DataPacket{
@@ -76,7 +76,7 @@ CHAR | sequences of bytes which are interpreted as human readable text
 BCD | Binary-Coded Decimal
 RAW | sequences of bytes that do not fall in the categories above and used as-is
  
-Annotations for these pseudo data types can be found under the package ````org.dzh.bytesutil.annotations.types````.
+Annotations for these pseudo data types can be found under the package ````io.github.zhtmf.annotations.types````.
 
 Following conversion between above-mentioned data types and Java types are defined:
 
@@ -105,7 +105,7 @@ Variant| Specifies this field is of a sub type of ````DataPacket```` and require
 Length/ListLength| Statically or dyanmically determines length of an array or a list at compile time or runtime, refer to dedicated chapter below for more info.
 EndsWith| Specifies a string is of indeterministic length and ends with special sequence of bytes, refer to dedicated chapter below for more info.
 
-These annotations can be found under the package ````org.dzh.bytesutil.annotations.modifiers````. They can be specified both at  type level and at field level, which applies to all fields in one class or to a single field. 
+These annotations can be found under the package ````io.github.zhtmf.annotations.modifiers````. They can be specified both at  type level and at field level, which applies to all fields in one class or to a single field. 
 By combining modifiers and data types, this library enables implementing protocols that adopts different endian-ness and signedness, even ones that mix them.
 
 The library would be rather useless until now, as it can only be used to implement static protocols but not ones that have conditional branches in its structure. The real power which enables it to accommodate for vast varieties of binary protocols lies in the mechanics we will cover next.
@@ -153,17 +153,17 @@ The solution is ***handlers***:
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
-import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.LittleEndian;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 @LittleEndian
@@ -275,7 +275,7 @@ The `BodyHandler ` is a subclass of `ModifierHandler` which simplifies the inter
 
 Also `@Length(type=DataType.BYTE)` in `BodyType2` means "write length of the list into the stream as a BYTE prior to serializing list content and read in list length prior to deserialize list itself", this is another usage of `Length` annotation which provides support for the "Length-Value" pattern. Such usage is especially useful in Java because length of a `List` is implicit in the list itself and using another field to record the length is fairly redundant.
 
-Annotations and helper classes used in this chapter can be found under package `org.dzh.bytesutil.annotations.modifiers` and `org.dzh.bytesutil.converters.auxiliary`.
+Annotations and helper classes used in this chapter can be found under package `io.github.zhtmf.annotations.modifiers` and `io.github.zhtmf.converters.auxiliary`.
 
 ## Length Calculation
 ### Length and ListLength

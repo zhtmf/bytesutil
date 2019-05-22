@@ -14,11 +14,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.converters.auxiliary.exceptions.ExactException;
 import org.junit.Assert;
+
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.converters.auxiliary.exceptions.ExactException;
 
 public class TestUtils {
     public static boolean assertException(Throwable leaf, Class<? extends Throwable> expected) {

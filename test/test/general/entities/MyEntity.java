@@ -5,23 +5,23 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.BigEndian;
-import org.dzh.bytesutil.annotations.modifiers.CHARSET;
-import org.dzh.bytesutil.annotations.modifiers.DatePattern;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.annotations.types.SHORT;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.DatePattern;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.LittleEndian;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 @LittleEndian
 @Unsigned

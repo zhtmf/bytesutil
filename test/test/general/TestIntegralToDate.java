@@ -3,14 +3,14 @@ package test.general;
 import java.util.Calendar;
 import java.util.Date;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.INT;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.INT;
 import test.TestUtils;
 
 public class TestIntegralToDate {

@@ -6,20 +6,20 @@ import java.io.EOFException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.ListLength;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.annotations.types.SHORT;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
-import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.ListLength;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.auxiliary.DataType;
+import io.github.zhtmf.converters.auxiliary.StreamUtils;
 import test.TestUtils;
 
 public class TestStreamUtils {

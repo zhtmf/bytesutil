@@ -1,9 +1,9 @@
 package test.general.entities;
 
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.SHORT;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.SHORT;
 
 public class Sub1 extends Base {
     @Order(0)

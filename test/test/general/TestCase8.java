@@ -3,9 +3,10 @@ package test.general;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 
-import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.junit.Assert;
 import org.junit.Test;
+
+import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
 
 public class TestCase8{
     

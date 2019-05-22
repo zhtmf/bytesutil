@@ -6,11 +6,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.dzh.bytesutil.ConversionException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
 import test.TestUtils;
 import test.general.entities.MyEntity;
 import test.general.entities.Sub1;
