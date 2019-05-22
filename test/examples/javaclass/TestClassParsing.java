@@ -56,7 +56,8 @@ public class TestClassParsing {
     private InputStream getInputStream() throws FileNotFoundException {
         File f = new File("DataPacket.classfile");
         if( ! f.exists()) {
-            f = new File("test/examples/classparser/DataPacket.classfile");
+            String path = "test/"+this.getClass().getPackage().getName().replace('.', '/')+"/DataPacket.classfile";
+            f = new File(path);
         }
         return new FileInputStream(f);
     }
