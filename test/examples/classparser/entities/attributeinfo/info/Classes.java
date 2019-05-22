@@ -1,9 +1,9 @@
 package examples.classparser.entities.attributeinfo.info;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.SHORT;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.SHORT;
 
 @Unsigned
 public class Classes extends DataPacket{

@@ -1,6 +1,6 @@
 package examples.classparser.entities.cpinfo;
 
-import org.dzh.bytesutil.annotations.enums.NumericEnum;
+import io.github.zhtmf.annotations.enums.NumericEnum;
 
 public enum CPInfoTag implements NumericEnum{
     CONSTANT_Class(7),

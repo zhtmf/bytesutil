@@ -2,13 +2,13 @@ package examples.classparser.entities.attributeinfo.info.stackmapframe.verificat
 
 import java.io.InputStream;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 public class VerificationTypeInfo extends DataPacket{

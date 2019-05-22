@@ -3,21 +3,21 @@ package test.exceptions;
 import java.io.IOException;
 import java.sql.Timestamp;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.TypeConverter;
-import org.dzh.bytesutil.TypeConverter.Input;
-import org.dzh.bytesutil.TypeConverter.Output;
-import org.dzh.bytesutil.annotations.modifiers.BigEndian;
-import org.dzh.bytesutil.annotations.modifiers.CHARSET;
-import org.dzh.bytesutil.annotations.modifiers.DatePattern;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.types.UserDefined;
-import org.dzh.bytesutil.converters.UserDefinedTypeConverter;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.TypeConverter;
+import io.github.zhtmf.TypeConverter.Input;
+import io.github.zhtmf.TypeConverter.Output;
+import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.DatePattern;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.types.UserDefined;
+import io.github.zhtmf.converters.UserDefinedTypeConverter;
 import test.TestUtils;
 
 public class TestCaseUserDefined {

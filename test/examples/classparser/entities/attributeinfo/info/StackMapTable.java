@@ -4,15 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
-import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
-
 import examples.classparser.entities.attributeinfo.info.stackmapframe.AppendFrame;
 import examples.classparser.entities.attributeinfo.info.stackmapframe.ChopFrame;
 import examples.classparser.entities.attributeinfo.info.stackmapframe.FullFrame;
@@ -21,6 +12,14 @@ import examples.classparser.entities.attributeinfo.info.stackmapframe.SameFrameE
 import examples.classparser.entities.attributeinfo.info.stackmapframe.SameLocals1StackItemFrame;
 import examples.classparser.entities.attributeinfo.info.stackmapframe.SameLocals1StackItemFrameExtended;
 import examples.classparser.entities.attributeinfo.info.stackmapframe.StackMapFrame;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.converters.auxiliary.DataType;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.StreamUtils;
 
 @Unsigned
 public class StackMapTable extends DataPacket{

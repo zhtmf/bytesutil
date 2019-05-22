@@ -1,13 +1,13 @@
 package test.exceptions;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.converters.BooleanConverter;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.converters.BooleanConverter;
 import test.TestUtils;
 
 public class TestCaseBooleanConverter{

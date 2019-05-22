@@ -6,23 +6,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.BigEndian;
-import org.dzh.bytesutil.annotations.modifiers.CHARSET;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.SHORT;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
-import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
-
 import examples.classparser.entities.attributeinfo.AttributeInfo;
 import examples.classparser.entities.cpinfo.CpInfo;
 import examples.classparser.entities.cpinfo.info.CONSTANT_Class_info;
 import examples.classparser.entities.cpinfo.info.CONSTANT_Utf8_info;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.auxiliary.DataType;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 @CHARSET("UTF-8")

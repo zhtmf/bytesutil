@@ -4,10 +4,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.dzh.bytesutil.converters.auxiliary.MarkableInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
 import test.TestUtils;
 
 public class TestMarkableInputStream {

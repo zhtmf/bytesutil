@@ -2,13 +2,13 @@ package test.general.entities;
 
 import java.io.InputStream;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.BigEndian;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @BigEndian
 public class WeirdEntity extends DataPacket{

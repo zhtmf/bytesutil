@@ -3,8 +3,8 @@ package examples.classparser.entities.attributeinfo.info.annotation;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 public class ElementValueHandler extends EntityHandler{
 

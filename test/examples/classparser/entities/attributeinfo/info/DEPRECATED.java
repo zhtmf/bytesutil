@@ -1,6 +1,6 @@
 package examples.classparser.entities.attributeinfo.info;
 
-import org.dzh.bytesutil.DataPacket;
+import io.github.zhtmf.DataPacket;
 
 public class DEPRECATED extends DataPacket{
 }

@@ -3,9 +3,9 @@ package test.general.entities;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.StreamUtils;
 
 public class EntityHandler1 extends EntityHandler{
 

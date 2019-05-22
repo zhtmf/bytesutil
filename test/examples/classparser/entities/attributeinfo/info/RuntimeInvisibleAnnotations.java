@@ -1,7 +1,7 @@
 package examples.classparser.entities.attributeinfo.info;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
 
 public class RuntimeInvisibleAnnotations extends DataPacket{
     @Order(0)

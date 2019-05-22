@@ -4,14 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.SHORT;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
-
 import examples.classparser.entities.attributeinfo.info.AnnotationDefault;
 import examples.classparser.entities.attributeinfo.info.BootstrapMethods;
 import examples.classparser.entities.attributeinfo.info.Code;
@@ -34,6 +26,13 @@ import examples.classparser.entities.attributeinfo.info.StackMapTable;
 import examples.classparser.entities.attributeinfo.info.Synthetic;
 import examples.classparser.entities.cpinfo.CpInfo;
 import examples.classparser.entities.cpinfo.info.CONSTANT_Utf8_info;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 @Unsigned
 public class AttributeInfo extends DataPacket{

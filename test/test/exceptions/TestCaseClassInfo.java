@@ -9,27 +9,27 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.List;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.TypeConverter;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.annotations.types.UserDefined;
-import org.dzh.bytesutil.converters.Converters;
-import org.dzh.bytesutil.converters.auxiliary.ClassInfo;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
-import org.dzh.bytesutil.converters.auxiliary.PlaceHolderHandler;
-import org.dzh.bytesutil.converters.auxiliary.StreamUtils;
-import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.TypeConverter;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.annotations.types.UserDefined;
+import io.github.zhtmf.converters.Converters;
+import io.github.zhtmf.converters.auxiliary.ClassInfo;
+import io.github.zhtmf.converters.auxiliary.DataType;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.PlaceHolderHandler;
+import io.github.zhtmf.converters.auxiliary.StreamUtils;
+import io.github.zhtmf.converters.auxiliary.Utils;
 import test.TestUtils;
 
 public class TestCaseClassInfo {

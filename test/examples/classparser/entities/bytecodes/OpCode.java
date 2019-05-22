@@ -1,6 +1,6 @@
 package examples.classparser.entities.bytecodes;
 
-import org.dzh.bytesutil.annotations.enums.NumericEnum;
+import io.github.zhtmf.annotations.enums.NumericEnum;
 
 public enum OpCode implements NumericEnum{
     nop(0x0,0),

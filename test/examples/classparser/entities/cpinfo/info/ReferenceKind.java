@@ -1,6 +1,6 @@
 package examples.classparser.entities.cpinfo.info;
 
-import org.dzh.bytesutil.annotations.enums.NumericEnum;
+import io.github.zhtmf.annotations.enums.NumericEnum;
 
 public enum ReferenceKind implements NumericEnum{
     REF_getField(1),

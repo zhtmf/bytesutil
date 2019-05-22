@@ -1,6 +1,6 @@
 package examples.classparser.entities.attributeinfo.info.stackmapframe.verificationtypeinfo;
 
-import org.dzh.bytesutil.annotations.enums.NumericEnum;
+import io.github.zhtmf.annotations.enums.NumericEnum;
 
 public enum VerificationTypeInfoTag implements NumericEnum{
     ITEM_Top(0),

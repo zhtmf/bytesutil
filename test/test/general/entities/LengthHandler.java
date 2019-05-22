@@ -2,7 +2,7 @@ package test.general.entities;
 
 import java.io.InputStream;
 
-import org.dzh.bytesutil.converters.auxiliary.ModifierHandler;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class LengthHandler extends ModifierHandler<Integer> {
 

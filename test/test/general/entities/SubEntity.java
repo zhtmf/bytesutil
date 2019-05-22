@@ -1,11 +1,11 @@
 package test.general.entities;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.CHARSET;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.INT;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.INT;
 
 public class SubEntity extends DataPacket{
     

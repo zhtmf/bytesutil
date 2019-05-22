@@ -7,14 +7,14 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import test.general.entities.ListEntity;
 
 public class TestVariantForList {

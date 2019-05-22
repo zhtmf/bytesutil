@@ -5,18 +5,18 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.LittleEndian;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.LONG;
-import org.dzh.bytesutil.annotations.types.SHORT;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.LittleEndian;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.LONG;
+import io.github.zhtmf.annotations.types.SHORT;
 import test.TestUtils;
 
 public class TestEndianness {

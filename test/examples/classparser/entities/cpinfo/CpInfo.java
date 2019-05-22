@@ -3,14 +3,6 @@ package examples.classparser.entities.cpinfo;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.CHARSET;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.converters.auxiliary.EntityHandler;
-
 import examples.classparser.entities.cpinfo.info.CONSTANT_Class_info;
 import examples.classparser.entities.cpinfo.info.CONSTANT_Double_info;
 import examples.classparser.entities.cpinfo.info.CONSTANT_Fieldref_info;
@@ -25,6 +17,13 @@ import examples.classparser.entities.cpinfo.info.CONSTANT_Methodref_info;
 import examples.classparser.entities.cpinfo.info.CONSTANT_NameAndType_info;
 import examples.classparser.entities.cpinfo.info.CONSTANT_String_info;
 import examples.classparser.entities.cpinfo.info.CONSTANT_Utf8_info;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 @Unsigned
 @CHARSET("UTF-8")

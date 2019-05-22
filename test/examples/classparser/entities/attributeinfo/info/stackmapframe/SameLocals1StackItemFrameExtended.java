@@ -1,10 +1,9 @@
 package examples.classparser.entities.attributeinfo.info.stackmapframe;
 
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.SHORT;
-
 import examples.classparser.entities.attributeinfo.info.stackmapframe.verificationtypeinfo.VerificationTypeInfo;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.SHORT;
 
 @Unsigned
 public class SameLocals1StackItemFrameExtended extends StackMapFrame{

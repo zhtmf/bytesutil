@@ -1,12 +1,12 @@
 package examples.classparser.entities.cpinfo.info;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.CHARSET;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.converters.auxiliary.DataType;
 
 @Unsigned
 @CHARSET("UTF-8")

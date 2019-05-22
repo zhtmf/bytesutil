@@ -1,12 +1,11 @@
 package examples.classparser.entities.attributeinfo.info;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.modifiers.Variant;
-
 import examples.classparser.entities.attributeinfo.info.annotation.ElementValue;
 import examples.classparser.entities.attributeinfo.info.annotation.ElementValueHandler;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
 
 @Unsigned
 public class AnnotationDefault extends DataPacket{

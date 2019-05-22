@@ -2,13 +2,12 @@ package examples.classparser.entities.attributeinfo.info;
 
 import java.util.List;
 
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Length;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.converters.auxiliary.DataType;
-
 import examples.classparser.entities.attributeinfo.info.annotation.Annotation;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.converters.auxiliary.DataType;
 
 /**
  * used by 

@@ -3,23 +3,23 @@ package test.general;
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
 
-import org.dzh.bytesutil.ConversionException;
-import org.dzh.bytesutil.DataPacket;
-import org.dzh.bytesutil.annotations.modifiers.Order;
-import org.dzh.bytesutil.annotations.modifiers.Signed;
-import org.dzh.bytesutil.annotations.modifiers.Unsigned;
-import org.dzh.bytesutil.annotations.types.BCD;
-import org.dzh.bytesutil.annotations.types.BYTE;
-import org.dzh.bytesutil.annotations.types.CHAR;
-import org.dzh.bytesutil.annotations.types.INT;
-import org.dzh.bytesutil.annotations.types.LONG;
-import org.dzh.bytesutil.annotations.types.RAW;
-import org.dzh.bytesutil.annotations.types.SHORT;
-import org.dzh.bytesutil.converters.BigIntegerConverter;
-import org.dzh.bytesutil.converters.auxiliary.Utils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.LONG;
+import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.BigIntegerConverter;
+import io.github.zhtmf.converters.auxiliary.Utils;
 import test.TestUtils;
 
 public class TestIntegerRange {
