@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.zhtmf</groupId>
 	<artifactId>bytes-util</artifactId>
@@ -24,7 +23,8 @@
 		<connection>scm:git:https://github.com/zhtmf/bytesutil.git</connection>
 		<developerConnection>scm:git:https://github.com/zhtmf/bytesutil.git</developerConnection>
 		<url>https://github.com/zhtmf/bytesutil</url>
-	</scm>
+	  <tag>bytes-util-1.1.1</tag>
+  </scm>
 
 	<properties>
 		<jdk.version>1.7</jdk.version>
@@ -74,7 +74,16 @@
 					</execution>
 				</executions>
 			</plugin>
-
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<version>2.5.2</version>
+				<configuration>
+					<checkModificationExcludes>
+						<checkModificationExclude>pom.xml</checkModificationExclude>
+					</checkModificationExcludes>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
@@ -159,10 +168,15 @@
 	</build>
 
 	<distributionManagement>
+		<snapshotRepository>
+			<id>sonatype-nexus-snapshots</id>
+			<name>Nexus Snapshot Repository</name>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
 		<repository>
-			<id>bintray-edgardzh-bytes-util</id>
-			<name>edgardzh-bytes-util</name>
-			<url>https://api.bintray.com/maven/edgardzh/bytes-util/bytesutil/;publish=1</url>
+			<id>nexus-releases</id>
+			<name>Nexus Release Repository</name>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
 		</repository>
 	</distributionManagement>
 </project>
