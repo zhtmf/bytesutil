@@ -1,4 +1,4 @@
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Coverage Status](https://coveralls.io/repos/github/zhtmf/bytesutil/badge.svg?branch=master)](https://coveralls.io/github/zhtmf/bytesutil?branch=master) [![Build Status](https://travis-ci.org/zhtmf/bytesutil.svg?branch=master)](https://travis-ci.org/zhtmf/bytesutil)[ ![Download](https://api.bintray.com/packages/edgardzh/bytes-util/bytesutil/images/download.svg?version=1.1.1) ](https://bintray.com/edgardzh/bytes-util/bytesutil/1.1.1/link)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0) [![Coverage Status](https://coveralls.io/repos/github/zhtmf/bytesutil/badge.svg?branch=master)](https://coveralls.io/github/zhtmf/bytesutil?branch=master) [![Build Status](https://travis-ci.org/zhtmf/bytesutil.svg?branch=master)](https://travis-ci.org/zhtmf/bytesutil)[![Maven Central](https://img.shields.io/maven-central/v/io.github.zhtmf/bytes-util.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22io.github.zhtmf%22%20AND%20a:%22bytes-util%22)
 # Bytes-Util
 
 ## What's this
