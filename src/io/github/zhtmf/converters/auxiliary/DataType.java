@@ -289,19 +289,19 @@ public enum DataType{
         int sz = size()-1;
         if(unsigned) {
             if(val<0 || val>UNSIGNED_MAXIMUMS[sz]) {
-                return "val " + val +" cannot be stored as unsigned "+sz+1+"-byte integer value";
+                return "val " + val +" cannot be stored as unsigned "+(sz+1)+"-byte integer value";
             }
         }else {
             if(val<SIGNED_MINIMUMS[sz] || val>SIGNED_MAXIMUMS[sz]) {
-                return "val " + val + " cannot be stored as signed "+sz+1+"-byte integer value";
+                return "val " + val + " cannot be stored as signed "+(sz+1)+"-byte integer value";
             }
         }
         return null;
     }
     public String checkRange(BigInteger val, boolean unsigned) {throw new UnsupportedOperationException();}
     abstract boolean supports(Class<?> javaType);
-    
-    private static final long[] SIGNED_MAXIMUMS = {
+    //used by stream utils
+    static final long[] SIGNED_MAXIMUMS = {
        Byte.MAX_VALUE,Short.MAX_VALUE,(0x00ffffff+1)/2-1,
        Integer.MAX_VALUE,(0x00ffffffffffL+1)/2-1,
        (0x00ffffffffffffL+1)/2-1,(0x00ffffffffffffffL+1)/2-1,Long.MAX_VALUE

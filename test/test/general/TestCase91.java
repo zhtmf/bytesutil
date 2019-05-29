@@ -26,6 +26,7 @@ import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.INT3;
 import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
@@ -340,6 +341,30 @@ public class TestCase91{
         @Order(60)
         @BYTE
         public Boolean bool4 = Boolean.FALSE;
+        @Order(61)
+        @INT3
+        @Unsigned
+        public int int3_1 = (int)(Math.pow(2, 24)-1);
+        @Order(62)
+        @INT3
+        @Unsigned
+        public int int3_2 = 0;
+        @Order(63)
+        @INT3
+        @Signed
+        public int int3_3 = (int)(Math.pow(2, 24)/2-1);
+        @Order(64)
+        @INT3
+        @Signed
+        public int int3_4 = -(int)(Math.pow(2, 24)/2);
+        @Order(65)
+        @INT3
+        @Signed
+        public int int3_5 = (int)(Math.pow(2, 24)/2-123);
+        @Order(66)
+        @INT3
+        @Signed
+        public int int3_6 = -(int)(Math.pow(2, 24)/2)+120;
     }
     
     @Test

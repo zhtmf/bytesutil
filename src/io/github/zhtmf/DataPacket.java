@@ -218,6 +218,10 @@ public abstract class DataPacket {
             case SHORT:
             case INT:
             case LONG:
+            case INT3:
+            case INT5:
+            case INT6:
+            case INT7:
                 ret += type.size() * length;
                 break;
             case CHAR:{

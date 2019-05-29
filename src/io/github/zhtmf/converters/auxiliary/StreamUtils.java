@@ -37,6 +37,17 @@ public class StreamUtils {
             os.write((byte)(value>>24 & 0xFF));
         }
     }
+    public static void writeInt3(OutputStream os, int value, boolean bigendian) throws IOException {
+        if(bigendian) {
+            os.write((byte)(value>>16 & 0xFF));
+            os.write((byte)(value>>8 & 0xFF));
+            os.write((byte)(value & 0xFF));
+        }else {
+            os.write((byte)(value & 0xFF));
+            os.write((byte)(value>>8 & 0xFF));
+            os.write((byte)(value>>16 & 0xFF));
+        }
+    }
     public static void writeLong(OutputStream os, long value, boolean bigendian) throws IOException {
         if(bigendian) {
             os.write((byte)(value>>56 & 0xFF));
@@ -119,7 +130,7 @@ public class StreamUtils {
     public static long readInt(InputStream is,boolean signed, boolean bigEndian) throws IOException{
         int ret = 0;
         if(bigEndian) {
-            ret |= (read(is)<<24);
+            ret |= (read(is) <<24);
             ret |= (read(is) << 16);
             ret |= (read(is) << 8);
             ret |= read(is);
@@ -131,6 +142,23 @@ public class StreamUtils {
         }
         long tmp = (((long)ret) & 0xFFFFFFFFL);
         return signed ? (int)tmp : tmp;
+    }
+    
+    public static int readInt3(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+        int ret = 0;
+        if(bigEndian) {
+            ret |= (read(is) << 16);
+            ret |= (read(is) << 8);
+            ret |= read(is);
+        }else {
+            ret |= read(is);
+            ret |= (read(is) <<  8);
+            ret |= (read(is) << 16);
+        }
+        if(signed && ((ret & 0b10000000_00000000_00000000) !=0)) {
+            ret |= 0b11111111_00000000_00000000_00000000;
+        }
+        return ret;
     }
     
     public static long readLong(InputStream is, boolean bigEndian) throws IOException{

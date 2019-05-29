@@ -32,6 +32,11 @@ public class IntegerConverter implements Converter<Integer> {
             StreamUtils.writeInt(dest, val, ctx.bigEndian);
             return;
         }
+        case INT3:{
+            Utils.checkRangeInContext(DataType.INT3, val, ctx);
+            StreamUtils.writeInt3(dest, val, ctx.bigEndian);
+            return;
+        }
         case CHAR:
             Utils.serializeAsCHAR(val, dest, ctx, self);
             return;
@@ -55,6 +60,9 @@ public class IntegerConverter implements Converter<Integer> {
         }
         case INT:{
             return (int)StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
+        }
+        case INT3:{
+            return (int)StreamUtils.readInt3(is, ctx.signed, ctx.bigEndian);
         }
         case CHAR:{
             return (int)Utils.deserializeAsCHAR(is, ctx, self, DataType.INT);
