@@ -27,6 +27,7 @@ import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.INT3;
+import io.github.zhtmf.annotations.types.INT5;
 import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
@@ -342,6 +343,8 @@ public class TestCase91{
         @BYTE
         public Boolean bool4 = Boolean.FALSE;
         
+        //int3
+        
         @Order(61)
         @INT3
         @Unsigned
@@ -403,6 +406,70 @@ public class TestCase91{
         @Signed
         @BigEndian
         public int int3_12 = -(int)(Math.pow(2, 24)/2)+120;
+        
+        //int5
+        
+        @Order(73)
+        @INT5
+        @Unsigned
+        @LittleEndian
+        public long int5_1 = (long)(Math.pow(2, 40)-1);
+        @Order(74)
+        @INT5
+        @Unsigned
+        @LittleEndian
+        public long int5_2 = 0;
+        @Order(75)
+        @INT5
+        @Signed
+        @LittleEndian
+        public long int5_3 = (long)(Math.pow(2, 40)/2-1);
+        @Order(76)
+        @INT5
+        @Signed
+        @LittleEndian
+        public long int5_4 = -(long)(Math.pow(2, 40)/2);
+        @Order(77)
+        @INT5
+        @Signed
+        @LittleEndian
+        public long int5_5 = (long)(Math.pow(2, 40)/2-123);
+        @Order(78)
+        @INT5
+        @Signed
+        @LittleEndian
+        public long int5_6 = -(long)(Math.pow(2, 40)/2)+120;
+        
+        @Order(79)
+        @INT5
+        @Unsigned
+        @BigEndian
+        public long int5_7 = (long)(Math.pow(2, 40)-1);
+        @Order(80)
+        @INT5
+        @Unsigned
+        @BigEndian
+        public long int5_8 = 0;
+        @Order(81)
+        @INT5
+        @Signed
+        @BigEndian
+        public long int5_9 = (long)(Math.pow(2, 40)/2-1);
+        @Order(82)
+        @INT5
+        @Signed
+        @BigEndian
+        public long int5_10 = -(long)(Math.pow(2, 40)/2);
+        @Order(83)
+        @INT5
+        @Signed
+        @BigEndian
+        public long int5_11 = (long)(Math.pow(2, 40)/2-123);
+        @Order(84)
+        @INT5
+        @Signed
+        @BigEndian
+        public long int5_12 = -(long)(Math.pow(2, 40)/2)+120;
     }
     
     @Test

@@ -38,6 +38,11 @@ public class LongConverter implements Converter<Long> {
             StreamUtils.writeInt3(dest, (int)val, ctx.bigEndian);
             return;
         }
+        case INT5:{
+            Utils.checkRangeInContext(DataType.INT5, val, ctx);
+            StreamUtils.writeInt5(dest, val, ctx.bigEndian);
+            return;
+        }
         case LONG:{
             StreamUtils.writeLong(dest, val, ctx.bigEndian);
             return;
@@ -68,6 +73,9 @@ public class LongConverter implements Converter<Long> {
         }
         case INT3:{
             return (long)StreamUtils.readInt3(is, ctx.signed, ctx.bigEndian);
+        }
+        case INT5:{
+            return StreamUtils.readInt5(is, ctx.signed, ctx.bigEndian);
         }
         case LONG:{
             return StreamUtils.readLong(is, ctx.bigEndian);
