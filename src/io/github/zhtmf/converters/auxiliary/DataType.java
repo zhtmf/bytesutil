@@ -302,28 +302,43 @@ public enum DataType{
     abstract boolean supports(Class<?> javaType);
     //used by stream utils
     static final long[] SIGNED_MAXIMUMS = {
-       Byte.MAX_VALUE,Short.MAX_VALUE,(0x00ffffff+1)/2-1,
-       Integer.MAX_VALUE,(0x00ffffffffffL+1)/2-1,
-       (0x00ffffffffffffL+1)/2-1,(0x00ffffffffffffffL+1)/2-1,Long.MAX_VALUE
+       Byte.MAX_VALUE,
+       Short.MAX_VALUE,
+       (long) (pow(2, 3*8)/2-1),
+       Integer.MAX_VALUE,
+       (long) (pow(2, 5*8)/2-1),
+       (long) (pow(2, 6*8)/2-1),
+       (long) (pow(2, 7*8)/2-1),
+       Long.MAX_VALUE
     };
     private static final long[] SIGNED_MINIMUMS = {
-        ((long)SIGNED_MAXIMUMS[0]+1)*-1,
-        ((long)SIGNED_MAXIMUMS[1]+1)*-1,
-        ((long)SIGNED_MAXIMUMS[2]+1)*-1,
-        ((long)SIGNED_MAXIMUMS[3]+1)*-1,
-        ((long)SIGNED_MAXIMUMS[4]+1)*-1,
-        ((long)SIGNED_MAXIMUMS[5]+1)*-1,
-        ((long)SIGNED_MAXIMUMS[6]+1)*-1,
-        ((long)SIGNED_MAXIMUMS[7]+1)*-1,
+        -(long) (pow(2, 1*8)/2),
+        -(long) (pow(2, 2*8)/2),
+        -(long) (pow(2, 3*8)/2),
+        -(long) (pow(2, 4*8)/2),
+        -(long) (pow(2, 5*8)/2),
+        -(long) (pow(2, 6*8)/2),
+        -(long) (pow(2, 7*8)/2),
+        Long.MIN_VALUE,
      };
     private static final long[] UNSIGNED_MAXIMUMS = {
-       ((long)SIGNED_MAXIMUMS[0])*2+1,
-       ((long)SIGNED_MAXIMUMS[1])*2+1,
-       ((long)SIGNED_MAXIMUMS[2])*2+1,
-       ((long)SIGNED_MAXIMUMS[3])*2+1,
-       ((long)SIGNED_MAXIMUMS[4])*2+1,
-       ((long)SIGNED_MAXIMUMS[5])*2+1,
-       ((long)SIGNED_MAXIMUMS[6])*2+1,
+         (long) (pow(2, 1*8)-1),
+         (long) (pow(2, 2*8)-1),
+         (long) (pow(2, 3*8)-1),
+         (long) (pow(2, 4*8)-1),
+         (long) (pow(2, 5*8)-1),
+         (long) (pow(2, 6*8)-1),
+         (long) (pow(2, 7*8)-1),
        //unavailable left blank
     };
+    private static long pow(long base ,int power) {
+        long tmp = base;
+        while(power-->1) {
+            base = base*tmp;
+            if(base<0) {
+                throw new ArithmeticException();
+            }
+        }
+        return base;
+    }
 }

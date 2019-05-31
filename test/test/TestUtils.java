@@ -269,4 +269,15 @@ public class TestUtils {
         }
         return true;
     }
+    
+    public static long pow(long base ,int power) {
+        long tmp = base;
+        while(power-->1) {
+            base = base*tmp;
+            if(base<0) {
+                throw new ArithmeticException();
+            }
+        }
+        return base;
+    }
 }
