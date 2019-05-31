@@ -63,6 +63,23 @@ public class StreamUtils {
             os.write((byte)(value>>32 & 0xFF));
         }
     }
+    public static void writeInt6(OutputStream os, long value, boolean bigendian) throws IOException {
+        if(bigendian) {
+            os.write((byte)(value>>40 & 0xFF));
+            os.write((byte)(value>>32 & 0xFF));
+            os.write((byte)(value>>24 & 0xFF));
+            os.write((byte)(value>>16 & 0xFF));
+            os.write((byte)(value>>8 & 0xFF));
+            os.write((byte)(value & 0xFF));
+        }else {
+            os.write((byte)(value & 0xFF));
+            os.write((byte)(value>>8 & 0xFF));
+            os.write((byte)(value>>16 & 0xFF));
+            os.write((byte)(value>>24 & 0xFF));
+            os.write((byte)(value>>32 & 0xFF));
+            os.write((byte)(value>>40 & 0xFF));
+        }
+    }
     public static void writeLong(OutputStream os, long value, boolean bigendian) throws IOException {
         if(bigendian) {
             os.write((byte)(value>>56 & 0xFF));
@@ -179,7 +196,7 @@ public class StreamUtils {
     public static long readInt5(InputStream is,boolean signed, boolean bigEndian) throws IOException{
         long ret = 0;
         if(bigEndian) {
-            ret |= (((long)((long)read(is))) << 32);
+            ret |= (((long)read(is)) << 32);
             ret |= (((long)read(is)) << 24);
             ret |= (((long)read(is)) << 16);
             ret |= (((long)read(is)) << 8);
@@ -193,6 +210,29 @@ public class StreamUtils {
         }
         if(signed && ((ret & 0b10000000_00000000_00000000_00000000_00000000L) !=0)) {
             ret |= 0b11111111_11111111_11111111_00000000_00000000_00000000_00000000_00000000L;
+        }
+        return ret;
+    }
+    
+    public static long readInt6(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+        long ret = 0;
+        if(bigEndian) {
+            ret |= (((long)read(is)) << 40);
+            ret |= (((long)read(is)) << 32);
+            ret |= (((long)read(is)) << 24);
+            ret |= (((long)read(is)) << 16);
+            ret |= (((long)read(is)) << 8);
+            ret |= ((long)read(is));
+        }else {
+            ret |= ((long)read(is));
+            ret |= (((long)read(is)) <<  8);
+            ret |= (((long)read(is)) << 16);
+            ret |= (((long)read(is)) << 24);
+            ret |= (((long)read(is)) << 32);
+            ret |= (((long)read(is)) << 40);
+        }
+        if(signed && ((ret & 0b10000000_00000000_00000000_00000000_00000000_00000000L) !=0)) {
+            ret |= 0b11111111_11111111_00000000_00000000_00000000_00000000_00000000_00000000L;
         }
         return ret;
     }
