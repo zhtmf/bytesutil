@@ -341,30 +341,68 @@ public class TestCase91{
         @Order(60)
         @BYTE
         public Boolean bool4 = Boolean.FALSE;
+        
         @Order(61)
         @INT3
         @Unsigned
+        @LittleEndian
         public int int3_1 = (int)(Math.pow(2, 24)-1);
         @Order(62)
         @INT3
         @Unsigned
+        @LittleEndian
         public int int3_2 = 0;
         @Order(63)
         @INT3
         @Signed
+        @LittleEndian
         public int int3_3 = (int)(Math.pow(2, 24)/2-1);
         @Order(64)
         @INT3
         @Signed
+        @LittleEndian
         public int int3_4 = -(int)(Math.pow(2, 24)/2);
         @Order(65)
         @INT3
         @Signed
+        @LittleEndian
         public int int3_5 = (int)(Math.pow(2, 24)/2-123);
         @Order(66)
         @INT3
         @Signed
+        @LittleEndian
         public int int3_6 = -(int)(Math.pow(2, 24)/2)+120;
+        
+        @Order(67)
+        @INT3
+        @Unsigned
+        @BigEndian
+        public int int3_7 = (int)(Math.pow(2, 24)-1);
+        @Order(68)
+        @INT3
+        @Unsigned
+        @BigEndian
+        public int int3_8 = 0;
+        @Order(69)
+        @INT3
+        @Signed
+        @BigEndian
+        public int int3_9 = (int)(Math.pow(2, 24)/2-1);
+        @Order(70)
+        @INT3
+        @Signed
+        @BigEndian
+        public int int3_10 = -(int)(Math.pow(2, 24)/2);
+        @Order(71)
+        @INT3
+        @Signed
+        @BigEndian
+        public int int3_11 = (int)(Math.pow(2, 24)/2-123);
+        @Order(72)
+        @INT3
+        @Signed
+        @BigEndian
+        public int int3_12 = -(int)(Math.pow(2, 24)/2)+120;
     }
     
     @Test
