@@ -19,7 +19,7 @@ public class TestMarkableInputStream {
             Assert.assertFalse(mis.marked());
             Assert.assertEquals(mis.available(),new ByteArrayInputStream(array).available());
             for(int i=0;i<10;++i) {
-                Assert.assertEquals(mis.read(), array[i]);
+                Assert.assertEquals((byte)mis.read(), array[i]);
             }
         }
         try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
@@ -54,58 +54,36 @@ public class TestMarkableInputStream {
             Assert.assertTrue(mis.marked());
             Assert.assertEquals(mis.remaining(),0);
             for(int i=0;i<300;++i) {
-                Assert.assertEquals(mis.read(), array[i]);
+                Assert.assertEquals((byte)mis.read(), array[i]);
                 Assert.assertEquals(mis.remaining(),0);
             }
             mis.reset();
             Assert.assertEquals(mis.remaining(),300);
             int i=0;
             for(;i<150;++i) {
-                Assert.assertEquals(mis.read(), array[i]);
+                Assert.assertEquals((byte)mis.read(), array[i]);
                 Assert.assertEquals(mis.remaining(),300-i-1);
             }
             Assert.assertEquals(mis.remaining(),300-i);
-            mis.mark(444);
-            Assert.assertEquals(mis.remaining(),300-i);
             mis.reset();
-            Assert.assertEquals(mis.remaining(),300-i);
+            Assert.assertEquals(mis.remaining(),300);
             int k = 0;
-            for(;k<444;++k) {
-                Assert.assertEquals(mis.read(), array[k+i]);
+            for(;k<300;++k) {
+                Assert.assertEquals((byte)mis.read(), array[k]);
             }
             mis.reset();
-            Assert.assertEquals(mis.remaining(),444);
-            for(int p=0;p<444;++p) {
+            Assert.assertEquals(mis.remaining(),300);
+            for(int p=0;p<300;++p) {
                 mis.read();
             }
-            int pos = k+i;
+            int pos = k;
             while(true) {
                 int ret = mis.read();
                 Assert.assertFalse(mis.marked());
                 if(ret==-1) {
                     break;
                 }
-                Assert.assertEquals(ret,array[pos++]);
-            }
-        }
-    }
-    @Test
-    public void test3() throws IOException {
-        byte[] array = TestUtils.randomArray(1024);
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
-            Assert.assertTrue(mis.marked()==false);
-            mis.mark(300);
-            Assert.assertTrue(mis.marked());
-            Assert.assertEquals(mis.remaining(),0);
-            for(int i=0;i<400;++i) {
-                Assert.assertEquals(mis.read(), array[i]);
-                Assert.assertEquals(mis.remaining(),0);
-            }
-            Assert.assertTrue(mis.marked()==false);
-            try {
-                mis.reset();
-                Assert.fail();
-            } catch (IOException e) {
+                Assert.assertEquals((byte)ret,array[pos++]);
             }
         }
     }
@@ -176,22 +154,68 @@ public class TestMarkableInputStream {
         mis.read();
         mis.reset();
         Assert.assertEquals(mis.remaining(), 4);
-        mis.mark(3);
-        Assert.assertEquals(mis.remaining(), 3);
-        mis.read();
-        mis.read();
-        mis.read();
-        mis.read();
-        Assert.assertEquals(mis.marked(),false);
-        Assert.assertEquals(mis.remaining(), 0);
-        int pos = 5;
+        int pos = 0;
         while(true) {
             int ret = mis.read();
             if(ret==-1) {
                 break;
             }
-            Assert.assertEquals(ret, array[pos++]);
+            Assert.assertEquals((byte)ret, array[pos++]);
         }
         mis.close();
+    }
+    @Test
+    public void test8() throws IOException {
+        byte[] array = TestUtils.randomArray(12);
+        final int limit = 10;
+        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+            mis.mark(limit);
+            mis.reset();
+            mis.mark(limit);
+            mis.reset();
+            mis.mark(limit);
+            mis.reset();
+            for(int i=0;i<limit;++i) {
+                Assert.assertEquals(i+"",(byte)mis.read(), array[i]);
+            }
+            mis.reset();
+            for(int i=0;i<limit-1;++i) {
+                Assert.assertEquals(i+"",(byte)mis.read(), array[i]);
+            }
+            try {
+                mis.mark(10);
+                Assert.fail();
+            } catch (Exception e) {
+            }
+        }
+    }
+    @Test
+    public void test9() throws IOException {
+        byte[] array = TestUtils.randomArray(12);
+        final int limit = 3;
+        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+            mis.mark(limit);
+            mis.reset();
+            mis.mark(limit);
+            mis.reset();
+            mis.mark(limit);
+            mis.reset();
+            for(int i=0;i<limit;++i) {
+                Assert.assertEquals(i+"",(byte)mis.read(), array[i]);
+            }
+            try {
+                mis.mark(10);
+            } catch (Exception e) {
+                Assert.fail();
+            }
+            int pos = 3;
+            for(;;) {
+                int ret = mis.read();
+                if(ret==-1) {
+                    break;
+                }
+                Assert.assertEquals((byte)ret, array[pos++]);
+            }
+        }
     }
 }

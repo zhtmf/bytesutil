@@ -34,11 +34,25 @@ public abstract class ModifierHandler<E> {
     //only set when this class is used as LengthHandler
     boolean checkLength = false;
     
+    private ThreadLocal<Integer> currentPosition = new ThreadLocal<>();
+    {
+        currentPosition.set(-1);
+    }
+    
     public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is) throws IllegalArgumentException{
-        is.mark(HANDLER_READ_BUFFER_SIZE);
+        try {
+            is.mark(HANDLER_READ_BUFFER_SIZE);
+        } catch (IllegalStateException e1) {
+            //TODO:
+            throw new UnsatisfiedConstraintException(
+                    "there are still unprocessed bytes since last call to a ModifierHandler")
+                    .withSiteAndOrdinal(ModifierHandler.class, 5);
+        }
         E ret = null;
         try {
+            currentPosition.set(is.actuallyProcessedBytes());
             ret = handleDeserialize0(fieldName, entity, is);
+            currentPosition.set(-1);
             checkReturnValue(ret);
             /*
              * There is still a chance for errors that are hard to detect: remaining
@@ -52,6 +66,7 @@ public abstract class ModifierHandler<E> {
                     .withSiteAndOrdinal(ModifierHandler.class, 4);
             }
             is.reset();
+            is.drain();
         } catch (IOException e) {
             throw new UnsatisfiedConstraintException(e)
                 .withSiteAndOrdinal(ModifierHandler.class, 3);
@@ -63,6 +78,23 @@ public abstract class ModifierHandler<E> {
         E ret = handleSerialize0(fieldName, entity);
         checkReturnValue(ret);
         return ret;
+    }
+    
+    /**
+     * Returns how many bytes have been processed relative to the beginning of this
+     * DataPacket (not to the first byte of underlying stream).
+     * <p>
+     * This is required to implement some data structure which does not possess a
+     * deterministic length but occupied rest space in current packet.
+     * <p>
+     * This method is only meant to be used in subclasses.
+     * 
+     * @return how many bytes have been processed relative to the beginning of this
+     *         DataPacket or -1 if this method is not called within
+     *         {@link #handleDeserialize0(String, Object, InputStream) handleDeserialize0}
+     */
+    protected int currentPosition() {
+        return currentPosition.get();
     }
     
     private void checkReturnValue(E ret) {

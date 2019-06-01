@@ -124,8 +124,9 @@ public class TestUtils {
     }
     public static byte[] randomArray(int size) {
         byte[] array = new byte[size];
-        for(int i=0;i<array.length;++i) {
-            array[i] = (byte) (Math.random()*127);
+        array[0] = (byte) (Math.random()*127);
+        for(int i=1;i<array.length;++i) {
+            array[i] = (byte) (array[i-1]+1);
         }
         return array;
     }

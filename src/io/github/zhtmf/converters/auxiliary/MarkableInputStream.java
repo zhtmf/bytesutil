@@ -4,117 +4,88 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-/**
- * An input stream implementation that supports <tt>mark()</tt> and
- * <tt>reset()</tt> operations but does not maintain any internal buffer.
- * <p>
- * Due to the way how this library is used, the <tt>InputStream</tt> object
- * passed in by client code may be used again by client code thereafter. Classes
- * like {@link java.io.BufferedInputStream BufferedInputStream} effectively
- * prevent such use because of their internal buffering mechanics, which reads
- * more data than needed and those data cannot be put back to the original
- * stream.
- * 
- * @author dzh
- */
 public final class MarkableInputStream extends InputStream implements AutoCloseable{
     
     private static final int[] SHARED_EMPTY_BUFFER = new int[0];
     private InputStream in;
     private int[] buffer = SHARED_EMPTY_BUFFER;
-    private int bufferUpperLimit;
-    private int bufferReadPos;
-    private int bufferFillPos;
+    private int readPos = 0;
+    private int fillPos = 0;
+    private int bytesProcessed;
     
     public MarkableInputStream(InputStream is) {
         if(is==null) {
             throw new NullPointerException();
         }
         this.in = is;
-        reset0();
     }
     
     @Override
     public int read() throws IOException {
         checkClosed();
-        if(!marked())
-            return in.read();
-        if(bufferReadPos>=bufferUpperLimit) {
-            /*
-             * throw away all bytes recorded after last call to mark() 
-             * because more data than readlimit has been read
-             */
-            reset0();
-            return in.read();
-        }else {
-            if(bufferReadPos<bufferFillPos) {
-                return buffer[bufferReadPos++];
-            }
-            int b = in.read();
-            if(b==-1) {
-                return b;
-            }
-            buffer[bufferReadPos++] = b;
-            ++bufferFillPos;
-            return b;
+        if(readPos<fillPos) {
+            ++bytesProcessed;
+            return buffer[readPos++];
         }
+        if(fillPos==buffer.length) {
+            buffer = SHARED_EMPTY_BUFFER;
+            readPos = 0;
+            fillPos = 0;
+            return read0();
+        }
+        int b = read0();
+        if(b==-1) {
+            return -1;
+        }
+        buffer[fillPos++] = b;
+        ++readPos;
+        return b;
     }
-
+    
+    private int read0() throws IOException {
+        int b = in.read();
+        if(b!=-1) {
+            ++bytesProcessed;
+        }
+        return b;
+    }
+    
     @Override
-    public void mark(int readlimit) {
+    public void mark(int readlimit) throws IllegalArgumentException, IllegalStateException {
         checkClosed();
         if(readlimit<=0) {
             throw new IllegalArgumentException("invalid mark limit "+readlimit);
         }
-        if(marked()) {
-            /*
-             * mark again, throw away bytes before bufferReadPos 
-             * and copy the remaining data to the beginning of buffer
-             */
-            if(readlimit>buffer.length) {
-                this.buffer = Arrays.copyOf(buffer, readlimit);
-            }
-            System.arraycopy(this.buffer, bufferReadPos, buffer, 0, bufferUpperLimit - bufferReadPos);
-            bufferUpperLimit = readlimit;
-            bufferFillPos -= bufferReadPos;
-            bufferFillPos = Math.min(bufferFillPos, bufferUpperLimit);
-            bufferReadPos = 0;
-            return;
+        if(marked() && fillPos != readPos) {
+            throw new IllegalStateException("already marked");
         }
-        bufferUpperLimit = readlimit;
-        buffer = Arrays.copyOf(buffer, readlimit);
-        bufferReadPos = 0;
-        bufferFillPos = 0;
+        buffer = new int[readlimit];
     }
 
     @Override
     public void reset() throws IOException {
         if(marked()) {
-            bufferReadPos = 0;
-        }else {
-            throw new IOException("not marked or already depleted buffer");
+            bytesProcessed -= readPos;
         }
+        readPos = 0;
     }
+    
+    //TODO:
+    public void drain() {
+        buffer = Arrays.copyOf(buffer, fillPos);
+    }
+    
     public int remaining() {
-        return marked() ? bufferFillPos - bufferReadPos : 0;
+        return marked() ? fillPos - readPos : 0;
     }
     public boolean marked() {
-        return bufferReadPos>=0;
+        return buffer != SHARED_EMPTY_BUFFER;
     }
-
-    private void reset0() {
-        bufferUpperLimit = -1;
-        bufferReadPos = -1;
-        bufferFillPos = -1;
-    }
-    private void checkClosed() {
-        if(in==null)
-            throw new IllegalStateException("stream closed");
-    }
+    
     public void close() throws IOException {
-        reset0();
         in = null;//intended
     }
+    
     public int available() throws IOException {return in.available();}
     public int read(byte[] b) throws IOException {return super.read(b);}
     public int read(byte[] b, int off, int len) throws IOException {return super.read(b, off, len);}
@@ -132,5 +103,13 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
             }
         }
         return tmp - n - 1;
+    }
+    
+    private void checkClosed() {
+        if(in==null)
+            throw new IllegalStateException("stream closed");
+    }
+    int actuallyProcessedBytes() {
+        return bytesProcessed;
     }
 }
