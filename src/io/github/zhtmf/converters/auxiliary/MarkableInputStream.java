@@ -4,6 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+/**
+ * An input stream implementation that supports <tt>mark()</tt> and
+ * <tt>reset()</tt> operations but does not maintain any internal buffer.
+ * <p>
+ * Due to the way how this library is used, the <tt>InputStream</tt> object
+ * passed in by client code may be used again by client code thereafter. Classes
+ * like {@link java.io.BufferedInputStream BufferedInputStream} effectively
+ * prevent such use because of their internal buffering mechanics, which reads
+ * more data than needed and those data cannot be put back to the original
+ * stream.
+ * 
+ * @author dzh
+ */
 public final class MarkableInputStream extends InputStream implements AutoCloseable{
     
     private static final int[] SHARED_EMPTY_BUFFER = new int[0];
@@ -39,14 +52,6 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
         }
         buffer[fillPos++] = b;
         ++readPos;
-        return b;
-    }
-    
-    private int read0() throws IOException {
-        int b = in.read();
-        if(b!=-1) {
-            ++bytesProcessed;
-        }
         return b;
     }
     
@@ -109,6 +114,26 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
         if(in==null)
             throw new IllegalStateException("stream closed");
     }
+    
+    private int read0() throws IOException {
+        int b = in.read();
+        if(b!=-1) {
+            ++bytesProcessed;
+        }
+        return b;
+    }
+    
+    /**
+     * Return how many bytes have been read and actually processed from underlying
+     * stream so far.
+     * <p>
+     * Normally it is same as how many bytes have been {@link #read()}, however when
+     * the internal buffer is rewound by {@link #reset()}, return value of this
+     * method is also deducted to reflect the effect as some bytes are "put back" to
+     * the underlying stream and may be read again in later processing.
+     * 
+     * @return  how many bytes have been read and actually processed
+     */
     int actuallyProcessedBytes() {
         return bytesProcessed;
     }
