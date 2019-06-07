@@ -115,8 +115,12 @@ public abstract class DataPacket {
      * ascending order as specified by {@link Order#value()}.
      * <p>
      * Fields declared as subclass of {@link DataPacket} should declare a no-arg
-     * constructor and that dataType should be accessible (not a non-static inner class
-     * or a private inner class).
+     * constructor and that dataType should be accessible (not a non-static inner
+     * class or a private inner class).
+     * <p>
+     * Such fields will always be assigned with newly created objects after a
+     * successful deserialization. Any value associated with them before will be
+     * discarded.
      * 
      * @param src
      *            the input stream
