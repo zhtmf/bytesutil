@@ -18,6 +18,7 @@ import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.TypeConverter;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.DatePattern;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
@@ -27,6 +28,7 @@ import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.UserDefined;
+import io.github.zhtmf.converters.ConditionalConverter;
 import io.github.zhtmf.converters.Converter;
 import io.github.zhtmf.converters.Converters;
 
@@ -99,6 +101,7 @@ public class FieldInfo{
     public final ModifierHandler<Integer> listLengthHandler;
     @SuppressWarnings("rawtypes")
     public final TypeConverter userDefinedConverter;
+    public final ModifierHandler<Boolean> conditionalHandler;
     /**
      * Charset of this field, null if not defined
      */
@@ -123,6 +126,7 @@ public class FieldInfo{
      */
     final boolean customLengthDefined;
     
+    @SuppressWarnings("unchecked")
     FieldInfo(Field field, DataType type, ClassInfo base) {
         this.base = base;
         this.field = field;
@@ -311,23 +315,36 @@ public class FieldInfo{
         }
         this.userDefinedConverter = typeConverter;
         
+        Conditional conditional = localAnnotation(Conditional.class);
+        try {
+            this.conditionalHandler = conditional!=null ? conditional.value().newInstance() : null;
+        } catch (Exception e) {
+            throw forContext(base.entityClass, name, "ModiferHandler of Conditional cannot be instantiated by no-arg contructor")
+            .withSiteAndOrdinal(FieldInfo.class, 25);
+        }
+        
+        Converter<?> converter = null;
         if(isEntityList) {
             //class of list elements is another DataPacket
-            this.converter = Converters.listConverter;
+            converter = Converters.listConverter;
             this.innerConverter = Converters.dataPacketConverter;
         }else if(listComponentClass!=null) {
-            this.converter = Converters.listConverter;
+            converter = Converters.listConverter;
             //component class is a pre-defined data dataType or a user-defined type
             this.innerConverter = typeConverter!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(listComponentClass);
         }else if(isEntity) {
             //class of field is a DataPacket
-            this.converter = Converters.dataPacketConverter;
+            converter = Converters.dataPacketConverter;
             this.innerConverter = null;
         }else {
             //a plain field
-            this.converter = typeConverter!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(getFieldType());
+            converter = typeConverter!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(getFieldType());
             this.innerConverter = null;
         }
+        if(conditionalHandler!=null) {
+            converter = new ConditionalConverter((Converter<Object>)converter);
+        }
+        this.converter = converter;
     }
     /**
      * Wrapper of {@link Field#get(Object)}
@@ -350,6 +367,8 @@ public class FieldInfo{
      * @param val   value to set
      */
     public void set(Object self, Object val) {
+        if(val==null)
+            return;
         try {
             field.set(self, val);
         } catch (IllegalArgumentException | IllegalAccessException e) {
