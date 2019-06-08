@@ -120,7 +120,7 @@ public abstract class DataPacket {
      * <p>
      * Such fields will always be assigned with newly created objects after a
      * successful deserialization. Any value associated with them before will be
-     * discarded.
+     * overwritten.
      * 
      * @param src
      *            the input stream
