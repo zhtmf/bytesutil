@@ -26,18 +26,16 @@ public class DataPacketConverter implements Converter<DataPacket> {
     @Override
     public DataPacket deserialize(MarkableInputStream is, FieldInfo fi, Object self)
             throws IOException, ConversionException {
-        DataPacket object = ((DataPacket)fi.get(self));
-        if(object==null) {
-            try {
-                object = fi.entityCreator.handleDeserialize(fi.name, self, is);
-            } catch (Exception e) {
-                throw new ExtendedConversionException(
-                        self.getClass(),fi.name,
-                        String.format("field value is null and"
-                                + " entity class [%s] cannot be instantiated"
-                                , fi.name, fi.isEntityList ? fi.listComponentClass : fi.getFieldType()),e)
-                        .withSiteAndOrdinal(DataPacketConverter.class, 11);
-            }
+        DataPacket object = null;
+        try {
+            object = fi.entityCreator.handleDeserialize(fi.name, self, is);
+        } catch (Exception e) {
+            throw new ExtendedConversionException(
+                    self.getClass(),fi.name,
+                    String.format("field value is null and"
+                            + " entity class [%s] cannot be instantiated"
+                            , fi.name, fi.isEntityList ? fi.listComponentClass : fi.getFieldType()),e)
+                    .withSiteAndOrdinal(DataPacketConverter.class, 11);
         }
         object.deserialize(is);
         return object;
