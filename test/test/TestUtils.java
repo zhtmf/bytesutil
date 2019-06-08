@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
@@ -89,6 +90,7 @@ public class TestUtils {
         DataPacket restored = entity.getClass().newInstance();
         restored.deserialize(newInputStream(data));
         Assert.assertTrue(equalsOrderFields(entity, restored));
+        Assert.assertEquals(data.length, entity.length());
     }
     public static interface Provider<T>{
         T newInstance();

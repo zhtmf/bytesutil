@@ -178,6 +178,10 @@ public abstract class DataPacket {
         ClassInfo ci = getClassInfo();
         int ret = 0;
         for(FieldInfo fi:ci.fieldInfoList()) {
+            if(fi.conditionalHandler!=null
+            && fi.conditionalHandler.handleSerialize(fi.name, this).equals(Boolean.FALSE)) {
+                continue;
+            }
             Object value = fi.get(this);
             if(value==null) {
                 throw new UnsatisfiedConstraintException(
