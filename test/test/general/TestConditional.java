@@ -19,11 +19,12 @@ import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 import test.TestUtils;
+import test.TestUtils.Provider;
 
 public class TestConditional {
     @CHARSET("UTF-8")
     @Signed
-    public static class Test1 extends DataPacket{
+    public static class Test1 extends DataPacket implements Cloneable{
         public int condition;
         @INT
         @Order(0)
@@ -60,15 +61,23 @@ public class TestConditional {
         @BYTE
         @Order(9)
         public byte b5 = 4;
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
     }
     @Unsigned
-    public static class Test2 extends DataPacket{
+    public static class Test2 extends DataPacket implements Cloneable{
         @INT
         @Order(0)
         public int int1 = 10;
         @INT
         @Order(1)
         public int int2 = 11;
+        @Override
+        public Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
     }
     public static class Condition extends ModifierHandler<Boolean>{
         @Override
@@ -89,8 +98,21 @@ public class TestConditional {
         obj1.condition = 0;
         Assert.assertTrue(obj1.length()!=5);
         TestUtils.serializeAndRestore(obj1);
+    }
+    
+    @Test
+    public void test2() throws Exception {
+        Test1 obj1 = new Test1();
         obj1.condition = 5;
         Assert.assertEquals(obj1.length(), 5);
-        TestUtils.serializeAndRestore(obj1);
+        TestUtils.serializeMultipleTimesAndRestore(obj1,5,new Provider<Test1>() {
+
+            @Override
+            public Test1 newInstance() {
+                Test1 ret = new Test1();
+                ret.condition = 5;
+                return ret;
+            }
+        });
     }
 }
