@@ -35,9 +35,9 @@ import io.github.zhtmf.DataPacket;
  * <p>
  * Fields declared as subclass of {@link DataPacket} does not need to be marked
  * with an annotation in {@code types} package, however they should declare a
- * no-arg constructor and type of it should be accessible (not a non-static
+ * no-arg constructor and its type should be accessible (not a non-static
  * inner class, a private inner class or a local class).
- * 
+
  * @author dzh
  *
  */
