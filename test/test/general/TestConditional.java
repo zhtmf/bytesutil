@@ -115,4 +115,40 @@ public class TestConditional {
             }
         });
     }
+    
+    @CHARSET("UTF-8")
+    @Signed
+    public static class Test3 extends DataPacket implements Cloneable{
+        public int condition;
+        @Order(0)
+        @INT
+        @Conditional(ConditionTest3.class)
+        public int int1 = 3;
+        @Order(1)
+        @BYTE
+        @Conditional(value=ConditionTest3.class,negative=true)
+        public byte b1 = 0;
+    }
+    
+    public static class ConditionTest3 extends ModifierHandler<Boolean>{
+        @Override
+        public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+            Test3 obj = (Test3)entity;
+            return obj.condition<5;
+        }
+        @Override
+        public Boolean handleSerialize0(String fieldName, Object entity) {
+            Test3 obj = (Test3)entity;
+            return obj.condition<5;
+        }
+    }
+    
+    @Test
+    public void test3() throws Exception {
+        Test3 obj1 = new Test3();
+        obj1.condition = 5;
+        Assert.assertEquals(obj1.length(), 1);
+        obj1.condition = 4;
+        Assert.assertEquals(obj1.length(), 4);
+    }
 }

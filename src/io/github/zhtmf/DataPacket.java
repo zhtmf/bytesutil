@@ -179,7 +179,7 @@ public abstract class DataPacket {
         int ret = 0;
         for(FieldInfo fi:ci.fieldInfoList()) {
             if(fi.conditionalHandler!=null
-            && fi.conditionalHandler.handleSerialize(fi.name, this).equals(Boolean.FALSE)) {
+            && !fi.conditionalHandler.handleSerialize(fi.name, this).equals(fi.conditionalResult)) {
                 continue;
             }
             Object value = fi.get(this);

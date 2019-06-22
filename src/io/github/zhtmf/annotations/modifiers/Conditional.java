@@ -12,4 +12,5 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 @Target({FIELD})
 public @interface Conditional {
     Class<? extends ModifierHandler<Boolean>> value();
+    boolean negative() default false;
 }
