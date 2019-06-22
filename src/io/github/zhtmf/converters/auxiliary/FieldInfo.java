@@ -102,6 +102,7 @@ public class FieldInfo{
     @SuppressWarnings("rawtypes")
     public final TypeConverter userDefinedConverter;
     public final ModifierHandler<Boolean> conditionalHandler;
+    public final Boolean conditionalResult;
     /**
      * Charset of this field, null if not defined
      */
@@ -343,6 +344,9 @@ public class FieldInfo{
         }
         if(conditionalHandler!=null) {
             converter = new ConditionalConverter((Converter<Object>)converter);
+            conditionalResult = !conditional.negative();
+        }else {
+            conditionalResult = Boolean.TRUE;
         }
         this.converter = converter;
     }
