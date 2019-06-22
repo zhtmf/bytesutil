@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import examples.mysql.connector.auxiliary.CapabilityFlags;
+import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
@@ -20,7 +21,7 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 @LittleEndian
-public class HandshakeV10 extends BasePacket{
+public class HandshakeV10 extends DataPacket{
 
     @Order(0)
     @BYTE

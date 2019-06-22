@@ -24,7 +24,7 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 @LittleEndian
-public class HandshakeResponse41 extends BasePacket{
+public class HandshakeResponse41 extends DataPacket{
 
     @Order(0)
     @INT
@@ -121,6 +121,8 @@ public class HandshakeResponse41 extends BasePacket{
             switch(fieldName) {
             case "authResponse":
             case "authResponseWithLength":
+                System.out.println(resp.clientFlag);
+                System.out.println(resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA);
                 return (resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
             case "database":
                 return (resp.clientFlag & CapabilityFlags.CLIENT_CONNECT_WITH_DB) != 0;
