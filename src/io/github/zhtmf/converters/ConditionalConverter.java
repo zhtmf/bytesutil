@@ -18,7 +18,7 @@ public class ConditionalConverter implements Converter<Object>{
     @Override
     public void serialize(Object value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
-        if(ctx.conditionalHandler.handleSerialize(ctx.name, self).equals(Boolean.TRUE)) {
+        if(ctx.conditionalHandler.handleSerialize(ctx.name, self).equals(ctx.conditionalResult)) {
             wrappedConverter.serialize(value, dest, ctx, self);
         }
     }
@@ -26,7 +26,7 @@ public class ConditionalConverter implements Converter<Object>{
     @Override
     public Object deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
-        if(ctx.conditionalHandler.handleDeserialize(ctx.name,self,is).equals(Boolean.TRUE)) {
+        if(ctx.conditionalHandler.handleDeserialize(ctx.name,self,is).equals(ctx.conditionalResult)) {
             return wrappedConverter.deserialize(is, ctx, self);
         }
         return null;
