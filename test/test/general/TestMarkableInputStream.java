@@ -14,7 +14,7 @@ public class TestMarkableInputStream {
     @Test
     public void test() throws IOException {
         byte[] array = TestUtils.randomArray(1024);
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             Assert.assertTrue(mis.markSupported());
             Assert.assertFalse(mis.marked());
             Assert.assertEquals(mis.available(),new ByteArrayInputStream(array).available());
@@ -22,24 +22,24 @@ public class TestMarkableInputStream {
                 Assert.assertEquals((byte)mis.read(), array[i]);
             }
         }
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             byte[] tmp = new byte[1024];
             mis.read(tmp);
             Assert.assertArrayEquals(tmp, array);
         }
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             byte[] tmp = new byte[1024];
             mis.read(tmp,0,512);
             Assert.assertArrayEquals(Arrays.copyOf(tmp, 512), Arrays.copyOf(array, 512));
         }
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             int count = 424;
             Assert.assertEquals(mis.skip(count),count);
             byte[] tmp = new byte[array.length-count];
             Assert.assertEquals(mis.read(tmp),array.length-count);
             Assert.assertArrayEquals(tmp, Arrays.copyOfRange(array, count, array.length));
         }
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             int count = array.length;
             Assert.assertEquals(mis.skip(count),count);
             Assert.assertEquals(mis.skip(3), 0);
@@ -48,7 +48,7 @@ public class TestMarkableInputStream {
     @Test
     public void test2() throws IOException {
         byte[] array = TestUtils.randomArray(1024);
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             Assert.assertTrue(mis.marked()==false);
             mis.mark(300);
             Assert.assertTrue(mis.marked());
@@ -87,11 +87,10 @@ public class TestMarkableInputStream {
             }
         }
     }
-    @SuppressWarnings("resource")
     @Test
     public void test4() throws IOException {
         try {
-            new MarkableInputStream(null);
+            MarkableInputStream.wrap(null);
             Assert.fail();
         } catch (NullPointerException e) {
         }
@@ -99,7 +98,7 @@ public class TestMarkableInputStream {
     @Test
     public void test5() throws IOException {
         try {
-            MarkableInputStream mis = new MarkableInputStream(System.in);
+            MarkableInputStream mis = MarkableInputStream.wrap(System.in);
             Assert.assertEquals(mis.skip(-1), 0);
             Assert.assertEquals(mis.skip(0), 0);
             mis.close();
@@ -108,14 +107,14 @@ public class TestMarkableInputStream {
         } catch (IllegalStateException e) {
         }
         try {
-            MarkableInputStream mis = new MarkableInputStream(System.in);
+            MarkableInputStream mis = MarkableInputStream.wrap(System.in);
             mis.mark(-1);
             Assert.fail();
             mis.close();
         } catch (IllegalArgumentException e) {
         }
         try {
-            MarkableInputStream mis = new MarkableInputStream(System.in);
+            MarkableInputStream mis = MarkableInputStream.wrap(System.in);
             mis.mark(0);
             Assert.fail();
             mis.close();
@@ -125,7 +124,7 @@ public class TestMarkableInputStream {
     @Test
     public void test6() throws IOException {
         byte[] array = TestUtils.randomArray(13);
-        MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array));
+        MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array));
         mis.mark(300);
         while(true) {
             int ret = mis.read();
@@ -140,7 +139,7 @@ public class TestMarkableInputStream {
     @Test
     public void test7() throws IOException {
         byte[] array = TestUtils.randomArray(124);
-        MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array));
+        MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array));
         mis.mark(4);
         Assert.assertEquals(mis.remaining(), 0);
         mis.reset();
@@ -168,7 +167,7 @@ public class TestMarkableInputStream {
     public void test8() throws IOException {
         byte[] array = TestUtils.randomArray(12);
         final int limit = 10;
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             mis.mark(limit);
             mis.reset();
             mis.mark(limit);
@@ -193,7 +192,7 @@ public class TestMarkableInputStream {
     public void test9() throws IOException {
         byte[] array = TestUtils.randomArray(12);
         final int limit = 3;
-        try(MarkableInputStream mis = new MarkableInputStream(new ByteArrayInputStream(array))){
+        try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             mis.mark(limit);
             mis.reset();
             mis.mark(limit);

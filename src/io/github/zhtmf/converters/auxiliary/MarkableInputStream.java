@@ -26,7 +26,14 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
     private int fillPos = 0;
     private int bytesProcessed;
     
-    public MarkableInputStream(InputStream is) {
+    public static MarkableInputStream wrap(InputStream in) {
+        if(in instanceof MarkableInputStream) {
+            return (MarkableInputStream) in;
+        }
+        return new MarkableInputStream(in);
+    }
+    
+    private MarkableInputStream(InputStream is) {
         if(is==null) {
             throw new NullPointerException();
         }

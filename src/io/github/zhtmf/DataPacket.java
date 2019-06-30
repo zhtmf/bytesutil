@@ -137,7 +137,7 @@ public abstract class DataPacket {
         if(src==null) {
             throw new NullPointerException();
         }
-        deserialize0(new MarkableInputStream(src));
+        deserialize0(MarkableInputStream.wrap(src));
     }
     
     private void deserialize0(MarkableInputStream _src) throws ConversionException {
