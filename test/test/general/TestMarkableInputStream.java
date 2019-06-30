@@ -2,15 +2,71 @@ package test.general;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import examples.mysql.connector.datatypes.le.LEInt1;
+import examples.mysql.connector.datatypes.le.LEIntHandler;
+import examples.mysql.connector.datatypes.le.LEInteger;
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Conditional;
+import io.github.zhtmf.annotations.modifiers.LittleEndian;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 import test.TestUtils;
 
 public class TestMarkableInputStream {
+    
+    @LittleEndian
+    @Unsigned
+    public static class TestPacket extends DataPacket{
+        public long capabilities;
+        @Order(0)
+        @BYTE
+        public int header = 0x00;
+        @Order(1)
+        @Variant(LEIntHandler.class)
+        public LEInteger affectedRows;
+        @Order(2)
+        @Variant(LEIntHandler.class)
+        public LEInteger lastInsertId;
+        @Order(3)
+        @SHORT
+        //SERVER_STATUS_flags_enum
+        @Conditional(MyCondition.class)
+        public int statusFlags;
+        
+        public static class MyCondition extends ModifierHandler<Boolean>{
+            @Override
+            public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+                return Boolean.TRUE;
+            }
+
+            @Override
+            public Boolean handleSerialize0(String fieldName, Object entity) {
+                return Boolean.TRUE;
+            }
+        }
+    }
+    
+    @Test
+    public void testReset() throws Exception{
+        TestPacket packet = new TestPacket();
+        packet.affectedRows = new LEInt1();
+        packet.lastInsertId = new LEInt1();
+        packet.statusFlags = 30;
+        TestUtils.serializeAndRestore(packet);
+    }
+    
+    
     @Test
     public void test() throws IOException {
         byte[] array = TestUtils.randomArray(1024);
