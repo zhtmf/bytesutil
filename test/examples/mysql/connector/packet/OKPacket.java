@@ -34,13 +34,15 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 public class OKPacket extends DataPacket{
     
     public long capabilities;
+    
+    public int payloadLength;
 
     /**
      * 0x00 or 0xFE the OK packet header
      */
     @Order(0)
     @BYTE
-    public int header = 0x00;
+    public int header = 0xFE;
     
     @Order(1)
     @Variant(LEIntHandler.class)
@@ -82,6 +84,13 @@ public class OKPacket extends DataPacket{
     @Length(handler=RestOfPacketStringHandler.class)
     public String info2;
     
+    @Override
+    public String toString() {
+        return "OKPacket [header=" + header + ", affectedRows=" + affectedRows + ", lastInsertId=" + lastInsertId
+                + ", statusFlags=" + statusFlags + ", warnings=" + warnings + ", info=" + info + ", sessionStatusInfo="
+                + sessionStatusInfo + ", info2=" + info2 + "]";
+    }
+
     public static class CapabilitiesCondition extends ModifierHandler<Boolean>{
 
         @Override

@@ -10,4 +10,9 @@ import io.github.zhtmf.DataPacket;
  */
 public abstract class LEInteger extends DataPacket{
     public abstract BigInteger getNumericValue();
+    
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "[" + getNumericValue() + "]";
+    }
 }

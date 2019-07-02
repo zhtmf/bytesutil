@@ -3,6 +3,7 @@ package examples.mysql.connector;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -16,7 +17,7 @@ import examples.mysql.connector.packet.MySQLPacket;
 
 public class Test {
     public static void main(String[] args) throws Exception {
-        try(Socket sk = new Socket("localhost",3306)){
+        try(Socket sk = new Socket("127.0.0.1",3306,(InetAddress)null,0)){
             int seq = 0;
             InputStream in = sk.getInputStream();
             OutputStream os = sk.getOutputStream();

@@ -65,8 +65,8 @@ public abstract class ModifierHandler<E> {
                 throw new UnsatisfiedConstraintException("should not read more than  "+HANDLER_READ_BUFFER_SIZE+" in the handler")
                     .withSiteAndOrdinal(ModifierHandler.class, 4);
             }
-            is.reset();
             is.drain();
+            is.reset();
         } catch (IOException e) {
             throw new UnsatisfiedConstraintException(e)
                 .withSiteAndOrdinal(ModifierHandler.class, 3);

@@ -28,5 +28,8 @@ public class LEInt2 extends LEInteger{
     public BigInteger getNumericValue() {
         return new BigInteger(value+"");
     }
-
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }

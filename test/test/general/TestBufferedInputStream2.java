@@ -13,7 +13,7 @@ import test.TestUtils;
 public class TestBufferedInputStream2 {
     @Test
     public void test() throws IOException {
-        byte[] array = TestUtils.randomArray(1024);
+        byte[] array = TestUtils.pseudoRandomArray(1024);
         try(BufferedInputStream mis = new BufferedInputStream(new ByteArrayInputStream(array))){
             Assert.assertTrue(mis.markSupported());
             Assert.assertEquals(mis.available(),new ByteArrayInputStream(array).available());
@@ -46,7 +46,7 @@ public class TestBufferedInputStream2 {
     }
     @Test
     public void test2() throws IOException {
-        byte[] array = TestUtils.randomArray(1024);
+        byte[] array = TestUtils.pseudoRandomArray(1024);
         try(BufferedInputStream mis = new BufferedInputStream(new ByteArrayInputStream(array))){
             mis.mark(300);
             for(int i=0;i<300;++i) {
@@ -83,7 +83,7 @@ public class TestBufferedInputStream2 {
     }
     @Test
     public void test3() throws IOException {
-        byte[] array = TestUtils.randomArray(1024);
+        byte[] array = TestUtils.pseudoRandomArray(1024);
         try(BufferedInputStream mis = new BufferedInputStream(new ByteArrayInputStream(array))){
             mis.mark(300);
             for(int i=0;i<400;++i) {
@@ -133,7 +133,7 @@ public class TestBufferedInputStream2 {
     }
     @Test
     public void test6() throws IOException {
-        byte[] array = TestUtils.randomArray(13);
+        byte[] array = TestUtils.pseudoRandomArray(13);
         BufferedInputStream mis = new BufferedInputStream(new ByteArrayInputStream(array));
         mis.mark(300);
         while(true) {
@@ -147,7 +147,7 @@ public class TestBufferedInputStream2 {
     }
     @Test
     public void test7() throws IOException {
-        byte[] array = TestUtils.randomArray(124);
+        byte[] array = TestUtils.pseudoRandomArray(124);
         BufferedInputStream mis = new BufferedInputStream(new ByteArrayInputStream(array));
         mis.mark(4);
         mis.reset();
@@ -175,7 +175,7 @@ public class TestBufferedInputStream2 {
     }
     @Test
     public void test8() throws IOException {
-        byte[] array = TestUtils.randomArray(12);
+        byte[] array = TestUtils.pseudoRandomArray(12);
         BufferedInputStream mis = new BufferedInputStream(new ByteArrayInputStream(array));
         mis.mark(10);
         mis.reset();

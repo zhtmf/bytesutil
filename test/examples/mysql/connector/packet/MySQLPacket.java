@@ -60,6 +60,7 @@ public class MySQLPacket extends DataPacket{
                 if(b==0x00 || b==0xFE) {
                     OKPacket ret = new OKPacket();
                     ret.capabilities = pac.capabilitiesFlag;
+                    ret.payloadLength = pac.payloadLength;
                     return ret;
                 }else if(b==0xFF){
                     ERRPacket ret = new ERRPacket();

@@ -22,5 +22,9 @@ public class LEInt1 extends LEInteger{
     public BigInteger getNumericValue() {
         return new BigInteger(header+"");
     }
-
+    
+    @Override
+    public String toString() {
+        return super.toString();
+    }
 }
