@@ -82,16 +82,18 @@ public abstract class ModifierHandler<E> {
     
     /**
      * Returns how many bytes have been processed relative to the beginning of this
-     * DataPacket (not to the first byte of underlying stream).
+     * DataPacket but not to beginning of the whole serialization/deserialization
+     * process.
      * <p>
-     * This is required to implement some data structure which does not possess a
-     * deterministic length but occupied rest space in current packet.
+     * This is required to implement some data structures (typically strings) which
+     * do not have a deterministic length but occupy all rest space in a packet.
      * <p>
      * This method is only meant to be used in subclasses.
      * 
      * @return how many bytes have been processed relative to the beginning of this
      *         DataPacket or -1 if this method is not called within
-     *         {@link #handleDeserialize0(String, Object, InputStream) handleDeserialize0}
+     *         {@link #handleDeserialize0(String, Object, InputStream)
+     *         handleDeserialize0}
      */
     protected int currentPosition() {
         return currentPosition.get();

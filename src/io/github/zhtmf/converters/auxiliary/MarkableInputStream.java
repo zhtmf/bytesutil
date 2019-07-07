@@ -16,7 +16,7 @@ import java.io.InputStream;
  * 
  * @author dzh
  */
-public final class MarkableInputStream extends InputStream implements AutoCloseable{
+public class MarkableInputStream extends InputStream implements AutoCloseable{
     
     private static final int[] SHARED_EMPTY_BUFFER = new int[0];
     private InputStream in;
@@ -29,9 +29,12 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
     
     public static MarkableInputStream wrap(InputStream in) {
         if(in instanceof MarkableInputStream) {
-            return (MarkableInputStream) in;
+            return new ResetCounterMarkableInputStream((MarkableInputStream) in);
         }
         return new MarkableInputStream(in);
+    }
+    
+    protected MarkableInputStream() {
     }
     
     private MarkableInputStream(InputStream is) {
@@ -133,5 +136,70 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
      */
     int actuallyProcessedBytes() {
         return bytesProcessed;
+    }
+    
+    /**
+     * Delegate sublcass which delegates most of operations to wrapped
+     * MarkableInputStream object but reports count of processed bytes after
+     * creation of this class.
+     * 
+     * @author dzh
+     */
+    private static final class ResetCounterMarkableInputStream extends MarkableInputStream{
+        private MarkableInputStream delegate;
+        private int delta;
+        public ResetCounterMarkableInputStream(MarkableInputStream delegate) {
+            this.delegate = delegate;
+            //don't use value of bytesProcessed field directly
+            //, as this object may wrap another ResetCounterMarkableInputStream
+            this.delta = - delegate.actuallyProcessedBytes();
+        }
+        @Override
+        int actuallyProcessedBytes() {
+            return delegate.actuallyProcessedBytes() + delta;
+        }
+        
+        public int read() throws IOException {
+            return delegate.read();
+        }
+        public int hashCode() {
+            return delegate.hashCode();
+        }
+        public void reset() throws IOException {
+            delegate.reset();
+        }
+        public void drain() throws IOException {
+            delegate.drain();
+        }
+        public int remaining() {
+            return delegate.remaining();
+        }
+        public boolean marked() {
+            return delegate.marked();
+        }
+        public void mark(int readlimit) throws IllegalArgumentException, IllegalStateException {
+            delegate.mark(readlimit);
+        }
+        public void close() throws IOException {
+            delegate.close();
+        }
+        public int available() throws IOException {
+            return delegate.available();
+        }
+        public int read(byte[] b) throws IOException {
+            return delegate.read(b);
+        }
+        public int read(byte[] b, int off, int len) throws IOException {
+            return delegate.read(b, off, len);
+        }
+        public boolean markSupported() {
+            return delegate.markSupported();
+        }
+        public long skip(long n) throws IOException {
+            return delegate.skip(n);
+        }
+        public boolean equals(Object obj) {
+            return delegate.equals(obj);
+        }
     }
 }

@@ -8,6 +8,7 @@ import org.junit.Test;
 
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.BYTE;
@@ -104,5 +105,81 @@ public class TestPositionRecording {
     @Test
     public void test() throws Exception {
         TestUtils.serializeAndRestore(new Test1());
+    }
+    
+    public static class Level1 extends DataPacket{
+        @Order(0)
+        @BYTE
+        @Conditional(Test2Conditional.class)
+        public int level1Field1;
+        @Order(1)
+        @BYTE
+        @Conditional(Test2Conditional.class)
+        public int level1Field2;
+        @Order(2)
+        @Conditional(Test2Conditional.class)
+        public Level2 level2;
+        @Order(3)
+        @BYTE
+        @Conditional(Test2Conditional.class)
+        public int level1Field4;
+    }
+    
+    public static class Level2 extends DataPacket{
+        @Order(0)
+        @BYTE
+        @Conditional(Test2Conditional.class)
+        public int level2Field1;
+        @Order(1)
+        @Conditional(Test2Conditional.class)
+        public Level3 level3;
+        @Order(2)
+        @BYTE
+        @Conditional(Test2Conditional.class)
+        public int level2Field3;
+    }
+    
+    public static class Level3 extends DataPacket{
+        @Order(0)
+        @BYTE
+        @Conditional(Test2Conditional.class)
+        public int level3Field1;
+        @Order(1)
+        @BYTE
+        @Conditional(Test2Conditional.class)
+        public int level3Field2;
+    }
+    
+    public static class Test2Conditional extends ModifierHandler<Boolean>{
+
+        @Override
+        public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+            int offset = super.currentPosition();
+            switch(fieldName) {
+            case "level1Field1":Assert.assertEquals(offset, 0);break;
+            case "level1Field2":Assert.assertEquals(offset, 1);break;
+            case "level2":Assert.assertEquals(offset, 2);break;
+            case "level2Field1":Assert.assertEquals(offset, 0);break;
+            case "level3":Assert.assertEquals(offset, 1);break;
+            case "level3Field1":Assert.assertEquals(offset, 0);break;
+            case "level3Field2":Assert.assertEquals(offset, 1);break;
+            case "level2Field3":Assert.assertEquals(offset, 3);break;
+            case "level1Field4":Assert.assertEquals(offset, 6);break;
+            }
+            return true;
+        }
+
+        @Override
+        public Boolean handleSerialize0(String fieldName, Object entity) {
+            return true;
+        }
+    }
+    
+    @Test
+    public void test2() throws Exception {
+        Level1 level1 = new Level1();
+        level1.level2 = new Level2();
+        level1.level2.level3 = new Level3();
+        TestUtils.serializeAndRestore(level1);
     }
 }
