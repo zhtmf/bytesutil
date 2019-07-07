@@ -81,6 +81,9 @@ public abstract class DataPacket {
         
         for(FieldInfo fi:ci.fieldInfoList()) {
             
+            if(Utils.shouldSkipField(fi, this))
+                continue;
+            
             Object value = fi.get(this);
             if(value==null) {
                 /*
@@ -178,8 +181,7 @@ public abstract class DataPacket {
         ClassInfo ci = getClassInfo();
         int ret = 0;
         for(FieldInfo fi:ci.fieldInfoList()) {
-            if(fi.conditionalHandler!=null
-            && !fi.conditionalHandler.handleSerialize(fi.name, this).equals(fi.conditionalResult)) {
+            if(Utils.shouldSkipField(fi, this)) {
                 continue;
             }
             Object value = fi.get(this);

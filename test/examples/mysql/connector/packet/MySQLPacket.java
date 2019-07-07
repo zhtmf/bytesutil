@@ -25,7 +25,7 @@ public class MySQLPacket extends DataPacket{
     public int phase;
     
     /**
-     * client flag, passed down to OKPacket or other packets 
+     * client test4Flag, passed down to OKPacket or other packets 
      * for conditional branches
      */
     public int capabilitiesFlag;

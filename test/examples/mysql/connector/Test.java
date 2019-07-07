@@ -9,7 +9,6 @@ import java.util.ArrayList;
 
 import examples.mysql.connector.auxiliary.CapabilityFlags;
 import examples.mysql.connector.datatypes.le.LEInt8;
-import examples.mysql.connector.datatypes.string.LengthEncodedString;
 import examples.mysql.connector.packet.HandshakeResponse41;
 import examples.mysql.connector.packet.HandshakeResponse41.KeyValue;
 import examples.mysql.connector.packet.HandshakeV10;
@@ -57,7 +56,6 @@ public class Test {
             LEInt8 int8 = new LEInt8();
             int8.value = BigInteger.valueOf(resp.attrs.keyValue.size());
             resp.attrs.lengthAllkeyValues = int8;
-            resp.authResponse = new LengthEncodedString();//TODO: delete this
             
             {
                 MySQLPacket packet = new MySQLPacket();

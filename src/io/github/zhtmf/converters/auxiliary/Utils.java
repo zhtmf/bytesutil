@@ -324,6 +324,11 @@ public class Utils {
         return tl.get();
     }
     
+    public static final boolean shouldSkipField(FieldInfo fi, Object self) {
+        return fi.conditionalHandler!=null
+                && ! fi.conditionalHandler.handleSerialize(fi.name, self).equals(fi.conditionalResult);
+    }
+    
     private static final ConcurrentHashMap<String, ThreadLocal<SimpleDateFormat>> formatterMap = new ConcurrentHashMap<>();
 
     private static final class _TLFormatter extends ThreadLocal<SimpleDateFormat> {
@@ -341,7 +346,7 @@ public class Utils {
             return ret;
         }
     }
-        
+    
     static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error) {
         StringBuilder ret = new StringBuilder();
         if(entity!=null) {
