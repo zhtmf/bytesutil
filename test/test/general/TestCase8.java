@@ -13,7 +13,7 @@ public class TestCase8{
     @Test
     public void testLength() throws Exception {
         String str = "1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz";
-        try(MarkableInputStream bs = new MarkableInputStream(new ByteArrayInputStream(str.getBytes()))){
+        try(MarkableInputStream bs = MarkableInputStream.wrap(new ByteArrayInputStream(str.getBytes()))){
             StringBuilder sb = new StringBuilder();
             for(int i=0;i<str.length();++i) {
                 sb.append((char)bs.read());
@@ -21,7 +21,7 @@ public class TestCase8{
             bs.close();
             Assert.assertTrue(str.contentEquals(sb));
         }
-        try(MarkableInputStream bs = new MarkableInputStream(new ByteArrayInputStream(str.getBytes()))){
+        try(MarkableInputStream bs = MarkableInputStream.wrap(new ByteArrayInputStream(str.getBytes()))){
             StringBuilder sb = new StringBuilder();
             int marklimit = 23;
             bs.mark(marklimit);
@@ -53,7 +53,7 @@ public class TestCase8{
             for(int k=0;k<pre;++k) {
                 bis.read();
             }
-            MarkableInputStream bs = new MarkableInputStream(bis);
+            MarkableInputStream bs = MarkableInputStream.wrap(bis);
             int marklimit = 10;
             bs.mark(marklimit);
             StringBuilder sb = new StringBuilder();
@@ -79,7 +79,7 @@ public class TestCase8{
         }
         {
             ByteArrayInputStream bais = new ByteArrayInputStream(str.getBytes());
-            MarkableInputStream bs = new MarkableInputStream(bais);
+            MarkableInputStream bs = MarkableInputStream.wrap(bais);
             bs.mark(10);
             StringBuilder sb = new StringBuilder();
             int marklimit = 10;

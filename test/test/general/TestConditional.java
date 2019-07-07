@@ -16,6 +16,7 @@ import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
+import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 import test.TestUtils;
@@ -150,5 +151,41 @@ public class TestConditional {
         Assert.assertEquals(obj1.length(), 1);
         obj1.condition = 4;
         Assert.assertEquals(obj1.length(), 4);
+    }
+    
+    static final boolean test4Flag[] = {true};
+    public static class Test4Conditonal extends ModifierHandler<Boolean>{
+        @Override
+        public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
+            return test4Flag[0];
+        }
+        @Override
+        public Boolean handleSerialize0(String fieldName, Object entity) {
+            return test4Flag[0];
+        }
+    }
+    @Test
+    public void test4() throws Exception {
+        
+        class Test4Entity extends DataPacket{
+            @Order(0)
+            @CHAR(10)
+            @Conditional(Test4Conditonal.class)
+            public String str1;
+        }
+        
+        Test4Entity entity = new Test4Entity();
+        try {
+            entity.serialize(TestUtils.newByteArrayOutputStream());
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, DataPacket.class, 0);
+        }
+        test4Flag[0] = false;
+        try {
+            entity.serialize(TestUtils.newByteArrayOutputStream());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 }

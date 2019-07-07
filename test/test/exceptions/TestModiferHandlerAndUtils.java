@@ -144,7 +144,7 @@ public class TestModiferHandlerAndUtils {
     public void test4() throws ConversionException {
         try {
             class Entity extends DataPacket{@Order(0)@RAW @Length(handler=Handler4.class) public byte[] ts;}
-            new Entity().deserialize(TestUtils.newInputStream(TestUtils.randomArray(248)));
+            new Entity().deserialize(TestUtils.newInputStream(TestUtils.pseudoRandomArray(248)));
             Assert.fail();
         } catch (Exception e) {
             TestUtils.assertExactExceptionInHierarchy(e, ModifierHandler.class, 4);

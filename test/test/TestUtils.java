@@ -123,7 +123,7 @@ public class TestUtils {
             Assert.assertTrue(equalsOrderFields(entity, restored));
         }
     }
-    public static byte[] randomArray(int size) {
+    public static byte[] pseudoRandomArray(int size) {
         byte[] array = new byte[size];
         array[0] = (byte) (Math.random()*127);
         for(int i=1;i<array.length;++i) {

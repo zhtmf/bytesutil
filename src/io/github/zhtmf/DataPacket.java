@@ -81,6 +81,9 @@ public abstract class DataPacket {
         
         for(FieldInfo fi:ci.fieldInfoList()) {
             
+            if(Utils.shouldSkipField(fi, this))
+                continue;
+            
             Object value = fi.get(this);
             if(value==null) {
                 /*
@@ -137,7 +140,7 @@ public abstract class DataPacket {
         if(src==null) {
             throw new NullPointerException();
         }
-        deserialize0(new MarkableInputStream(src));
+        deserialize0(MarkableInputStream.wrap(src));
     }
     
     private void deserialize0(MarkableInputStream _src) throws ConversionException {
@@ -178,8 +181,7 @@ public abstract class DataPacket {
         ClassInfo ci = getClassInfo();
         int ret = 0;
         for(FieldInfo fi:ci.fieldInfoList()) {
-            if(fi.conditionalHandler!=null
-            && !fi.conditionalHandler.handleSerialize(fi.name, this).equals(fi.conditionalResult)) {
+            if(Utils.shouldSkipField(fi, this)) {
                 continue;
             }
             Object value = fi.get(this);

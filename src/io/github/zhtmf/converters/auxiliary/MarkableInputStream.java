@@ -2,7 +2,6 @@ package io.github.zhtmf.converters.auxiliary;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 /**
  * An input stream implementation that supports <tt>mark()</tt> and
@@ -24,9 +23,18 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
     private int[] buffer = SHARED_EMPTY_BUFFER;
     private int readPos = 0;
     private int fillPos = 0;
+    private int markPos = 0;
+    private boolean marked;
     private int bytesProcessed;
     
-    public MarkableInputStream(InputStream is) {
+    public static MarkableInputStream wrap(InputStream in) {
+        if(in instanceof MarkableInputStream) {
+            return (MarkableInputStream) in;
+        }
+        return new MarkableInputStream(in);
+    }
+    
+    private MarkableInputStream(InputStream is) {
         if(is==null) {
             throw new NullPointerException();
         }
@@ -35,56 +43,58 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
     
     @Override
     public int read() throws IOException {
-        checkClosed();
-        if(readPos<fillPos) {
+        if(in==null) {
+            throw new IOException("Stream Closed");
+        }
+        if(readPos < fillPos) {
             ++bytesProcessed;
             return buffer[readPos++];
         }
-        if(fillPos==buffer.length) {
-            buffer = SHARED_EMPTY_BUFFER;
-            readPos = 0;
-            fillPos = 0;
-            return read0();
-        }
-        int b = read0();
+        int b = in.read();
         if(b==-1) {
-            return -1;
+            return b;
         }
-        buffer[fillPos++] = b;
-        ++readPos;
+        ++bytesProcessed;
+        if(fillPos < markPos) {
+            ++fillPos;
+            buffer[readPos++] = b;
+        }else {
+            marked = false;
+        }
         return b;
     }
     
     @Override
-    public void mark(int readlimit) throws IllegalArgumentException, IllegalStateException {
-        checkClosed();
-        if(readlimit<=0) {
-            throw new IllegalArgumentException("invalid mark limit "+readlimit);
-        }
-        if(marked() && fillPos != readPos) {
-            throw new IllegalStateException("already marked");
-        }
-        buffer = new int[readlimit];
-    }
-
-    @Override
     public void reset() throws IOException {
-        if(marked()) {
-            bytesProcessed -= readPos;
-        }
+        bytesProcessed -= readPos;
         readPos = 0;
     }
     
     //TODO:
-    public void drain() {
-        buffer = Arrays.copyOf(buffer, fillPos);
+    public void drain() throws IOException {
+        markPos = fillPos;
     }
     
     public int remaining() {
         return marked() ? fillPos - readPos : 0;
     }
     public boolean marked() {
-        return buffer != SHARED_EMPTY_BUFFER;
+        return marked;
+    }
+    @Override
+    public void mark(int readlimit) throws IllegalArgumentException, IllegalStateException {
+        if(readlimit<=0)
+            throw new IllegalArgumentException("readlimit should be greater than 0");
+        if(marked() && fillPos<markPos) {
+            throw new IllegalStateException("already marked");
+        }
+        if(readlimit>buffer.length) {
+            buffer = new int[readlimit];
+        }
+        fillPos = 0;
+        readPos = 0;
+        markPos = readlimit;
+        marked = true;
     }
     
     public void close() throws IOException {
@@ -108,19 +118,6 @@ public final class MarkableInputStream extends InputStream implements AutoClosea
             }
         }
         return tmp - n - 1;
-    }
-    
-    private void checkClosed() {
-        if(in==null)
-            throw new IllegalStateException("stream closed");
-    }
-    
-    private int read0() throws IOException {
-        int b = in.read();
-        if(b!=-1) {
-            ++bytesProcessed;
-        }
-        return b;
     }
     
     /**
