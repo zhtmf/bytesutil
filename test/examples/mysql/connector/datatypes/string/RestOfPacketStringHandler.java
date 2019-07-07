@@ -20,8 +20,7 @@ public class RestOfPacketStringHandler extends ModifierHandler<Integer>{
         }else {
             throw new IllegalArgumentException(entity.getClass()+"");
         }
-        //4 for fields in outer MySQLPacket
-        return length - currentPosition() + 4;
+        return length - currentPosition();
     }
 
     @Override
