@@ -10,4 +10,5 @@ public class CapabilityFlags {
     public static final int CLIENT_SESSION_TRACK = 1<<23;
     public static final int SERVER_SESSION_STATE_CHANGED = 1<<14;
     public static final int CLIENT_DEPRECATE_EOF = 1<<24;
+    public static final int CLIENT_OPTIONAL_RESULTSET_METADATA = 1<<25;
 }

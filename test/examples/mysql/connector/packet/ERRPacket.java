@@ -59,7 +59,7 @@ public class ERRPacket extends DataPacket{
 
         @Override
         public Integer handleSerialize0(String fieldName, Object entity) {
-            return ((String)entity).length();
+            return ((ERRPacket)entity).errorMessage.length();
         }
     }
     
@@ -79,8 +79,7 @@ public class ERRPacket extends DataPacket{
 
     @Override
     public String toString() {
-        return "ERRPacket [clientCapabilities=" + clientCapabilities + ", selfLength=" + selfLength + ", header="
-                + header + ", errorCode=" + errorCode + ", sqlStateMarker=" + sqlStateMarker + ", sqlSate=" + sqlSate
-                + ", errorMessage=" + errorMessage + "]";
+        return "ERRPacket [header=" + header + ", errorCode=" + errorCode + ", sqlStateMarker=" + sqlStateMarker
+                + ", sqlSate=" + sqlSate + ", errorMessage=" + errorMessage + "]";
     }
 }

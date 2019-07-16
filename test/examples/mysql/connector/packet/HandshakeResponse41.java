@@ -14,6 +14,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
@@ -28,6 +29,7 @@ public class HandshakeResponse41 extends DataPacket{
 
     @Order(0)
     @INT
+    @Signed
     //Capabilities Flags, CLIENT_PROTOCOL_41 always set.
     public long clientFlag;
     
@@ -121,8 +123,6 @@ public class HandshakeResponse41 extends DataPacket{
             switch(fieldName) {
             case "authResponse":
             case "authResponseWithLength":
-                System.out.println(resp.clientFlag);
-                System.out.println(resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA);
                 return (resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
             case "database":
                 return (resp.clientFlag & CapabilityFlags.CLIENT_CONNECT_WITH_DB) != 0;
