@@ -2,6 +2,7 @@ package io.github.zhtmf.converters.auxiliary;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 /**
  * An input stream implementation that supports <tt>mark()</tt> and
@@ -19,12 +20,12 @@ import java.io.InputStream;
 public class MarkableInputStream extends InputStream implements AutoCloseable{
     
     private static final int[] SHARED_EMPTY_BUFFER = new int[0];
+    private static final int INITIAL_BUFFER_SIZE = 16;
     private InputStream in;
     private int[] buffer = SHARED_EMPTY_BUFFER;
     private int readPos = 0;
     private int fillPos = 0;
-    private int markPos = 0;
-    private boolean marked;
+    private int resetPos = readPos;
     private int bytesProcessed;
     
     public static MarkableInputStream wrap(InputStream in) {
@@ -53,51 +54,60 @@ public class MarkableInputStream extends InputStream implements AutoCloseable{
             ++bytesProcessed;
             return buffer[readPos++];
         }
+        /*
+         * may throw exception if size of the stream is exactly Integer.MAX_VALUE - 8
+         * bytes. But this ensures the underlying stream is in a consistent state after
+         * OutOfMemoryError is thrown
+         */
+        ensureCapacity();
         int b = in.read();
         if(b==-1) {
             return b;
         }
         ++bytesProcessed;
-        if(fillPos < markPos) {
-            ++fillPos;
-            buffer[readPos++] = b;
-        }else {
-            marked = false;
-        }
+        ++fillPos;
+        buffer[readPos++] = b;
         return b;
+    }
+    
+    private void ensureCapacity() {
+        int length = buffer.length;
+        if(fillPos == length) {
+            if(length==0) {
+                length = INITIAL_BUFFER_SIZE;
+            }else {
+                length <<= 1;
+            }
+            if(length<=0) {
+                //TODO: max array size
+                length = Integer.MAX_VALUE - 8;
+            }
+            if(length == buffer.length) {
+                throw new OutOfMemoryError();
+            }
+            buffer = Arrays.copyOf(buffer, length);
+        }
     }
     
     @Override
     public void reset() throws IOException {
-        bytesProcessed -= readPos;
-        readPos = 0;
-    }
-    
-    //TODO:
-    public void drain() throws IOException {
-        markPos = fillPos;
+        bytesProcessed -= (readPos - resetPos);
+        readPos = resetPos;
     }
     
     public int remaining() {
-        return marked() ? fillPos - readPos : 0;
+        return fillPos - readPos;
     }
-    public boolean marked() {
-        return marked;
-    }
+    
+    /**
+     * TODO: javadoc/readlimit not respected
+     */
     @Override
     public void mark(int readlimit) throws IllegalArgumentException, IllegalStateException {
-        if(readlimit<=0)
-            throw new IllegalArgumentException("readlimit should be greater than 0");
-        if(marked() && fillPos<markPos) {
-            throw new IllegalStateException("already marked");
-        }
         if(readlimit>buffer.length) {
-            buffer = new int[readlimit];
+            buffer = Arrays.copyOf(buffer, readlimit);
         }
-        fillPos = 0;
-        readPos = 0;
-        markPos = readlimit;
-        marked = true;
+        resetPos = readPos;
     }
     
     public void close() throws IOException {
@@ -168,14 +178,8 @@ public class MarkableInputStream extends InputStream implements AutoCloseable{
         public void reset() throws IOException {
             delegate.reset();
         }
-        public void drain() throws IOException {
-            delegate.drain();
-        }
         public int remaining() {
             return delegate.remaining();
-        }
-        public boolean marked() {
-            return delegate.marked();
         }
         public void mark(int readlimit) throws IllegalArgumentException, IllegalStateException {
             delegate.mark(readlimit);
