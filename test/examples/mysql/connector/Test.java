@@ -148,10 +148,10 @@ public class Test {
                 }
             }
             
-            seq.reset();
             
             //################Init DB################
             {
+                seq.reset();
                 COMInitDB query = new COMInitDB();
                 query.schemaName = "sakila";
                 MySQLPacket packet = new MySQLPacket(query,seq.get());
@@ -165,10 +165,12 @@ public class Test {
             }
             //################Run Query################
             {
+                seq.reset();
                 COMQuery query = new COMQuery();
-                query.query = "select version(),CURRENT_TIMESTAMP;";
-                MySQLPacket packet = new MySQLPacket(query,seq.addAndGet());
+                query.query = "select version(),CURRENT_TIMESTAMP";
+                MySQLPacket packet = new MySQLPacket(query,seq.get());
                 System.out.println("[send]query:"+packet);
+                packet.serialize(os);
                 
                 MySQLPacket resp = new MySQLPacket(clientFlags);
                 resp.deserialize(in);
