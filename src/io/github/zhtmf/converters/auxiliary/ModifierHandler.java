@@ -26,11 +26,6 @@ import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintExce
  */
 public abstract class ModifierHandler<E> {
     
-    /**
-     * limit of buffer
-     */
-    public static final int HANDLER_READ_BUFFER_SIZE = 32;
-    
     //only set when this class is used as LengthHandler
     boolean checkLength = false;
     
@@ -40,32 +35,13 @@ public abstract class ModifierHandler<E> {
     }
     
     public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is) throws IllegalArgumentException{
-        try {
-            is.mark(HANDLER_READ_BUFFER_SIZE);
-        } catch (IllegalStateException e1) {
-            //TODO:
-            throw new UnsatisfiedConstraintException(
-                    "there are still unprocessed bytes since last call to a ModifierHandler")
-                    .withSiteAndOrdinal(ModifierHandler.class, 5);
-        }
+        is.mark(0);
         E ret = null;
         try {
             currentPosition.set(is.actuallyProcessedBytes());
             ret = handleDeserialize0(fieldName, entity, is);
             currentPosition.set(-1);
             checkReturnValue(ret);
-            /*
-             * There is still a chance for errors that are hard to detect: remaining
-             * processing of this entity does not use up all bytes marked after this
-             * handler method returns, then some bytes in the original stream passed to
-             * deserialize() are forever lost. But at least we limit the buffer size to a
-             * quite small value and thus reduce the chance for such errors.
-             */
-            if( ! is.marked()) {
-                throw new UnsatisfiedConstraintException("should not read more than  "+HANDLER_READ_BUFFER_SIZE+" in the handler")
-                    .withSiteAndOrdinal(ModifierHandler.class, 4);
-            }
-            is.drain();
             is.reset();
         } catch (IOException e) {
             throw new UnsatisfiedConstraintException(e)
