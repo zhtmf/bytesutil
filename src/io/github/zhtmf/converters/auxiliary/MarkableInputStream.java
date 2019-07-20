@@ -5,15 +5,14 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 /**
- * An input stream implementation that supports <tt>mark()</tt> and
- * <tt>reset()</tt> operations but does not maintain any internal buffer.
+ * An input stream implementation which supports <tt>mark</tt> and <tt>reset</tt>
+ * operations but does not read more bytes than required.
  * <p>
- * Due to the way how this library is used, the <tt>InputStream</tt> object
- * passed in by client code may be used again by client code thereafter. Classes
- * like {@link java.io.BufferedInputStream BufferedInputStream} effectively
- * prevent such use because of their internal buffering mechanics, which reads
- * more data than needed and those data cannot be put back to the original
- * stream.
+ * Due to how this library is used, the <tt>InputStream</tt> passed in by client
+ * codes may be used again thereafter. Classes like
+ * {@link java.io.BufferedInputStream BufferedInputStream} prevent such use
+ * because of internal buffering which reads more data than needed and those
+ * data cannot be put back to the underlying stream.
  * 
  * @author dzh
  */
@@ -25,7 +24,6 @@ public class MarkableInputStream extends InputStream implements AutoCloseable{
     private int[] buffer = SHARED_EMPTY_BUFFER;
     private int readPos = 0;
     private int fillPos = 0;
-    private int resetPos = readPos;
     private int bytesProcessed;
     
     public static MarkableInputStream wrap(InputStream in) {
@@ -47,67 +45,59 @@ public class MarkableInputStream extends InputStream implements AutoCloseable{
     
     @Override
     public int read() throws IOException {
-        if(in==null) {
-            throw new IOException("Stream Closed");
-        }
+        checkClosed();
         if(readPos < fillPos) {
             ++bytesProcessed;
             return buffer[readPos++];
         }
-        /*
-         * may throw exception if size of the stream is exactly Integer.MAX_VALUE - 8
-         * bytes. But this ensures the underlying stream is in a consistent state after
-         * OutOfMemoryError is thrown
-         */
-        ensureCapacity();
         int b = in.read();
         if(b==-1) {
             return b;
         }
         ++bytesProcessed;
+        if(buffer == SHARED_EMPTY_BUFFER) {
+            return b;
+        }
+        ensureCapacity();
         ++fillPos;
         buffer[readPos++] = b;
         return b;
     }
     
-    private void ensureCapacity() {
-        int length = buffer.length;
-        if(fillPos == length) {
-            if(length==0) {
-                length = INITIAL_BUFFER_SIZE;
-            }else {
-                length <<= 1;
-            }
-            if(length<=0) {
-                //TODO: max array size
-                length = Integer.MAX_VALUE - 8;
-            }
-            if(length == buffer.length) {
-                throw new OutOfMemoryError();
-            }
-            buffer = Arrays.copyOf(buffer, length);
-        }
-    }
-    
     @Override
     public void reset() throws IOException {
-        bytesProcessed -= (readPos - resetPos);
-        readPos = resetPos;
+        checkClosed();
+        bytesProcessed -= (readPos);
+        readPos = 0;
     }
     
-    public int remaining() {
+    int remaining() {
         return fillPos - readPos;
     }
     
     /**
-     * TODO: javadoc/readlimit not respected
+     * Behavior of this method is different from general contract of
+     * {@link InputStream#mark(int)}, as all bytes read after first call to this
+     * method are remembered and never get invalidated by {@link #read() read}.
+     * <p>
+     * When this method is called again before bytes remembered are not fully
+     * consumed after a call to {@link #reset() reset}, bytes before
+     * {@link #readPos} are discarded
+     * 
+     * @param readlimit
+     *            a hint to this method but not respected
      */
     @Override
-    public void mark(int readlimit) throws IllegalArgumentException, IllegalStateException {
+    public void mark(int readlimit){
+        if(readlimit<=0) {
+            readlimit = INITIAL_BUFFER_SIZE;
+        }
         if(readlimit>buffer.length) {
             buffer = Arrays.copyOf(buffer, readlimit);
         }
-        resetPos = readPos;
+        System.arraycopy(buffer, readPos, buffer, 0, fillPos - readPos);
+        fillPos -= readPos;
+        readPos = 0;
     }
     
     public void close() throws IOException {
@@ -146,6 +136,27 @@ public class MarkableInputStream extends InputStream implements AutoCloseable{
      */
     int actuallyProcessedBytes() {
         return bytesProcessed;
+    }
+    
+    private void ensureCapacity() {
+        int length = buffer.length;
+        if(fillPos == length) {
+            length <<= 1;
+            if(length<=0) {
+                //max array size
+                length = Integer.MAX_VALUE - 8;
+            }
+            if(length == buffer.length) {
+                throw new OutOfMemoryError();
+            }
+            buffer = Arrays.copyOf(buffer, length);
+        }
+    }
+    
+    private void checkClosed() throws IOException {
+        if(in==null) {
+            throw new IOException("Stream Closed");
+        }
     }
     
     /**

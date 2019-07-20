@@ -1,4 +1,4 @@
-package test.general;
+package io.github.zhtmf.converters.auxiliary;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -53,7 +53,7 @@ public class TestMarkableInputStream {
         }
     }
     @Test
-    public void testReset() throws Exception{
+    public void testSerialization() throws Exception{
         TestPacket packet = new TestPacket();
         packet.affectedRows = new LEInt1();
         ((LEInt1)packet.affectedRows).header = 1;
@@ -93,7 +93,7 @@ public class TestMarkableInputStream {
     }
     
     @Test
-    public void testReset2() throws Exception{
+    public void testSerialization2() throws Exception{
         TestPacket2 packet = new TestPacket2();
         packet.deserialize(TestUtils.newInputStream(new byte[] {34,54}));
         Assert.assertEquals(packet.subEntity.b1, 34);
@@ -138,6 +138,7 @@ public class TestMarkableInputStream {
         byte[] array = TestUtils.pseudoRandomArray(1024);
         try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
             Assert.assertEquals(mis.remaining(),0);
+            mis.mark(300);
             for(int i=0;i<300;++i) {
                 Assert.assertEquals((byte)mis.read(), array[i]);
                 Assert.assertEquals(mis.remaining(),0);
@@ -257,7 +258,7 @@ public class TestMarkableInputStream {
     public void test10() throws IOException {
         byte[] array = TestUtils.pseudoRandomArray(24);
         try(MarkableInputStream mis = MarkableInputStream.wrap(new ByteArrayInputStream(array))){
-            mis.mark(0);
+            mis.mark(12);
             for(int i=0;i<12;++i) {
                 mis.read();
             }
