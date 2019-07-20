@@ -11,6 +11,8 @@ import examples.mysql.connector.auxiliary.CapabilityFlags;
 import examples.mysql.connector.packet.AuthSwitchRequest;
 import examples.mysql.connector.packet.COMInitDB;
 import examples.mysql.connector.packet.COMQuery;
+import examples.mysql.connector.packet.EOFPacket;
+import examples.mysql.connector.packet.ERRPacket;
 import examples.mysql.connector.packet.HandshakeResponse41;
 import examples.mysql.connector.packet.HandshakeV10;
 import examples.mysql.connector.packet.MySQLPacket;
@@ -18,6 +20,7 @@ import examples.mysql.connector.packet.OKPacket;
 import examples.mysql.connector.packet.PasswordResponsePacket;
 import examples.mysql.connector.packet.query.ColumnDefinition;
 import examples.mysql.connector.packet.query.QueryResultColumnCount;
+import examples.mysql.connector.packet.query.TextResultsetRow;
 
 public class Test {
     
@@ -167,7 +170,7 @@ public class Test {
             {
                 seq.reset();
                 COMQuery query = new COMQuery();
-                query.query = "select version(),CURRENT_TIMESTAMP,222 as cnt";
+                query.query = "select version(),CURRENT_TIMESTAMP,222 as cnt,NULL as null_value";
                 MySQLPacket packet = new MySQLPacket(query,seq.get());
                 System.out.println("[send]query:"+packet);
                 packet.serialize(os);
@@ -183,15 +186,39 @@ public class Test {
                 resp.deserialize(in);
                 System.out.println("[recv]column count:"+resp);
                 QueryResultColumnCount count = (QueryResultColumnCount)resp.payload;
-                for(int i=0;i<count.columnCount.getNumericValue().intValue();++i) {
+                int columnCount = count.columnCount.getNumericValue().intValue();
+                for(int i=0;i<columnCount;++i) {
                     resp.payload = new ColumnDefinition();
                     resp.deserialize(in);
                     System.out.println("[recv]column metadata:"+resp);
                 }
                 resp.deserialize(in);
                 System.out.println("[recv]eof marking end of column metadata:"+resp);
-                
-                seq.reset(resp.sequenceId);
+                /*
+                 * One or more ProtocolText::ResultsetRow packets, each containing column_count
+                 * values
+                 * 
+                 * ERR_Packet in case of error. Otherwise: If the CLIENT_DEPRECATE_EOF client
+                 * capability flag is set, OK_Packet; else EOF_Packet.
+                 */
+                for(;;) {
+                    TextResultsetRow row = new TextResultsetRow();
+                    row.columnCount = columnCount;
+                    resp.payload = row;
+                    resp.deserialize(in);
+                    if(resp.payload instanceof ERRPacket) {
+                        System.err.println("[recv]error during receiving result set data:"+resp);
+                        System.exit(1);
+                    }else if(resp.payload instanceof EOFPacket) {
+                        System.out.println("[recv]eof marking end of result set data:"+resp);
+                        break;
+                    }else if(resp.payload instanceof TextResultsetRow){
+                        System.out.println("[recv]result set data:"+resp);
+                    }else {
+                        System.err.println("[recv]unexpected response during receiving result set data:"+resp);
+                        System.exit(1);
+                    }
+                }
             }
         }
     }
