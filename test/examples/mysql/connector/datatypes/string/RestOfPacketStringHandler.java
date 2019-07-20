@@ -25,10 +25,9 @@ public class RestOfPacketStringHandler extends ModifierHandler<Integer>{
 
     @Override
     public Integer handleSerialize0(String fieldName, Object entity) {
-        //TODO: better way of dealing with this
         try {
             return entity.getClass().getField(fieldName).get(entity).toString().length();
-        } catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+        } catch (Exception e) {
             throw new Error(e);
         }
     }

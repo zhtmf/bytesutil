@@ -3,7 +3,7 @@ package examples.mysql.connector.packet.common;
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.ClientCapabilityAware;
 import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
@@ -67,13 +67,13 @@ public class ERRPacket extends DataPacket implements ClientCapabilityAware, PayL
         @Override
         public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             ERRPacket pac = (ERRPacket)entity;
-            return (pac.clientCapabilities & (CapabilityFlags.CLIENT_PROTOCOL_41) )!=0;
+            return (pac.clientCapabilities & (ClientCapabilities.CLIENT_PROTOCOL_41) )!=0;
         }
 
         @Override
         public Boolean handleSerialize0(String fieldName, Object entity) {
             ERRPacket pac = (ERRPacket)entity;
-            return (pac.clientCapabilities & (CapabilityFlags.CLIENT_PROTOCOL_41) )!=0;
+            return (pac.clientCapabilities & (ClientCapabilities.CLIENT_PROTOCOL_41) )!=0;
         }
     }
 

@@ -6,7 +6,7 @@ import java.util.List;
 
 import examples.mysql.connector.datatypes.le.LEInteger;
 import examples.mysql.connector.datatypes.string.LengthEncodedString;
-import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilities;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
@@ -31,7 +31,7 @@ public class HandshakeResponse41 extends DataPacket{
     @INT
     @Signed
     //Capabilities Flags, CLIENT_PROTOCOL_41 always set.
-    public long clientFlag;
+    public long clientCapabilities;
     
     @Order(1)
     @INT
@@ -123,13 +123,13 @@ public class HandshakeResponse41 extends DataPacket{
             switch(fieldName) {
             case "authResponse":
             case "authResponseWithLength":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
             case "database":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_CONNECT_WITH_DB) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_WITH_DB) != 0;
             case "clientPluginName":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH) != 0;
             case "attrs":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_CONNECT_ATTRS) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_ATTRS) != 0;
             }
             throw new IllegalArgumentException(fieldName);
         }
@@ -139,13 +139,13 @@ public class HandshakeResponse41 extends DataPacket{
             switch(fieldName) {
             case "authResponse":
             case "authResponseWithLength":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
             case "database":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_CONNECT_WITH_DB) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_WITH_DB) != 0;
             case "clientPluginName":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_PLUGIN_AUTH) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH) != 0;
             case "attrs":
-                return (resp.clientFlag & CapabilityFlags.CLIENT_CONNECT_ATTRS) != 0;
+                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_ATTRS) != 0;
             }
             throw new IllegalArgumentException(fieldName);
         }

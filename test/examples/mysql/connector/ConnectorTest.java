@@ -2,12 +2,11 @@ package examples.mysql.connector;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
 import java.net.Socket;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
-import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.MySQLPacket;
 import examples.mysql.connector.packet.command.COMInitDB;
 import examples.mysql.connector.packet.command.COMQuery;
@@ -23,42 +22,37 @@ import examples.mysql.connector.packet.connection.HandshakeV10;
 import examples.mysql.connector.packet.connection.PasswordResponsePacket;
 import io.github.zhtmf.ConversionException;
 
+/**
+ * <p>
+ * An example which demonstrates features of this library by implementing a
+ * basic mysql connector.
+ * <p>
+ * It connects to the mysql server running on specified address, runs sample
+ * queries which print system variables and content of 'city' table in 'sakila'
+ * schema and then exits.
+ * <p>
+ * This example is tested on 5.6.44 and 5.6.2, as the protocol should remain the
+ * same it should be working on other releases too.
+ * 
+ * @author dzh
+ */
 public class ConnectorTest {
     
-    private static final class Seq{
-        private int seq;
-        public byte addAndGet() {
-            return (byte) (seq == 255 ? (seq = 0) : ++seq);
-        }
-        public byte get() {
-            return (byte)seq;
-        }
-        public void reset(int seq) {
-            this.seq = seq;
-        }
-        public void reset() {
-            reset(0);
-        }
-    }
-    
-    private static void checkBody(MySQLPacket resp) {
-        if(! ( resp.payload instanceof OKPacket)) {
-            System.err.println("[err ]unexpected response from server");
-            System.exit(1);
-        }
-    }
-    
     public static void main(String[] args) throws Exception {
-        try(Socket sk = new Socket("localhost",3306,(InetAddress)null,0)){
-            
-            final String username = "dzh";
-            final String password = "dzh1234";
+        
+        //modify these information according to your environment
+        final String host = "localhost";
+        final int port = 3306;
+        final String username = "dzh";
+        final String password = "dzh1234";
+        
+        try(Socket sk = new Socket(host,port)){
             
             Seq seq = new Seq();
             InputStream in = sk.getInputStream();
             OutputStream os = sk.getOutputStream();
             
-            //################receive initial server handshake###################
+            //################initial handshake###################
             
             MySQLPacket initialHandshake = new MySQLPacket(0);
             initialHandshake.payload = new HandshakeV10();
@@ -72,32 +66,32 @@ public class ConnectorTest {
             
             HandshakeV10 handshakeV10 = (HandshakeV10)initialHandshake.payload;
             int serverFlags = handshakeV10.capFlags2 << 16 | handshakeV10.capFlags1;
-            System.out.println("server support CLIENT_PROTOCOL_41? "+((serverFlags & CapabilityFlags.CLIENT_PROTOCOL_41)!=0));
-            System.out.println("server support CLIENT_CONNECT_WITH_DB? "+((serverFlags & CapabilityFlags.CLIENT_CONNECT_WITH_DB)!=0));
-            System.out.println("server support CLIENT_CONNECT_ATTRS? "+((serverFlags & CapabilityFlags.CLIENT_CONNECT_ATTRS)!=0));
-            System.out.println("server support CLIENT_PLUGIN_AUTH? "+((serverFlags & CapabilityFlags.CLIENT_PLUGIN_AUTH)!=0));
+            System.out.println("server support CLIENT_PROTOCOL_41? "+((serverFlags & ClientCapabilities.CLIENT_PROTOCOL_41)!=0));
+            System.out.println("server support CLIENT_CONNECT_WITH_DB? "+((serverFlags & ClientCapabilities.CLIENT_CONNECT_WITH_DB)!=0));
+            System.out.println("server support CLIENT_CONNECT_ATTRS? "+((serverFlags & ClientCapabilities.CLIENT_CONNECT_ATTRS)!=0));
+            System.out.println("server support CLIENT_PLUGIN_AUTH? "+((serverFlags & ClientCapabilities.CLIENT_PLUGIN_AUTH)!=0));
             
-            if((serverFlags & CapabilityFlags.CLIENT_PROTOCOL_41) == 0) {
-                System.err.println("server does not support 4.1 protocol");
+            if((serverFlags & ClientCapabilities.CLIENT_PROTOCOL_41) == 0) {
+                System.err.println("[err ]server does not support 4.1 protocol");
                 System.exit(1);
             }
             
             if( ! "mysql_native_password".equals(handshakeV10.authPluginName)) {
-                System.err.println("this example does not support auth method other than 'mysql_native_password'");
+                System.err.println("[err ]this example does not support auth method other than 'mysql_native_password'");
                 System.exit(1);
             }
             
             int clientFlags = 0;
-            clientFlags |= CapabilityFlags.CLIENT_PROTOCOL_41;
-            clientFlags |= CapabilityFlags.CLIENT_PLUGIN_AUTH;
+            clientFlags |= ClientCapabilities.CLIENT_PROTOCOL_41;
+            clientFlags |= ClientCapabilities.CLIENT_PLUGIN_AUTH;
             
             seq.reset(initialHandshake.sequenceId);
             
-            //################send client flags and client clientCapabilities################
+            //################respond with client flags and capabilities################
             
             {
                 HandshakeResponse41 resp = new HandshakeResponse41();
-                resp.clientFlag = clientFlags;
+                resp.clientCapabilities = clientFlags;
                 resp.maxPacketSize = 0xFFFF;
                 resp.charSet = handshakeV10.charSet;
                 resp.username = username;
@@ -109,17 +103,18 @@ public class ConnectorTest {
                 packet.serialize(os);
             }
             
-            //################receive server response################
+            //################server response################
             
             {
                 MySQLPacket packet = new MySQLPacket(clientFlags);
                 packet.deserialize(in);
-                System.out.println("[recv]server handshake response:"+packet);
+                System.out.println("[recv]server response:"+packet);
                 
                 seq.reset(packet.sequenceId);
                 
-                //normally the server should send back a OKPacket, however it could also 
-                //be a AuthSwitchRequest which we should response with encrypted password
+                //normally the server should response with a OKPacket, however it may also 
+                //be a AuthSwitchRequest which should be responded with encrypted password
+                //this behavior is not clearly stated in mysql document
                 if(packet.payload instanceof AuthSwitchRequest) {
                     AuthSwitchRequest payload = (AuthSwitchRequest)packet.payload;
                     MessageDigest digest = MessageDigest.getInstance("SHA-1");
@@ -135,8 +130,8 @@ public class ConnectorTest {
                         part1[i] = (byte) (part1[i] ^ part2[i]);
                     }
                     
-                    //another packet which does not comply with pattern which uses first byte to 
-                    //indicate the type, the packet itself is merely a byte array
+                    //the packet itself is merely a byte array
+                    //this is also not clearly stated in mysql document
                     PasswordResponsePacket resp = new PasswordResponsePacket();
                     resp.pwd = part1;
                     
@@ -168,8 +163,6 @@ public class ConnectorTest {
                 checkBody(resp);
             }
             //################Run Queries################
-            System.out.println("####### test query ##########");
-            runQuery(os,in,clientFlags,"select version(),CURRENT_TIMESTAMP,222 as cnt,NULL as null_value");
             System.out.println("####### show system variables ##########");
             runQuery(os,in,clientFlags,"show VARIABLES");
             System.out.println("####### show contents in city table ##########");
@@ -177,7 +170,8 @@ public class ConnectorTest {
         }
     }
     
-    private static void runQuery(OutputStream os, InputStream in, int clientFlags, String queryString) throws IllegalArgumentException, ConversionException {
+    private static void runQuery(OutputStream os, InputStream in, int clientFlags, String queryString)
+            throws IllegalArgumentException, ConversionException {
         Seq seq = new Seq();
         COMQuery query = new COMQuery();
         query.query = queryString;
@@ -227,6 +221,29 @@ public class ConnectorTest {
                 System.err.println("[recv]unexpected response during receiving result set data:"+resp);
                 System.exit(1);
             }
+        }
+    }
+    
+    private static final class Seq{
+        private int seq;
+        public byte addAndGet() {
+            return (byte) (seq == 255 ? (seq = 0) : ++seq);
+        }
+        public byte get() {
+            return (byte)seq;
+        }
+        public void reset(int seq) {
+            this.seq = seq;
+        }
+        public void reset() {
+            reset(0);
+        }
+    }
+    
+    private static void checkBody(MySQLPacket resp) {
+        if(! ( resp.payload instanceof OKPacket)) {
+            System.err.println("[err ]unexpected response from server");
+            System.exit(1);
         }
     }
 }

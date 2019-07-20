@@ -7,7 +7,7 @@ import examples.mysql.connector.datatypes.le.LEIntHandler;
 import examples.mysql.connector.datatypes.le.LEInteger;
 import examples.mysql.connector.datatypes.string.LengthEncodedString;
 import examples.mysql.connector.datatypes.string.RestOfPacketStringHandler;
-import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.ClientCapabilityAware;
 import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
@@ -97,18 +97,18 @@ public class OKPacket extends DataPacket implements ClientCapabilityAware, PayLo
         public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             OKPacket packet = (OKPacket)entity;
             if("warnings".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    && (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)==0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_PROTOCOL_41)!=0
+                    && (packet.clientCapabilities & ClientCapabilities.CLIENT_TRANSACTIONS)==0;
             }else if("info".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_SESSION_TRACK)!=0;
             }else if("sessionStatusInfo".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0
-                    && (packet.statusFlags & CapabilityFlags.SERVER_SESSION_STATE_CHANGED)!=0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_SESSION_TRACK)!=0
+                    && (packet.statusFlags & ClientCapabilities.SERVER_SESSION_STATE_CHANGED)!=0;
             }else if("info2".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)==0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_SESSION_TRACK)==0;
             }else if("statusFlags".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    || (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)!=0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_PROTOCOL_41)!=0
+                    || (packet.clientCapabilities & ClientCapabilities.CLIENT_TRANSACTIONS)!=0;
             }else {
                 throw new IllegalStateException();
             }
@@ -118,18 +118,18 @@ public class OKPacket extends DataPacket implements ClientCapabilityAware, PayLo
         public Boolean handleSerialize0(String fieldName, Object entity) {
             OKPacket packet = (OKPacket)entity;
             if("warnings".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    && (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)==0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_PROTOCOL_41)!=0
+                    && (packet.clientCapabilities & ClientCapabilities.CLIENT_TRANSACTIONS)==0;
             }else if("info".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_SESSION_TRACK)!=0;
             }else if("sessionStatusInfo".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0
-                    && (packet.statusFlags & CapabilityFlags.SERVER_SESSION_STATE_CHANGED)!=0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_SESSION_TRACK)!=0
+                    && (packet.statusFlags & ClientCapabilities.SERVER_SESSION_STATE_CHANGED)!=0;
             }else if("info2".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)==0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_SESSION_TRACK)==0;
             }else if("statusFlags".equals(fieldName)) {
-                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    || (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)!=0;
+                return (packet.clientCapabilities & ClientCapabilities.CLIENT_PROTOCOL_41)!=0
+                    || (packet.clientCapabilities & ClientCapabilities.CLIENT_TRANSACTIONS)!=0;
             }else {
                 throw new IllegalStateException();
             }

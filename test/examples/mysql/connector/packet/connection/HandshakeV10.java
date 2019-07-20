@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilities;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
@@ -108,13 +108,13 @@ public class HandshakeV10 extends DataPacket{
         @Override
         public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             HandshakeV10 v10 = (HandshakeV10)entity;
-            return ((v10.capFlags2 << 16 | v10.capFlags1) & (CapabilityFlags.CLIENT_PLUGIN_AUTH) )!=0;
+            return ((v10.capFlags2 << 16 | v10.capFlags1) & (ClientCapabilities.CLIENT_PLUGIN_AUTH) )!=0;
         }
 
         @Override
         public Boolean handleSerialize0(String fieldName, Object entity) {
             HandshakeV10 v10 = (HandshakeV10)entity;
-            return ((v10.capFlags2 << 16 | v10.capFlags1) & (CapabilityFlags.CLIENT_PLUGIN_AUTH) )!=0;
+            return ((v10.capFlags2 << 16 | v10.capFlags1) & (ClientCapabilities.CLIENT_PLUGIN_AUTH) )!=0;
         }
     }
 

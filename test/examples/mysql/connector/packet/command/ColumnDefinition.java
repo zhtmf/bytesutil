@@ -64,7 +64,7 @@ public class ColumnDefinition extends DataPacket{
     public int decimals;
     
     /**
-     * not specified in 8.0 document
+     * not mentioned in document for 8.0
      */
     @Order(12)
     @RAW(2)

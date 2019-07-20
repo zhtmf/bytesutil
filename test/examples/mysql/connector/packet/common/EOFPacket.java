@@ -3,7 +3,7 @@ package examples.mysql.connector.packet.common;
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.ClientCapabilityAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
@@ -38,11 +38,11 @@ public class EOFPacket extends DataPacket implements ClientCapabilityAware{
     public static class CapabilitiesCondition extends ModifierHandler<Boolean>{
         @Override
         public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            return (((EOFPacket)entity).clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41) !=0;
+            return (((EOFPacket)entity).clientCapabilities & ClientCapabilities.CLIENT_PROTOCOL_41) !=0;
         }
         @Override
         public Boolean handleSerialize0(String fieldName, Object entity) {
-            return (((EOFPacket)entity).clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41) !=0;
+            return (((EOFPacket)entity).clientCapabilities & ClientCapabilities.CLIENT_PROTOCOL_41) !=0;
         }
     }
 

@@ -17,7 +17,10 @@ public class TextResultsetRow extends DataPacket {
     public int columnCount;
     
     /**
-     * NULL is sent as 0xfb everything else is converted into a string and is sent
+     * <p>
+     * NULL is sent as 0xfb
+     * <p>
+     * everything else is converted into a string and is sent
      * as Protocol::LengthEncodedString.
      */
     @Order(0)

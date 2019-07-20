@@ -17,12 +17,13 @@ public class COMQuery extends DataPacket{
     @Order(1)
     @CHAR
     @Length(handler=Query.class)
+    //this should be a string<EOF>
     public String query;
     
     public static class Query extends ModifierHandler<Integer>{
         @Override
         public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            throw new UnsupportedOperationException();//TODO: more elegant way of doing this
+            throw new UnsupportedOperationException();
         }
 
         @Override

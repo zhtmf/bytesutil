@@ -5,7 +5,7 @@ import java.io.InputStream;
 
 import examples.mysql.connector.datatypes.le.LEIntHandler;
 import examples.mysql.connector.datatypes.le.LEInteger;
-import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.ClientCapabilityAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
@@ -41,7 +41,7 @@ public class QueryResultColumnCount extends DataPacket implements ClientCapabili
             QueryResultColumnCount pac = (QueryResultColumnCount)entity;
             switch(fieldName) {
             case "metadataFollows":
-                return (pac.clientCapabilities & CapabilityFlags.CLIENT_OPTIONAL_RESULTSET_METADATA) != 0;
+                return (pac.clientCapabilities & ClientCapabilities.CLIENT_OPTIONAL_RESULTSET_METADATA) != 0;
             }
             throw new IllegalArgumentException(fieldName);
         }

@@ -16,12 +16,15 @@ import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.INT3;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
+/**
+ * Basic packet structure in MySQL protocol
+ * @author dzh
+ */
 @Unsigned
 @LittleEndian
 public class MySQLPacket extends DataPacket{
-    
     /**
-     * Used for sending response to server
+     * Used in sending response to server
      * @param payload
      * @param seq
      */
@@ -31,22 +34,21 @@ public class MySQLPacket extends DataPacket{
         this.sequenceId = seq;
     }
     /**
-     * Used for receiving data from server
-     * @param capabilitiesFlag
+     * Used in receiving data from server
+     * @param clientCapabilities
      */
-    public MySQLPacket(int capabilitiesFlag) {
-        this.capabilitiesFlag = capabilitiesFlag;
+    public MySQLPacket(int clientCapabilities) {
+        this.clientCapabilities = clientCapabilities;
     }
     
     /**
-     * client flag, passed down to OKPacket or other packets 
-     * for conditional branches
+     * passed down to pay load packets
      */
-    public int capabilitiesFlag;
+    public int clientCapabilities;
 
     /**
-     * Length of the payload. The number of bytes in the packet beyond the initial 4
-     * bytes that make up the packet header.
+     * Length of the pay load. The number of bytes in the packet beyond the initial
+     * 4 bytes that make up the packet header.
      */
     @Order(0)
     @INT3
@@ -76,8 +78,8 @@ public class MySQLPacket extends DataPacket{
             }else if(b==0xFF){
                 ret = new ERRPacket();
             }else if(b==0xFE) {
-                //0xFE header can be both AuthSwitchRequest or EOFPacket,
-                //they can only be distinguished by payload length
+                //0xFE header can mean both AuthSwitchRequest or EOFPacket,
+                //which can only be distinguished by payloadLength
                 if(pac.payloadLength==5) {
                     ret = new EOFPacket();
                 }else {
@@ -85,14 +87,13 @@ public class MySQLPacket extends DataPacket{
                 }
             }else {
                 /*
-                 * some mysql packets does not comply with the "first byte
-                 * determines payload type" pattern, these packets are directly
-                 * specified in other codes
+                 * some packets does not comply with the "first byte determines pay load type"
+                 * pattern, pay loads of these packets are directly specified by caller
                  */
-                return pac.payload;
+                ret = pac.payload;
             }
             if(ret instanceof ClientCapabilityAware) {
-                ((ClientCapabilityAware)ret).setClientCapability(pac.capabilitiesFlag);
+                ((ClientCapabilityAware)ret).setClientCapability(pac.clientCapabilities);
             }
             if(ret instanceof PayLoadLengthAware) {
                 ((PayLoadLengthAware)ret).setPayLoadLength(pac.payloadLength);
