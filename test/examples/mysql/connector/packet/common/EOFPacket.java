@@ -1,10 +1,10 @@
-package examples.mysql.connector.packet;
+package examples.mysql.connector.packet.common;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.auxiliary.CapabilityFlags;
-import examples.mysql.connector.packet.common.ClientCapabilityAware;
+import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilityAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Order;

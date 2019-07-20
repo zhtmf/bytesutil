@@ -7,22 +7,23 @@ import java.net.Socket;
 import java.security.MessageDigest;
 import java.util.Arrays;
 
-import examples.mysql.connector.auxiliary.CapabilityFlags;
-import examples.mysql.connector.packet.AuthSwitchRequest;
-import examples.mysql.connector.packet.COMInitDB;
-import examples.mysql.connector.packet.COMQuery;
-import examples.mysql.connector.packet.EOFPacket;
-import examples.mysql.connector.packet.ERRPacket;
-import examples.mysql.connector.packet.HandshakeResponse41;
-import examples.mysql.connector.packet.HandshakeV10;
+import examples.mysql.connector.packet.CapabilityFlags;
 import examples.mysql.connector.packet.MySQLPacket;
-import examples.mysql.connector.packet.OKPacket;
-import examples.mysql.connector.packet.PasswordResponsePacket;
-import examples.mysql.connector.packet.query.ColumnDefinition;
-import examples.mysql.connector.packet.query.QueryResultColumnCount;
-import examples.mysql.connector.packet.query.TextResultsetRow;
+import examples.mysql.connector.packet.command.COMInitDB;
+import examples.mysql.connector.packet.command.COMQuery;
+import examples.mysql.connector.packet.command.ColumnDefinition;
+import examples.mysql.connector.packet.command.QueryResultColumnCount;
+import examples.mysql.connector.packet.command.TextResultsetRow;
+import examples.mysql.connector.packet.common.EOFPacket;
+import examples.mysql.connector.packet.common.ERRPacket;
+import examples.mysql.connector.packet.common.OKPacket;
+import examples.mysql.connector.packet.connection.AuthSwitchRequest;
+import examples.mysql.connector.packet.connection.HandshakeResponse41;
+import examples.mysql.connector.packet.connection.HandshakeV10;
+import examples.mysql.connector.packet.connection.PasswordResponsePacket;
+import io.github.zhtmf.ConversionException;
 
-public class Test {
+public class ConnectorTest {
     
     private static final class Seq{
         private int seq;
@@ -166,59 +167,65 @@ public class Test {
                 seq.reset(resp.sequenceId);
                 checkBody(resp);
             }
-            //################Run Query################
-            {
-                seq.reset();
-                COMQuery query = new COMQuery();
-                query.query = "select version(),CURRENT_TIMESTAMP,222 as cnt,NULL as null_value";
-                MySQLPacket packet = new MySQLPacket(query,seq.get());
-                System.out.println("[send]query:"+packet);
-                packet.serialize(os);
-                
-                /*
-                 * The column definitions part starts with a packet containing the column-count,
-                 * followed by as many Column Definition packets as there are columns and
-                 * terminated by an EOF_Packet. packet if the CLIENT_DEPRECATE_EOF capability
-                 * flag is not set.
-                 */
-                MySQLPacket resp = new MySQLPacket(clientFlags);
-                resp.payload = new QueryResultColumnCount();
-                resp.deserialize(in);
-                System.out.println("[recv]column count:"+resp);
-                QueryResultColumnCount count = (QueryResultColumnCount)resp.payload;
-                int columnCount = count.columnCount.getNumericValue().intValue();
-                for(int i=0;i<columnCount;++i) {
-                    resp.payload = new ColumnDefinition();
-                    resp.deserialize(in);
-                    System.out.println("[recv]column metadata:"+resp);
-                }
-                resp.deserialize(in);
-                System.out.println("[recv]eof marking end of column metadata:"+resp);
-                /*
-                 * One or more ProtocolText::ResultsetRow packets, each containing column_count
-                 * values
-                 * 
-                 * ERR_Packet in case of error. Otherwise: If the CLIENT_DEPRECATE_EOF client
-                 * capability flag is set, OK_Packet; else EOF_Packet.
-                 */
-                for(;;) {
-                    TextResultsetRow row = new TextResultsetRow();
-                    row.columnCount = columnCount;
-                    resp.payload = row;
-                    resp.deserialize(in);
-                    if(resp.payload instanceof ERRPacket) {
-                        System.err.println("[recv]error during receiving result set data:"+resp);
-                        System.exit(1);
-                    }else if(resp.payload instanceof EOFPacket) {
-                        System.out.println("[recv]eof marking end of result set data:"+resp);
-                        break;
-                    }else if(resp.payload instanceof TextResultsetRow){
-                        System.out.println("[recv]result set data:"+resp);
-                    }else {
-                        System.err.println("[recv]unexpected response during receiving result set data:"+resp);
-                        System.exit(1);
-                    }
-                }
+            //################Run Queries################
+            System.out.println("####### test query ##########");
+            runQuery(os,in,clientFlags,"select version(),CURRENT_TIMESTAMP,222 as cnt,NULL as null_value");
+            System.out.println("####### show system variables ##########");
+            runQuery(os,in,clientFlags,"show VARIABLES");
+            System.out.println("####### show contents in city table ##########");
+            runQuery(os,in,clientFlags,"select * from city");
+        }
+    }
+    
+    private static void runQuery(OutputStream os, InputStream in, int clientFlags, String queryString) throws IllegalArgumentException, ConversionException {
+        Seq seq = new Seq();
+        COMQuery query = new COMQuery();
+        query.query = queryString;
+        MySQLPacket packet = new MySQLPacket(query,seq.get());
+        System.out.println("[send]query:"+packet);
+        packet.serialize(os);
+        /*
+         * The column definitions part starts with a packet containing the column-count,
+         * followed by as many Column Definition packets as there are columns and
+         * terminated by an EOF_Packet. packet if the CLIENT_DEPRECATE_EOF capability
+         * flag is not set.
+         */
+        MySQLPacket resp = new MySQLPacket(clientFlags);
+        resp.payload = new QueryResultColumnCount();
+        resp.deserialize(in);
+        System.out.println("[recv]column count:"+resp);
+        QueryResultColumnCount count = (QueryResultColumnCount)resp.payload;
+        int columnCount = count.columnCount.getNumericValue().intValue();
+        for(int i=0;i<columnCount;++i) {
+            resp.payload = new ColumnDefinition();
+            resp.deserialize(in);
+            System.out.println("[recv]column metadata:"+resp);
+        }
+        resp.deserialize(in);
+        System.out.println("[recv]eof marking end of column metadata:"+resp);
+        /*
+         * One or more ProtocolText::ResultsetRow packets, each containing column_count
+         * values
+         * 
+         * ERR_Packet in case of error. Otherwise: If the CLIENT_DEPRECATE_EOF client
+         * capability flag is set, OK_Packet; else EOF_Packet.
+         */
+        for(;;) {
+            TextResultsetRow row = new TextResultsetRow();
+            row.columnCount = columnCount;
+            resp.payload = row;
+            resp.deserialize(in);
+            if(resp.payload instanceof ERRPacket) {
+                System.err.println("[recv]error during receiving result set data:"+resp);
+                System.exit(1);
+            }else if(resp.payload instanceof EOFPacket) {
+                System.out.println("[recv]eof marking end of result set data:"+resp);
+                break;
+            }else if(resp.payload instanceof TextResultsetRow){
+                System.out.println("[recv]result set data:"+resp);
+            }else {
+                System.err.println("[recv]unexpected response during receiving result set data:"+resp);
+                System.exit(1);
             }
         }
     }

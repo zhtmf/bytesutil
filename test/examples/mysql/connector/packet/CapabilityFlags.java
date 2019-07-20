@@ -1,4 +1,4 @@
-package examples.mysql.connector.auxiliary;
+package examples.mysql.connector.packet;
 
 public class CapabilityFlags {
     public static final int CLIENT_PLUGIN_AUTH = 1<<19;

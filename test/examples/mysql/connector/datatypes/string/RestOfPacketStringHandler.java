@@ -3,7 +3,7 @@ package examples.mysql.connector.datatypes.string;
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.packet.common.PayLoadLengthAware;
+import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class RestOfPacketStringHandler extends ModifierHandler<Integer>{

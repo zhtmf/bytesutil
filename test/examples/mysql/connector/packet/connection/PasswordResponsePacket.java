@@ -1,4 +1,4 @@
-package examples.mysql.connector.packet;
+package examples.mysql.connector.packet.connection;
 
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Order;

@@ -3,8 +3,10 @@ package examples.mysql.connector.packet;
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.packet.common.ClientCapabilityAware;
-import examples.mysql.connector.packet.common.PayLoadLengthAware;
+import examples.mysql.connector.packet.common.EOFPacket;
+import examples.mysql.connector.packet.common.ERRPacket;
+import examples.mysql.connector.packet.common.OKPacket;
+import examples.mysql.connector.packet.connection.AuthSwitchRequest;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
@@ -56,7 +58,7 @@ public class MySQLPacket extends DataPacket{
      */
     @Order(1)
     @BYTE
-    public byte sequenceId;
+    public int sequenceId;
     
     @Order(2)
     @Variant(PayLoad.class)

@@ -1,4 +1,4 @@
-package examples.mysql.connector.packet.common;
+package examples.mysql.connector.packet;
 
 public interface PayLoadLengthAware {
     void setPayLoadLength(int payLoadLength);

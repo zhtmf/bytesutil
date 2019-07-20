@@ -1,4 +1,4 @@
-package examples.mysql.connector.packet.query;
+package examples.mysql.connector.packet.command;
 
 import examples.mysql.connector.datatypes.le.LEIntHandler;
 import examples.mysql.connector.datatypes.le.LEInteger;

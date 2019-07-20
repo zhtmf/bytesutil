@@ -1,4 +1,4 @@
-package examples.mysql.connector.packet.query;
+package examples.mysql.connector.packet.command;
 
 import java.io.IOException;
 import java.io.InputStream;

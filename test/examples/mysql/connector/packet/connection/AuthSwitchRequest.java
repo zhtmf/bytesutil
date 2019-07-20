@@ -1,9 +1,9 @@
-package examples.mysql.connector.packet;
+package examples.mysql.connector.packet.connection;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.packet.common.PayLoadLengthAware;
+import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
