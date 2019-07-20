@@ -1,4 +1,4 @@
-package examples.mysql.connector.packet;
+package examples.mysql.connector.packet.command;
 
 import examples.mysql.connector.datatypes.string.RestOfPacketStringHandler;
 import io.github.zhtmf.DataPacket;

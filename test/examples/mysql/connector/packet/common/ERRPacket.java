@@ -1,9 +1,11 @@
-package examples.mysql.connector.packet;
+package examples.mysql.connector.packet.common;
 
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.auxiliary.CapabilityFlags;
+import examples.mysql.connector.packet.CapabilityFlags;
+import examples.mysql.connector.packet.ClientCapabilityAware;
+import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Length;
@@ -17,12 +19,10 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @LittleEndian
 @Unsigned
-public class ERRPacket extends DataPacket{
+public class ERRPacket extends DataPacket implements ClientCapabilityAware, PayLoadLengthAware{
     
-    public int clientCapabilities;
-    
-    //injected by outer MySQLPacket object
-    public int selfLength;
+    private int clientCapabilities;
+    private int payLoadLength;
 
     /**
      * 0x00 or 0xFE the OK packet header
@@ -54,7 +54,7 @@ public class ERRPacket extends DataPacket{
         @Override
         public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             ERRPacket ret = (ERRPacket)entity;
-            return ret.selfLength - currentPosition();
+            return ret.payLoadLength - currentPosition();
         }
 
         @Override
@@ -81,5 +81,19 @@ public class ERRPacket extends DataPacket{
     public String toString() {
         return "ERRPacket [header=" + header + ", errorCode=" + errorCode + ", sqlStateMarker=" + sqlStateMarker
                 + ", sqlSate=" + sqlSate + ", errorMessage=" + errorMessage + "]";
+    }
+
+    @Override
+    public void setPayLoadLength(int payLoadLength) {
+        this.payLoadLength = payLoadLength;
+    }
+
+    @Override
+    public void setClientCapability(int clientCapabilities) {
+        this.clientCapabilities = clientCapabilities;
+    }
+    
+    public int getPayLoadLength() {
+        return this.payLoadLength;
     }
 }

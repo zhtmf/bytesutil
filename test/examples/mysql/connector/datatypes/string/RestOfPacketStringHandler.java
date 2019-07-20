@@ -3,7 +3,7 @@ package examples.mysql.connector.datatypes.string;
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.packet.OKPacket;
+import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class RestOfPacketStringHandler extends ModifierHandler<Integer>{
@@ -15,8 +15,8 @@ public class RestOfPacketStringHandler extends ModifierHandler<Integer>{
          * from the overall packet length minus the current position.
          */
         int length;
-        if(entity instanceof OKPacket) {
-            length = ((OKPacket)entity).payloadLength;
+        if(entity instanceof PayLoadLengthAware) {
+            length = ((PayLoadLengthAware)entity).getPayLoadLength();
         }else {
             throw new IllegalArgumentException(entity.getClass()+"");
         }

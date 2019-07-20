@@ -1,8 +1,9 @@
-package examples.mysql.connector.packet;
+package examples.mysql.connector.packet.connection;
 
 import java.io.IOException;
 import java.io.InputStream;
 
+import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
@@ -15,9 +16,9 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @LittleEndian
 @Unsigned
-public class AuthSwitchRequest extends DataPacket{
+public class AuthSwitchRequest extends DataPacket implements PayLoadLengthAware{
     
-    public int selfLength;
+    private int payLoadLength;
 
     @Order(0)
     @BYTE
@@ -37,7 +38,7 @@ public class AuthSwitchRequest extends DataPacket{
         @Override
         public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             AuthSwitchRequest ret = (AuthSwitchRequest)entity;
-            return ret.selfLength - currentPosition();
+            return ret.payLoadLength - currentPosition();
         }
 
         @Override
@@ -50,5 +51,15 @@ public class AuthSwitchRequest extends DataPacket{
     public String toString() {
         return "AuthSwitchRequest [header=" + header + ", pluginName=" + pluginName
                 + ", pluginProvidedData=" + pluginProvidedData + "]";
+    }
+
+    @Override
+    public void setPayLoadLength(int payLoadLength) {
+       this.payLoadLength = payLoadLength;
+    }
+
+    @Override
+    public int getPayLoadLength() {
+        return this.payLoadLength;
     }
 }
