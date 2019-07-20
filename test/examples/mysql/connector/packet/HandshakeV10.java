@@ -70,7 +70,7 @@ public class HandshakeV10 extends DataPacket{
     
     @Order(9)
     @BYTE
-    //if capabilities & CLIENT_PLUGIN_AUTH { 
+    //if clientCapabilities & CLIENT_PLUGIN_AUTH { 
     //length of the combined auth_plugin_data (scramble), if auth_plugin_data_len is > 0
     //or constant 0x00
     public int authPluginDataLen;

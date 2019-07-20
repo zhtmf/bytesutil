@@ -1,4 +1,4 @@
-package examples.mysql.connector.datatypes.result;
+package examples.mysql.connector.packet.query;
 
 import examples.mysql.connector.datatypes.le.LEIntHandler;
 import examples.mysql.connector.datatypes.le.LEInteger;
@@ -10,6 +10,7 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 
 @LittleEndian
@@ -61,6 +62,13 @@ public class ColumnDefinition extends DataPacket{
         0x00 to 0x51 for decimals
      */
     public int decimals;
+    
+    /**
+     * not specified in 8.0 document
+     */
+    @Order(12)
+    @RAW(2)
+    public byte[] filler;
     
     @Override
     public String toString() {

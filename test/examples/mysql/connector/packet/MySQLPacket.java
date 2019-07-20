@@ -3,7 +3,8 @@ package examples.mysql.connector.packet;
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.auxiliary.CapabilityFlags;
+import examples.mysql.connector.packet.common.ClientCapabilityAware;
+import examples.mysql.connector.packet.common.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
@@ -36,16 +37,6 @@ public class MySQLPacket extends DataPacket{
     }
     
     /**
-     * mysql packets in initial handshake phase does not obey the "first byte
-     * determines payload type" pattern, the packet send by the server is always a
-     * HandshakeV10 or HandshakeV9
-     * <p>
-     * after that the first byte should be used to determine the actual payload type
-     */
-    public int phase = 1;
-    public static final int INITIAL_HANDSHAKE = 0;
-    
-    /**
      * client flag, passed down to OKPacket or other packets 
      * for conditional branches
      */
@@ -76,42 +67,36 @@ public class MySQLPacket extends DataPacket{
         @Override
         public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
             MySQLPacket pac = (MySQLPacket)entity;
-            if(pac.phase == INITIAL_HANDSHAKE) {
-                return new HandshakeV10();
-            }
             int b = is.read();
+            DataPacket ret;
             if(b==0x00) {
-                OKPacket ret = new OKPacket();
-                ret.capabilities = pac.capabilitiesFlag;
-                ret.payloadLength = pac.payloadLength;
-                return ret;
+                ret = new OKPacket();
             }else if(b==0xFF){
-                ERRPacket ret = new ERRPacket();
-                ret.selfLength = pac.payloadLength;
-                return ret;
+                ret = new ERRPacket();
             }else if(b==0xFE) {
-                AuthSwitchRequest ret = new AuthSwitchRequest();
-                ret.selfLength = pac.payloadLength;
-                return ret;
+                //0xFE header can be both AuthSwitchRequest or EOFPacket,
+                //they can only be distinguished by payload length
+                if(pac.payloadLength==5) {
+                    ret = new EOFPacket();
+                }else {
+                    ret = new AuthSwitchRequest();
+                }
             }else {
-                //may be a COM_QUERY response
-                if((pac.capabilitiesFlag & CapabilityFlags.CLIENT_OPTIONAL_RESULTSET_METADATA)!=0) {
-                    //b is metadata_follows
-                    //read next byte
-                    b = is.read();
-                }
-                //check if b is beginning of an int lenec
-                //column count cannot be 0, so there is no ambiguity here
-                if((b>0 && b<251) || (b == 0xFC || b == 0xFD || b == 0xFE)){
-                    TextResultSet rs = new TextResultSet();
-                    rs.clientCapabilities = pac.capabilitiesFlag;
-                    rs.selfLength = pac.payloadLength;
-                    return rs;
-                }
-                throw new IllegalArgumentException(b+"");
+                /*
+                 * some mysql packets does not comply with the "first byte
+                 * determines payload type" pattern, these packets are directly
+                 * specified in other codes
+                 */
+                return pac.payload;
             }
+            if(ret instanceof ClientCapabilityAware) {
+                ((ClientCapabilityAware)ret).setClientCapability(pac.capabilitiesFlag);
+            }
+            if(ret instanceof PayLoadLengthAware) {
+                ((PayLoadLengthAware)ret).setPayLoadLength(pac.payloadLength);
+            }
+            return ret;
         }
-        
     }
 
     @Override

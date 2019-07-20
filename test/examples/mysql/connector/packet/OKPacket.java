@@ -8,6 +8,8 @@ import examples.mysql.connector.datatypes.le.LEIntHandler;
 import examples.mysql.connector.datatypes.le.LEInteger;
 import examples.mysql.connector.datatypes.string.LengthEncodedString;
 import examples.mysql.connector.datatypes.string.RestOfPacketStringHandler;
+import examples.mysql.connector.packet.common.ClientCapabilityAware;
+import examples.mysql.connector.packet.common.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Length;
@@ -31,12 +33,10 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
  */
 @LittleEndian
 @Unsigned
-public class OKPacket extends DataPacket{
+public class OKPacket extends DataPacket implements ClientCapabilityAware, PayLoadLengthAware{
     
-    public long capabilities;
-    
-    public int payloadLength;
-
+    private long clientCapabilities;
+    private int payLoadLength;
     /**
      * 0x00 or 0xFE the OK packet header
      */
@@ -62,25 +62,25 @@ public class OKPacket extends DataPacket{
     @SHORT
     @Conditional(CapabilitiesCondition.class)
     //number of warnings
-    //if capabilities & CLIENT_PROTOCOL_41 {
+    //if clientCapabilities & CLIENT_PROTOCOL_41 {
     public int warnings;
     
     @Order(5)
     @Conditional(CapabilitiesCondition.class)
-    //if capabilities & CLIENT_SESSION_TRACK
+    //if clientCapabilities & CLIENT_SESSION_TRACK
     public LengthEncodedString info;
     
     @Order(6)
     @Conditional(CapabilitiesCondition.class)
     //human readable status information
-    //if capabilities & CLIENT_SESSION_TRACK
+    //if clientCapabilities & CLIENT_SESSION_TRACK
     //if status_flags & SERVER_SESSION_STATE_CHANGED {
     public LengthEncodedString sessionStatusInfo;
     
     @Order(7)
     @CHAR
     @Conditional(CapabilitiesCondition.class)
-    //if ! capabilities & CLIENT_SESSION_TRACK
+    //if ! clientCapabilities & CLIENT_SESSION_TRACK
     @Length(handler=RestOfPacketStringHandler.class)
     public String info2;
     
@@ -97,18 +97,18 @@ public class OKPacket extends DataPacket{
         public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             OKPacket packet = (OKPacket)entity;
             if("warnings".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    && (packet.capabilities & CapabilityFlags.CLIENT_TRANSACTIONS)==0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
+                    && (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)==0;
             }else if("info".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0;
             }else if("sessionStatusInfo".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0
                     && (packet.statusFlags & CapabilityFlags.SERVER_SESSION_STATE_CHANGED)!=0;
             }else if("info2".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_SESSION_TRACK)==0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)==0;
             }else if("statusFlags".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    || (packet.capabilities & CapabilityFlags.CLIENT_TRANSACTIONS)!=0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
+                    || (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)!=0;
             }else {
                 throw new IllegalStateException();
             }
@@ -118,22 +118,36 @@ public class OKPacket extends DataPacket{
         public Boolean handleSerialize0(String fieldName, Object entity) {
             OKPacket packet = (OKPacket)entity;
             if("warnings".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    && (packet.capabilities & CapabilityFlags.CLIENT_TRANSACTIONS)==0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
+                    && (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)==0;
             }else if("info".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0;
             }else if("sessionStatusInfo".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)!=0
                     && (packet.statusFlags & CapabilityFlags.SERVER_SESSION_STATE_CHANGED)!=0;
             }else if("info2".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_SESSION_TRACK)==0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_SESSION_TRACK)==0;
             }else if("statusFlags".equals(fieldName)) {
-                return (packet.capabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
-                    || (packet.capabilities & CapabilityFlags.CLIENT_TRANSACTIONS)!=0;
+                return (packet.clientCapabilities & CapabilityFlags.CLIENT_PROTOCOL_41)!=0
+                    || (packet.clientCapabilities & CapabilityFlags.CLIENT_TRANSACTIONS)!=0;
             }else {
                 throw new IllegalStateException();
             }
         }
         
+    }
+
+    @Override
+    public void setClientCapability(int clientCapabilities) {
+        this.clientCapabilities = clientCapabilities;
+    }
+
+    @Override
+    public void setPayLoadLength(int payLoadLength) {
+        this.payLoadLength = payLoadLength;
+    }
+    
+    public int getPayLoadLength() {
+        return this.payLoadLength;
     }
 }

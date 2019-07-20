@@ -8,7 +8,6 @@ import java.security.MessageDigest;
 import java.util.Arrays;
 
 import examples.mysql.connector.auxiliary.CapabilityFlags;
-import examples.mysql.connector.datatypes.result.ColumnDefinition;
 import examples.mysql.connector.packet.AuthSwitchRequest;
 import examples.mysql.connector.packet.COMInitDB;
 import examples.mysql.connector.packet.COMQuery;
@@ -17,7 +16,8 @@ import examples.mysql.connector.packet.HandshakeV10;
 import examples.mysql.connector.packet.MySQLPacket;
 import examples.mysql.connector.packet.OKPacket;
 import examples.mysql.connector.packet.PasswordResponsePacket;
-import examples.mysql.connector.packet.TextResultSet;
+import examples.mysql.connector.packet.query.ColumnDefinition;
+import examples.mysql.connector.packet.query.QueryResultColumnCount;
 
 public class Test {
     
@@ -57,7 +57,7 @@ public class Test {
             //################receive initial server handshake###################
             
             MySQLPacket initialHandshake = new MySQLPacket(0);
-            initialHandshake.phase = MySQLPacket.INITIAL_HANDSHAKE;
+            initialHandshake.payload = new HandshakeV10();
             initialHandshake.deserialize(in);
             System.out.println("[recv]initial server handshake:"+initialHandshake);
             
@@ -89,7 +89,7 @@ public class Test {
             
             seq.reset(initialHandshake.sequenceId);
             
-            //################send client flags and client capabilities################
+            //################send client flags and client clientCapabilities################
             
             {
                 HandshakeResponse41 resp = new HandshakeResponse41();
@@ -167,25 +167,31 @@ public class Test {
             {
                 seq.reset();
                 COMQuery query = new COMQuery();
-                query.query = "select version(),CURRENT_TIMESTAMP";
+                query.query = "select version(),CURRENT_TIMESTAMP,222 as cnt";
                 MySQLPacket packet = new MySQLPacket(query,seq.get());
                 System.out.println("[send]query:"+packet);
                 packet.serialize(os);
                 
+                /*
+                 * The column definitions part starts with a packet containing the column-count,
+                 * followed by as many Column Definition packets as there are columns and
+                 * terminated by an EOF_Packet. packet if the CLIENT_DEPRECATE_EOF capability
+                 * flag is not set.
+                 */
                 MySQLPacket resp = new MySQLPacket(clientFlags);
+                resp.payload = new QueryResultColumnCount();
                 resp.deserialize(in);
-                System.out.println("[recv]query response:"+resp);
-                seq.reset(resp.sequenceId);
-                
-                if (packet.payload instanceof TextResultSet) {
-                    TextResultSet rs = (TextResultSet) packet.payload;
-                    for (ColumnDefinition def : rs.fieldMetaData) {
-                        System.out.println(def);
-                    }
-                } else {
-                    System.err.println(packet);
+                System.out.println("[recv]column count:"+resp);
+                QueryResultColumnCount count = (QueryResultColumnCount)resp.payload;
+                for(int i=0;i<count.columnCount.getNumericValue().intValue();++i) {
+                    resp.payload = new ColumnDefinition();
+                    resp.deserialize(in);
+                    System.out.println("[recv]column metadata:"+resp);
                 }
+                resp.deserialize(in);
+                System.out.println("[recv]eof marking end of column metadata:"+resp);
                 
+                seq.reset(resp.sequenceId);
             }
         }
     }

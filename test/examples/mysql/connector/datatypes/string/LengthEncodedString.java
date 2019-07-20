@@ -50,4 +50,9 @@ public class LengthEncodedString extends DataPacket{
             return ((LengthEncodedString)entity).length.getNumericValue().intValue();
         }
     }
+
+    @Override
+    public String toString() {
+        return "LengthEncodedString [length=" + length + ", actualString=" + actualString + "]";
+    }
 }
