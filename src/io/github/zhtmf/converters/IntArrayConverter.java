@@ -23,7 +23,8 @@ class IntArrayConverter implements Converter<int[]>{
             if(length<0) {
                 writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
             }else if(length!=value.length) {
-                throw new ExtendedConversionException(ctx,
+                throw new ExtendedConversionException(
+                        ctx.enclosingEntityClass,ctx.name,
                         "defined length "+length+" is not the same as length "+value.length+" of the array")
                             .withSiteAndOrdinal(IntArrayConverter.class, 1);
             }

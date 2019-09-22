@@ -393,7 +393,8 @@ class StreamUtils {
         for(int i=0;i<len;++i) {
             char c = str.charAt(i);
             if(!(c>='0' && c<='9')) {
-                throw new ExtendedConversionException(ctx,
+                throw new ExtendedConversionException(
+                        ctx.enclosingEntityClass,ctx.name,
                         "only numeric value is supported in bcd")
                             .withSiteAndOrdinal(StreamUtils.class, 14);
             }
@@ -426,7 +427,8 @@ class StreamUtils {
                 writeBytes(dest, ending);
             }
         }else if(length!=bytes.length) {
-            throw new ExtendedConversionException(ctx,
+            throw new ExtendedConversionException(
+                    ctx.enclosingEntityClass,ctx.name,
                     String.format("length of string representation [%s] does not equals with declared CHAR length [%d]"
                                 ,str,length))
                         .withSiteAndOrdinal(StreamUtils.class, 22);
@@ -439,7 +441,9 @@ class StreamUtils {
             throws ConversionException, IOException {
         if(val<0) {
             //implementation choice
-            throw new ExtendedConversionException(ctx,"negative number should not be converted to CHAR")
+            throw new ExtendedConversionException(
+                    ctx.enclosingEntityClass,ctx.name
+                    ,"negative number should not be converted to CHAR")
                         .withSiteAndOrdinal(StreamUtils.class, 0);
         }
         String str = Long.toString(val);
@@ -450,7 +454,9 @@ class StreamUtils {
             throws ConversionException, IOException {
         if(val.compareTo(BigInteger.ZERO)<0) {
             //implementation choice
-            throw new ExtendedConversionException(ctx,"negative number should not be converted to CHAR")
+            throw new ExtendedConversionException(
+                    ctx.enclosingEntityClass,ctx.name
+                    ,"negative number should not be converted to CHAR")
                         .withSiteAndOrdinal(StreamUtils.class, 18);
         }
         String str = val.toString();
@@ -477,7 +483,9 @@ class StreamUtils {
             }
         }
         if(error!=null) {
-            throw new ExtendedConversionException(ctx, error)
+            throw new ExtendedConversionException(
+                    ctx.enclosingEntityClass,ctx.name, 
+                    error)
                     .withSiteAndOrdinal(StreamUtils.class, 13);
         }
         if(type!=null) {
@@ -513,7 +521,7 @@ class StreamUtils {
             }
         }
         if(error!=null) {
-            throw new ExtendedConversionException(ctx, error)
+            throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name, error)
                     .withSiteAndOrdinal(StreamUtils.class, 19);
         }
         //no need to check the range here
@@ -565,7 +573,9 @@ class StreamUtils {
          * detect.
          */
         if(numChars.length>1 && numChars[0]=='0') {
-            throw new ExtendedConversionException(ctx, "streams contains numeric string with leading zero")
+            throw new ExtendedConversionException(
+                    ctx.enclosingEntityClass,ctx.name,
+                    "streams contains numeric string with leading zero")
                     .withSiteAndOrdinal(StreamUtils.class, 20);
         }
         return numChars;

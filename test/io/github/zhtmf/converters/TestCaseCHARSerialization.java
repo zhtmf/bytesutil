@@ -125,4 +125,69 @@ public class TestCaseCHARSerialization {
             TestUtils.assertExactException(e, StreamUtils.class, 13);
         }
     }
+    @Test
+    public void test3() throws ConversionException {
+        class EntityX extends DataPacket{
+            @CHAR(3)
+            @Order(0)
+            @Length(3)
+            public String str;
+        }
+        try {
+            new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, ClassInfo.class, 11);
+            return;
+        }
+    }
+    @Test
+    public void test4() throws ConversionException {
+        class EntityX extends DataPacket{
+            @CHAR(3)
+            @Order(0)
+            @EndsWith({0x0})
+            public String str;
+        }
+        try {
+            new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, ClassInfo.class, 10);
+            return;
+        }
+    }
+    @Test
+    public void test5() throws ConversionException {
+        class EntityX extends DataPacket{
+            @CHAR
+            @Order(0)
+            @Length(3)
+            @EndsWith({0x0})
+            public String str;
+        }
+        try {
+            new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, ClassInfo.class, 10);
+            return;
+        }
+    }
+    @Test
+    public void test6() throws ConversionException {
+        class EntityX extends DataPacket{
+            @CHAR
+            @Order(0)
+            @EndsWith({})
+            public String str;
+        }
+        try {
+            new EntityX().serialize(TestUtils.newByteArrayOutputStream());
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 11);
+            return;
+        }
+    }
 }

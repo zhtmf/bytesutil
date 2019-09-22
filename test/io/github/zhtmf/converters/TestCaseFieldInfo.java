@@ -1,4 +1,4 @@
-package test.exceptions;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -32,11 +32,11 @@ import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.FieldInfo;
+import io.github.zhtmf.converters.TestCaseFieldInfo.Entity6.CharsetHandler;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 import test.TestUtils;
-import test.exceptions.TestCaseFieldInfo.Entity6.CharsetHandler;
 
 public class TestCaseFieldInfo {
     

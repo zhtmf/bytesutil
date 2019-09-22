@@ -42,7 +42,7 @@ import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintExce
  * 
  * @author dzh
  */
-public class FieldInfo{
+class FieldInfo{
     private final Field field;
     protected final ClassInfo base;
     private final Map<Class<? extends Annotation>,Annotation> annotations;
@@ -210,8 +210,9 @@ public class FieldInfo{
                     try {
                         tmp = cs.handler().newInstance();
                     } catch (Exception e) {
-                        //TODO: wrap exception
-                        throw forContext(base.entityClass, name, "Charset ModifierHandler cannot be initialized by no-arg contructor")
+                        throw forContext(base.entityClass, name
+                                ,"Charset ModifierHandler cannot be initialized by no-arg contructor"
+                                ,e)
                         .withSiteAndOrdinal(FieldInfo.class, 6);
                     }
                     charset = null;
@@ -470,7 +471,7 @@ public class FieldInfo{
         return "FieldInfo:Entity["+enclosingEntityClass+"],Field:["+name+"]";
     }
     
-    //##########
+    //utility methods used by converters
     
     final Charset charsetForSerializingCHAR(Object self) {
         Charset cs = this.charset;
@@ -616,7 +617,7 @@ public class FieldInfo{
         }
     }
     
-    //##########
+    //↑ utility methods used by converters
     
     private <T> boolean isDummy(Class<? extends ModifierHandler<T>> mc) {
         return mc.getName().startsWith("io.github.zhtmf.annotations.modifiers.PlaceHolderHandler");
@@ -716,7 +717,7 @@ public class FieldInfo{
 
     }
     
-    static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error) {
+    static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error, Exception cause) {
         StringBuilder ret = new StringBuilder();
         if(entity!=null) {
             ret.append("Entity:"+entity);
@@ -731,6 +732,14 @@ public class FieldInfo{
             ret.append(", ");
         }
         ret.append("Error:").append(error);
-        return new UnsatisfiedConstraintException(ret.toString());
+        UnsatisfiedConstraintException ex = new UnsatisfiedConstraintException(ret.toString());
+        if(cause!=null) {
+            ex.initCause(cause);
+        }
+        return ex;
+    }
+    
+    static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error) {
+        return forContext(entity,field,error,null);
     }
 }

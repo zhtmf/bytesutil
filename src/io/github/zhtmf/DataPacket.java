@@ -2,13 +2,8 @@ package io.github.zhtmf;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.zhtmf.annotations.modifiers.Order;
-import io.github.zhtmf.converters.ClassInfo;
-import io.github.zhtmf.converters.Converter;
-import io.github.zhtmf.converters.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
  * <p>
@@ -38,10 +33,6 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
  */
 public abstract class DataPacket {
     
-    //thread-safe map of class info objects
-    private static final ConcurrentHashMap<Class<?>,ClassInfo> 
-        classInfoMap = new ConcurrentHashMap<>();
-    
     /**
      * <p>
      * Serialize entity class into the specified output stream.
@@ -62,41 +53,7 @@ public abstract class DataPacket {
      *             if <tt>dest</tt> is null.
      */
     public void serialize(OutputStream dest) throws ConversionException, IllegalArgumentException{
-        if(dest==null) {
-            throw new NullPointerException();
-        }
-        
-        //lazy initialization
-        ClassInfo ci = getClassInfo();
-        
-        for(FieldInfo ctx:ci.fieldInfoList()) {
-            
-            if(auxiliaryAccess.shouldSkipFieldForSerializing(ctx, this))
-                continue;
-            
-            Object value = ctx.get(this);
-            if(value==null) {
-                /*
-                 * null values shall not be permitted as it may be impossible 
-                 * to deserialize the byte sequence generated
-                 * Note: this modification causes incompatibility with former releases
-                 */
-                throw new ExtendedConversionException(this.getClass(),ctx.name,
-                        "this field is intended to be processed but its value is null")
-                        .withSiteAndOrdinal(DataPacket.class, 0);
-            }
-            
-            try {
-                @SuppressWarnings("unchecked")
-                Converter<Object> cv = (Converter<Object>)ctx.converter;
-                cv.serialize(value, dest, ctx, this);
-            } catch(ConversionException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new ExtendedConversionException(this.getClass(),ctx.name,e)
-                .withSiteAndOrdinal(DataPacket.class, 4);
-            }
-        }
+        auxiliaryAccess.serialize(this, dest);
     }
     
     /**
@@ -127,30 +84,9 @@ public abstract class DataPacket {
      *             if <tt>src</tt> is null.
      */
     public void deserialize(InputStream src) throws ConversionException, IllegalArgumentException {
-        if(src==null) {
-            throw new NullPointerException();
-        }
-        deserialize0(auxiliaryAccess.wrap(src));
+        auxiliaryAccess.deserialize(this, src);
     }
     
-    private void deserialize0(InputStream _src) throws ConversionException {
-        ClassInfo ci = getClassInfo();
-        for(FieldInfo ctx:ci.fieldInfoList()) {
-            Object value = null;
-            @SuppressWarnings("unchecked")
-            Converter<Object> cv = (Converter<Object>)ctx.converter;
-            try {
-                value = cv.deserialize(_src, ctx, this);
-            } catch(ConversionException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new ExtendedConversionException(this.getClass(),ctx.name,e)
-                        .withSiteAndOrdinal(DataPacket.class, 14);
-            }
-            ctx.set(this, value);
-        }
-    }
-
     /**
      * Calculate the length in bytes of this object as if it was serialized to an
      * output stream.
@@ -168,22 +104,19 @@ public abstract class DataPacket {
      * @return length in bytes
      */
     public int length() throws IllegalArgumentException{
-        ClassInfo ci = getClassInfo();
-        int ret = 0;
-        for(FieldInfo ctx:ci.fieldInfoList()) {
-            ret += auxiliaryAccess.calculateFieldLength(ctx, this);
-        }
-        return ret;
+        return auxiliaryAccess.length(this);
     }
     
     public static interface AuxiliaryAccess{
-        InputStream wrap(InputStream in);
-        int calculateFieldLength(FieldInfo ctx,Object self);
-        boolean shouldSkipFieldForSerializing(FieldInfo ctx, Object self);
+        int length(Object self) throws IllegalArgumentException;
+        void serialize(Object self,OutputStream dest)throws ConversionException, IllegalArgumentException;
+        void deserialize(Object self,InputStream src) throws ConversionException, IllegalArgumentException;
     }
     private static AuxiliaryAccess auxiliaryAccess;
     public static final void setAuxiliaryAccess(AuxiliaryAccess auxiliaryAccess) {
-        DataPacket.auxiliaryAccess = auxiliaryAccess;
+        if(DataPacket.auxiliaryAccess==null) {
+            DataPacket.auxiliaryAccess = auxiliaryAccess;
+        }
     }
     
     static {
@@ -192,18 +125,5 @@ public abstract class DataPacket {
         } catch (ClassNotFoundException e) {
             throw new Error(e);
         }
-    }
-    
-    //lazy initialization
-    private ClassInfo getClassInfo() {
-        Class<?> self = this.getClass();
-        ClassInfo ci = classInfoMap.get(self);
-        if(ci==null) {
-            //may suffer from duplicated creating
-            //but the penalty is trivial 
-            ci = new ClassInfo(self);
-            classInfoMap.put(self, ci);
-        }
-        return ci;
     }
 }

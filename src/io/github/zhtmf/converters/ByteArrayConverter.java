@@ -21,7 +21,7 @@ class ByteArrayConverter implements Converter<byte[]>{
             if(length<0) {
                 StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
             }else if(length!=value.length) {
-                throw new ExtendedConversionException(ctx,
+                throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name,
                         "defined length "+length+" is not the same as length "+value.length+" of the array")
                             .withSiteAndOrdinal(ByteArrayConverter.class, 1);
             }

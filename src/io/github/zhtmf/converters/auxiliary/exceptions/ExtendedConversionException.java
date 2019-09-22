@@ -1,7 +1,6 @@
 package io.github.zhtmf.converters.auxiliary.exceptions;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.FieldInfo;
 
 /**
  * Sub class for code coverage purposes.
@@ -19,12 +18,6 @@ public class ExtendedConversionException extends ConversionException implements 
     }
     public ExtendedConversionException(Class<?> enclosingEntityClass, String fieldName, Throwable cause) {
         super(enclosingEntityClass, fieldName, cause);
-    }
-    public ExtendedConversionException(FieldInfo ctx, String msg, Throwable cause) {
-        super(ctx, msg, cause);
-    }
-    public ExtendedConversionException(FieldInfo ctx, String msg) {
-        super(ctx, msg);
     }
     public ConversionException withSiteAndOrdinal(Class<?> site, int ordinal) {
         this.site = site;

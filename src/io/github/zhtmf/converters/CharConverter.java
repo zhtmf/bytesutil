@@ -34,7 +34,7 @@ class CharConverter implements Converter<Character> {
             }
             String str = new String(StreamUtils.readBytes(is, length),cs);
             if(str.length()!=1) {
-                throw new ExtendedConversionException(ctx,
+                throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name,
                         "length of decoded string ["+str+"] using declared charset ["+cs+"] is not 1")
                             .withSiteAndOrdinal(CharConverter.class, 1);
             }

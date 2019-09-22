@@ -1,6 +1,7 @@
 package io.github.zhtmf.converters;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -17,7 +18,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
@@ -27,6 +30,7 @@ import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.auxiliary.DataType;
+import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
 /**
@@ -36,7 +40,7 @@ import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintExce
  * This class itself is thread-safe after construction
  * @author dzh
  */
-public class ClassInfo {
+class ClassInfo {
     
     final Class<?> entityClass;
     
@@ -208,6 +212,7 @@ public class ClassInfo {
     }
     
     /**
+     * TODO: delete this method
      * Get a <b>copy</b> of FieldInfo list
      * @return  a <b>copy</b> of FieldInfo list
      */
@@ -247,141 +252,231 @@ public class ClassInfo {
         
     };
     
-    static {
-        DataPacket.setAuxiliaryAccess(new DataPacket.AuxiliaryAccess() {
+    //----------methods and fields originally defined in DataPacket-----------
+    
+    //thread-safe map of class info objects
+    private static final ConcurrentHashMap<Class<?>,ClassInfo> 
+    classInfoMap = new ConcurrentHashMap<>();
+    //lazy initialization
+    private static ClassInfo getClassInfo(Object entity) {
+        Class<?> self = entity.getClass();
+        ClassInfo ci = classInfoMap.get(self);
+        if(ci==null) {
+            //may suffer from duplicated creating
+            //but the penalty is trivial 
+            ci = new ClassInfo(self);
+            classInfoMap.put(self, ci);
+        }
+        return ci;
+    }
+    
+    public static void serialize(Object self,OutputStream dest)
+            throws ConversionException, IllegalArgumentException{
+        if(dest==null) {
+            throw new NullPointerException();
+        }
+        
+        //lazy initialization
+        ClassInfo ci = getClassInfo(self);
+        
+        for(FieldInfo ctx:ci.fieldInfoList()) {
             
-            @Override
-            public InputStream wrap(InputStream in) {
-                return MarkableInputStream.wrap(in);
+            if(ctx.shouldSkipFieldForSerializing(self))
+                continue;
+            
+            Object value = ctx.get(self);
+            if(value==null) {
+                /*
+                 * null values shall not be permitted as it may be impossible 
+                 * to deserialize the byte sequence generated
+                 * Note: this modification causes incompatibility with former releases
+                 */
+                throw new ExtendedConversionException(self.getClass(),ctx.name,
+                        "this field is intended to be processed but its value is null")
+                        .withSiteAndOrdinal(DataPacket.class, 0);
             }
             
-            @Override
-            public int calculateFieldLength(FieldInfo ctx,Object self) {
-                if(ctx.shouldSkipFieldForSerializing(self)) {
-                    return 0;
-                }
-                Object value = ctx.get(self);
-                if(value==null) {
-                    throw new UnsatisfiedConstraintException(
-                            ctx.name + " is intended to be processed but its value is null")
-                            .withSiteAndOrdinal(DataPacket.class, 20);
-                            
-                }
-                if(ctx.isEntity) {
-                    DataPacket dp = (DataPacket)value;
-                    return dp.length();
-                }
-                int ret = 0;
-                int length = 0;
-                if(ctx.listComponentClass!=null) {
-                    length = ctx.lengthForList(self);
-                    @SuppressWarnings("rawtypes")
-                    List lst = (List)value;
-                    if(length<0) {
-                        //write ahead
-                        //size of the write-ahead length should be considered
-                        //even the list itself is null or empty
-                        ret += DataTypeOperations.of(ctx.lengthType()).size();
-                        //use the defined length rather than the actual list size
-                        length = lst.size();
-                    }
-                    if(ctx.isEntityList) {
-                        for(int i=0;i<length;++i) {
-                            ret += ((DataPacket)lst.get(i)).length();
-                        }
-                        return ret;
-                    }
-                }else {
-                    length = 1;
-                }
-                DataType type = ctx.dataType;
-                switch(type) {
-                case BCD:
-                    ret += ((BCD)ctx.localAnnotation(BCD.class)).value() * length;
-                    break;
-                case BYTE:
-                case SHORT:
-                case INT:
-                case LONG:
-                case INT3:
-                case INT5:
-                case INT6:
-                case INT7:
-                    ret += DataTypeOperations.of(type).size() * length;
-                    break;
-                case CHAR:{
-                    int size = ctx.lengthForSerializingCHAR(self);
-                    if(size>=0) {
-                        //explicitly declared size
-                        ret += size * length;
-                    }else {
-                        //dynamic length written to stream prior to serializing
-                        //or strings terminated by specific sequence of bytes
-                        //size should be retrieved by inspecting the value itself
-                        //or in case of a list, inspecting values for EACH element
-                        size = 0;
-                        if(value instanceof Date) {
-                            size += DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
-                            size += FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format((Date)value).length();
-                        }else {
-                            Charset cs = ctx.charsetForSerializingCHAR(self);
-                            int fixedOverHead;
-                            if(ctx.endsWith!=null) {
-                                fixedOverHead = ctx.endsWith.length;
-                            }else {
-                                fixedOverHead = DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
-                            }
-                            if(value instanceof List) {
-                                @SuppressWarnings("rawtypes")
-                                List lst = (List)value;
-                                int lstSize = lst.size();
-                                size += fixedOverHead*lstSize;
-                                for(int i=0;i<lstSize;++i) {
-                                    size += lst.get(i).toString().getBytes(cs).length;
-                                }
-                            }else {
-                                size += fixedOverHead;
-                                size += value.toString().getBytes(cs).length;
-                            }
-                        }
-                        ret += size;
-                    }
-                    break;
-                }
-                case RAW:{
-                    int size = ctx.lengthForSerializingRAW(self);
-                    if(size>=0) {
-                        ret += size * length;
-                    }else {
-                        size = 0;
-                        DataTypeOperations lengthType = DataTypeOperations.of(ctx.annotation(Length.class).type());
-                        if(value instanceof List) {
-                            @SuppressWarnings("rawtypes")
-                            List lst = (List)value;
-                            for(int i=0;i<lst.size();++i) {
-                                value = lst.get(i);
-                                size += lengthType.size();
-                                size += Array.getLength(value);
-                            }
-                        }else {
-                            size += lengthType.size();
-                            size += Array.getLength(value);
-                        }
-                        ret += size;
-                    }
-                    break;
-                }
-                case USER_DEFINED:
-                    int size = ctx.lengthForSerializingUserDefinedType(self);
-                    ret += size * length;
-                    break;
+            try {
+                @SuppressWarnings("unchecked")
+                Converter<Object> cv = (Converter<Object>)ctx.converter;
+                cv.serialize(value, dest, ctx, self);
+            } catch(ConversionException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ExtendedConversionException(self.getClass(),ctx.name,e)
+                .withSiteAndOrdinal(DataPacket.class, 4);
+            }
+        }
+    }
+    
+    public static void deserialize(Object self,InputStream src) throws ConversionException, IllegalArgumentException {
+        if(src==null) {
+            throw new NullPointerException();
+        }
+        InputStream _src = MarkableInputStream.wrap(src);
+        ClassInfo ci = getClassInfo(self);
+        for(FieldInfo ctx:ci.fieldInfoList()) {
+            Object value = null;
+            @SuppressWarnings("unchecked")
+            Converter<Object> cv = (Converter<Object>)ctx.converter;
+            try {
+                value = cv.deserialize(_src, ctx, self);
+            } catch(ConversionException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new ExtendedConversionException(self.getClass(),ctx.name,e)
+                        .withSiteAndOrdinal(DataPacket.class, 14);
+            }
+            ctx.set(self, value);
+        }
+    }
+    
+    public static int length(Object self) throws IllegalArgumentException{
+        ClassInfo ci = getClassInfo(self);
+        int ret = 0;
+        for(FieldInfo ctx:ci.fieldInfoList()) {
+            ret += calculateFieldLength(ctx, self);
+        }
+        return ret;
+    }
+    
+    private static int calculateFieldLength(FieldInfo ctx,Object self) {
+        if(ctx.shouldSkipFieldForSerializing(self)) {
+            return 0;
+        }
+        Object value = ctx.get(self);
+        if(value==null) {
+            throw new UnsatisfiedConstraintException(
+                    ctx.name + " is intended to be processed but its value is null")
+                    .withSiteAndOrdinal(DataPacket.class, 20);
+                    
+        }
+        if(ctx.isEntity) {
+            DataPacket dp = (DataPacket)value;
+            return dp.length();
+        }
+        int ret = 0;
+        int length = 0;
+        if(ctx.listComponentClass!=null) {
+            length = ctx.lengthForList(self);
+            @SuppressWarnings("rawtypes")
+            List lst = (List)value;
+            if(length<0) {
+                //write ahead
+                //size of the write-ahead length should be considered
+                //even the list itself is null or empty
+                ret += DataTypeOperations.of(ctx.lengthType()).size();
+                //use the defined length rather than the actual list size
+                length = lst.size();
+            }
+            if(ctx.isEntityList) {
+                for(int i=0;i<length;++i) {
+                    ret += ((DataPacket)lst.get(i)).length();
                 }
                 return ret;
             }
-
-            @Override
-            public boolean shouldSkipFieldForSerializing(FieldInfo ctx, Object self) {
-                return ctx.shouldSkipFieldForSerializing(self);
+        }else {
+            length = 1;
+        }
+        DataType type = ctx.dataType;
+        switch(type) {
+        case BCD:
+            ret += ((BCD)ctx.localAnnotation(BCD.class)).value() * length;
+            break;
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case INT3:
+        case INT5:
+        case INT6:
+        case INT7:
+            ret += DataTypeOperations.of(type).size() * length;
+            break;
+        case CHAR:{
+            int size = ctx.lengthForSerializingCHAR(self);
+            if(size>=0) {
+                //explicitly declared size
+                ret += size * length;
+            }else {
+                //dynamic length written to stream prior to serializing
+                //or strings terminated by specific sequence of bytes
+                //size should be retrieved by inspecting the value itself
+                //or in case of a list, inspecting values for EACH element
+                size = 0;
+                if(value instanceof Date) {
+                    size += DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
+                    size += FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format((Date)value).length();
+                }else {
+                    Charset cs = ctx.charsetForSerializingCHAR(self);
+                    int fixedOverHead;
+                    if(ctx.endsWith!=null) {
+                        fixedOverHead = ctx.endsWith.length;
+                    }else {
+                        fixedOverHead = DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
+                    }
+                    if(value instanceof List) {
+                        @SuppressWarnings("rawtypes")
+                        List lst = (List)value;
+                        int lstSize = lst.size();
+                        size += fixedOverHead*lstSize;
+                        for(int i=0;i<lstSize;++i) {
+                            size += lst.get(i).toString().getBytes(cs).length;
+                        }
+                    }else {
+                        size += fixedOverHead;
+                        size += value.toString().getBytes(cs).length;
+                    }
+                }
+                ret += size;
+            }
+            break;
+        }
+        case RAW:{
+            int size = ctx.lengthForSerializingRAW(self);
+            if(size>=0) {
+                ret += size * length;
+            }else {
+                size = 0;
+                DataTypeOperations lengthType = DataTypeOperations.of(ctx.annotation(Length.class).type());
+                if(value instanceof List) {
+                    @SuppressWarnings("rawtypes")
+                    List lst = (List)value;
+                    for(int i=0;i<lst.size();++i) {
+                        value = lst.get(i);
+                        size += lengthType.size();
+                        size += Array.getLength(value);
+                    }
+                }else {
+                    size += lengthType.size();
+                    size += Array.getLength(value);
+                }
+                ret += size;
+            }
+            break;
+        }
+        case USER_DEFINED:
+            int size = ctx.lengthForSerializingUserDefinedType(self);
+            ret += size * length;
+            break;
+        }
+        return ret;
+    }
+    
+    static {
+        
+        DataPacket.setAuxiliaryAccess(new DataPacket.AuxiliaryAccess() {
+            public void serialize(Object self,OutputStream dest)
+                    throws ConversionException, IllegalArgumentException{
+                ClassInfo.serialize(self, dest);
+            }
+            public void deserialize(Object self,InputStream src)
+                    throws ConversionException, IllegalArgumentException{
+                ClassInfo.deserialize(self, src);
+            }
+            
+            public int length(Object self) throws IllegalArgumentException{
+                return ClassInfo.length(self);
             }
         });
     }

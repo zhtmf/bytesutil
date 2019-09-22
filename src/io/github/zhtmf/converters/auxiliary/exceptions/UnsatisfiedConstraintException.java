@@ -11,7 +11,8 @@ public class UnsatisfiedConstraintException extends IllegalArgumentException imp
     private Class<?> site;
     private int ordinal;
     public UnsatisfiedConstraintException(String s) {
-        this(s,null);
+        //do not call super(s,null) as initCause can only be called once
+        super(s);
     }
     public UnsatisfiedConstraintException(Throwable cause) {
         this(null,cause);

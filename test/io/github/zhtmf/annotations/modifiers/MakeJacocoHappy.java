@@ -8,8 +8,6 @@ import java.math.BigInteger;
 import org.junit.Test;
 
 import io.github.zhtmf.DataPacket;
-import io.github.zhtmf.annotations.types.INT;
-import io.github.zhtmf.converters.ClassInfo;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import test.TestUtils;
@@ -74,15 +72,6 @@ public class MakeJacocoHappy {
                 mtd.invoke(DataType.USER_DEFINED,BigInteger.ZERO,Boolean.TRUE);
             } catch (Exception e) {
                 TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            {
-                class Entity extends DataPacket{@Order(0)@INT int field1;}
-                Entity obj = new Entity();
-                obj.serialize(TestUtils.newByteArrayOutputStream());
-                Method mtd = DataPacket.class.getDeclaredMethod("getClassInfo");
-                mtd.setAccessible(true);
-                ClassInfo ci = (ClassInfo) mtd.invoke(obj);
-                ci.fieldInfoList().get(0).toString();
             }
         }
     }

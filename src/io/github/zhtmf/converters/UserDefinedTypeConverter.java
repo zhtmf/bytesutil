@@ -25,7 +25,7 @@ class UserDefinedTypeConverter implements Converter<Object> {
                 );
         ctx.userDefinedConverter.serialize(value,output);
         if(output.written()!=output.length()) {
-            throw new ExtendedConversionException(ctx,
+            throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name,
                     "should write exactly "+output.length()+" bytes to output for this user defined type")
                         .withSiteAndOrdinal(UserDefinedTypeConverter.class, 1);
         }
@@ -40,7 +40,7 @@ class UserDefinedTypeConverter implements Converter<Object> {
                         , ctx.charsetForDeserializingCHAR(self, is)
                         ));
         if(ret==null) {
-            throw new ExtendedConversionException(ctx,
+            throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name,
                     "should return non-null value from custom TypeConverters")
                         .withSiteAndOrdinal(UserDefinedTypeConverter.class, 2);
         }

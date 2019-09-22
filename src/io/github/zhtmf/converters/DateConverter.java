@@ -67,7 +67,8 @@ class DateConverter implements Converter<Date>{
             default:throw new Error("cannot happen");
             }
         } catch (ParseException e) {
-            throw new ExtendedConversionException(ctx,
+            throw new ExtendedConversionException(
+                    ctx.enclosingEntityClass,ctx.name,
                     "parser error",e)
                         .withSiteAndOrdinal(DateConverter.class, 2);
         }
