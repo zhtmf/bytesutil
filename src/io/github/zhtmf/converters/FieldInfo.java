@@ -1,19 +1,21 @@
-package io.github.zhtmf.converters.auxiliary;
-
-import static io.github.zhtmf.converters.auxiliary.Utils.forContext;
+package io.github.zhtmf.converters;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.TypeConverter;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
@@ -27,10 +29,13 @@ import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
-import io.github.zhtmf.converters.ConditionalConverter;
-import io.github.zhtmf.converters.Converter;
-import io.github.zhtmf.converters.Converters;
+import io.github.zhtmf.converters.auxiliary.DataType;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
+import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
 /**
  * Internal class that stores compile-time information of a {@link Field}
@@ -52,7 +57,7 @@ public class FieldInfo{
     public final boolean isEntityList;
     public final Class<?> listComponentClass;
     
-    public final EntityHandler entityCreator;
+    public final DelegateModifierHandler<DataPacket> entityCreator;
     
     public final byte[] endsWith;
     //auxiliary array for KMP searching
@@ -97,11 +102,11 @@ public class FieldInfo{
      * dynamically for this field, null if it is not defined in the {@link Length}
      * annotation.
      */
-    public final ModifierHandler<Integer> lengthHandler;
-    public final ModifierHandler<Integer> listLengthHandler;
+    public final DelegateModifierHandler<Integer> lengthHandler;
+    public final DelegateModifierHandler<Integer> listLengthHandler;
     @SuppressWarnings("rawtypes")
     public final TypeConverter userDefinedConverter;
-    public final ModifierHandler<Boolean> conditionalHandler;
+    public final DelegateModifierHandler<Boolean> conditionalHandler;
     public final Boolean conditionalResult;
     /**
      * Charset of this field, null if not defined
@@ -128,14 +133,17 @@ public class FieldInfo{
     final boolean customLengthDefined;
     
     @SuppressWarnings("unchecked")
-    FieldInfo(Field field, DataType type, ClassInfo base) {
+    FieldInfo(Field field, DataType dataType, ClassInfo base) {
         this.base = base;
         this.field = field;
         this.name = field.getName();
         final Class<?> fieldClass = field.getType();
         this.fieldClass = fieldClass;
-        this.dataType = type;
+        this.dataType = dataType;
         this.enclosingEntityClass = field.getDeclaringClass();
+        
+        //null for list types
+        DataTypeOperations type = dataType==null ? null : DataTypeOperations.of(dataType);
         
         this.isEntity = DataPacket.class.isAssignableFrom(fieldClass);
         
@@ -170,10 +178,11 @@ public class FieldInfo{
         
         Variant cond = localAnnotation(Variant.class);
         if(cond==null) {
-            this.entityCreator = new PlainReflectionEntityHandler(isEntityList ? listComponentClass : fieldClass);
+            this.entityCreator =
+                    new DelegateModifierHandler<>(new PlainReflectionEntityHandler(isEntityList ? listComponentClass : fieldClass));
         }else {
             try {
-                this.entityCreator = cond.value().newInstance();
+                this.entityCreator = new DelegateModifierHandler<>(cond.value().newInstance());
             } catch (Exception e) {
                 throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor")
                     .withSiteAndOrdinal(FieldInfo.class, 5);
@@ -193,24 +202,29 @@ public class FieldInfo{
         {
             CHARSET cs = annotation(CHARSET.class);
             if(cs==null) {
-                charset = CHARSET.DEFAULT_CHARSET;
+                charset = Charset.forName(CHARSET.DEFAULT_CHARSET);
                 charsetHandler = null;
-            }else if( ! PlaceHolderHandler.class.isAssignableFrom(cs.handler())) {
-                charset = null;
-                try {
-                    charsetHandler = cs.handler().newInstance();
-                } catch (Exception e) {
-                    throw forContext(base.entityClass, name, "Charset ModifierHandler cannot be initialized by no-arg contructor")
-                        .withSiteAndOrdinal(FieldInfo.class, 6);
-                }
             }else {
-                try {
-                    charset = Charset.forName(cs.value());
-                } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
-                    throw forContext(base.entityClass, name, "Illegal charset name: "+cs.value())
+                if( ! isDummy(cs.handler())) {
+                    ModifierHandler<Charset> tmp;
+                    try {
+                        tmp = cs.handler().newInstance();
+                    } catch (Exception e) {
+                        //TODO: wrap exception
+                        throw forContext(base.entityClass, name, "Charset ModifierHandler cannot be initialized by no-arg contructor")
                         .withSiteAndOrdinal(FieldInfo.class, 6);
+                    }
+                    charset = null;
+                    charsetHandler = new DelegateModifierHandler<>(tmp);
+                }else {
+                    charsetHandler = null;
+                    try {
+                        charset = Charset.forName(cs.value());
+                    } catch (IllegalCharsetNameException | UnsupportedCharsetException e) {
+                        throw forContext(base.entityClass, name, "Illegal charset name: "+cs.value())
+                        .withSiteAndOrdinal(FieldInfo.class, 6);
+                    }
                 }
-                charsetHandler = null;
             }
         }
         {
@@ -223,16 +237,19 @@ public class FieldInfo{
                 customLengthDefined = false;
             }else {
                 this.length = len.value();
-                if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
+                if( ! isDummy(len.handler())) {
+                    ModifierHandler<Integer> tmp;
                     try {
-                        this.lengthHandler = len.handler().newInstance();
-                        this.lengthHandler.checkLength = true;
+                        tmp = len.handler().newInstance();
                     } catch (Exception e) {
                         throw forContext(base.entityClass, name, "Length ModifierHandler cannot be initialized by no-arg contructor")
-                            .withSiteAndOrdinal(FieldInfo.class, 9);
+                        .withSiteAndOrdinal(FieldInfo.class, 9);
                     }
+                    DelegateModifierHandler<Integer> _tmp = new DelegateModifierHandler<>(tmp);
+                    _tmp.checkLength = true;
+                    lengthHandler = _tmp;
                 }else {
-                    this.lengthHandler = null;
+                    lengthHandler = null;
                 }
                 lengthType = len.type();
                 switch(lengthType) {
@@ -242,9 +259,8 @@ public class FieldInfo{
                     break;
                 default:
                     throw forContext(base.entityClass, name, "data dataType "+lengthType+" should not be specified as length dataType")
-                            .withSiteAndOrdinal(FieldInfo.class, 10);
+                    .withSiteAndOrdinal(FieldInfo.class, 10);
                 }
-                
                 lengthDefined = true;
                 customLengthDefined = length>=0 || lengthHandler!=null;
             }
@@ -271,24 +287,28 @@ public class FieldInfo{
                 listLengthType = null;
             }else {
                 this.listLength = len.value();
-                if( ! PlaceHolderHandler.class.isAssignableFrom(len.handler())) {
+                if( ! isDummy(len.handler())) {
+                    ModifierHandler<Integer> tmp;
                     try {
-                        this.listLengthHandler = len.handler().newInstance();
-                        this.listLengthHandler.checkLength = true;
+                        tmp = len.handler().newInstance();
                     } catch (Exception e) {
                         throw forContext(base.entityClass, name, "ListLength ModifierHandler cannot be initialized by no-arg contructor")
-                            .withSiteAndOrdinal(FieldInfo.class, 11);
+                        .withSiteAndOrdinal(FieldInfo.class, 11);
                     }
+                    DelegateModifierHandler<Integer> _tmp = new DelegateModifierHandler<>(tmp);
+                    _tmp.checkLength = true;
+                    listLengthHandler = _tmp;
                 }else {
-                    this.listLengthHandler = null;
+                    listLengthHandler = null;
                 }
+                
                 listLengthType = len.type();
             }
         }
         {
             DatePattern df = localAnnotation(DatePattern.class);
             if(df==null) {
-                if(fieldClass == java.util.Date.class && type!=DataType.INT && type!=DataType.LONG) {
+                if(fieldClass == java.util.Date.class && dataType!=DataType.INT && dataType!=DataType.LONG) {
                     throw forContext(base.entityClass, name, "define a date pattern")
                         .withSiteAndOrdinal(FieldInfo.class, 2);
                 }
@@ -318,7 +338,8 @@ public class FieldInfo{
         
         Conditional conditional = localAnnotation(Conditional.class);
         try {
-            this.conditionalHandler = conditional!=null ? conditional.value().newInstance() : null;
+            this.conditionalHandler = conditional!=null ?
+                    new DelegateModifierHandler<Boolean>(conditional.value().newInstance()) : null;
         } catch (Exception e) {
             throw forContext(base.entityClass, name, "ModiferHandler of Conditional cannot be instantiated by no-arg contructor")
             .withSiteAndOrdinal(FieldInfo.class, 25);
@@ -444,6 +465,163 @@ public class FieldInfo{
         return base.globalAnnotation(annoCls);
     }
     
+    @Override
+    public String toString() {
+        return "FieldInfo:Entity["+enclosingEntityClass+"],Field:["+name+"]";
+    }
+    
+    //##########
+    
+    final Charset charsetForSerializingCHAR(Object self) {
+        Charset cs = this.charset;
+        if(cs==null) {
+            cs = (Charset) this.charsetHandler.handleSerialize0(this.name,self);
+        }
+        return cs;
+    }
+    
+    final Charset charsetForDeserializingCHAR(Object self, InputStream is) {
+        Charset cs = this.charset;
+        if(cs==null) {
+            //avoid the exception declaration
+            cs = ((DelegateModifierHandler<Charset>)this.charsetHandler).handleDeserialize0(this.name,self,is);
+        }
+        return cs;
+    }
+    
+    final int lengthForSerializingCHAR(Object self){
+        int length = this.annotation(CHAR.class).value();
+        if(length<0) {
+            length = lengthForSerializingLength(self);
+        }
+        return length;
+    }
+    
+    final int lengthForDeserializingCHAR(Object self, InputStream bis){
+        int length = this.annotation(CHAR.class).value();
+        if(length<0) {
+            length = lengthForDeserializingLength(self,bis);
+        }
+        return length;
+    }
+    
+    final int lengthForSerializingUserDefinedType(Object self){
+        int length = this.annotation(UserDefined.class).length();
+        if(length<0) {
+            length = lengthForSerializingLength(self);
+        }
+        return length;
+    }
+    
+    final int lengthForDeserializingUserDefinedType(Object self, InputStream bis) {
+        int length = this.annotation(UserDefined.class).length();
+        if(length<0) {
+            length = lengthForDeserializingLength(self,bis);
+        }
+        return length;
+    }
+    
+    final int lengthForSerializingRAW(Object self) {
+        int length = this.annotation(RAW.class).value();
+        if(length<0) {
+            length = lengthForSerializingLength(self);
+        }
+        return length;
+    }
+    
+    final int lengthForDeserializingRAW(Object self, InputStream bis) {
+        int length = this.annotation(RAW.class).value();
+        if(length<0) {
+            length = lengthForDeserializingLength(self,bis);
+        }
+        return length;
+    }
+    
+    final int lengthForSerializingLength(Object self) throws IllegalArgumentException {
+        Integer length = this.length;
+        if(length<0 && this.lengthHandler!=null) {
+            length = this.lengthHandler.handleSerialize0(this.name, self);
+        }
+        return length;
+    }
+    
+    final int lengthForDeserializingLength(Object self, InputStream bis) {
+        Integer length = this.length;
+        if(length<0 && this.lengthHandler!=null) {
+            length = this.lengthHandler.handleDeserialize0(this.name, self, (MarkableInputStream)bis);
+        }
+        return length;
+    }
+    
+    final int lengthForSerializingListLength(Object self){
+        Integer length = this.listLength;
+        if(length<0 && this.listLengthHandler!=null) {
+            length = this.listLengthHandler.handleSerialize0(this.name, self);
+        }
+        return length;
+    }
+    
+    final int lengthForList(Object self){
+        /*
+         * ListLength first
+         * If the component dataType is not a dynamic-length data dataType, both listLength or Length may be present,
+         * if the component dataType is a dynamic-length data dataType, then listLenght must be present or an exception 
+         * will be thrown by ClassInfo
+         */
+        int length = lengthForSerializingListLength(self);
+        if(length==-1)
+            length = lengthForSerializingLength(self);
+        return length;
+    }
+    
+    final DataPacket entityForDeserializing(Object self,InputStream in) {
+        return entityCreator.handleDeserialize0(this.name, self, (MarkableInputStream)in);
+    }
+    
+    final int lengthForDeserializingListLength(Object self, InputStream bis){
+        Integer length = this.listLength;
+        if(length<0 && this.listLengthHandler!=null) {
+            length = this.listLengthHandler.handleDeserialize0(this.name, self, (MarkableInputStream)bis);
+        }
+        return length;
+    }
+    
+    final boolean shouldSkipFieldForSerializing(Object self) {
+        return this.conditionalHandler!=null
+                && ! this.conditionalHandler.handleSerialize0(this.name, self).equals(this.conditionalResult);
+    }
+    
+    static final SimpleDateFormat getThreadLocalDateFormatter(String datePattern) {
+        ThreadLocal<SimpleDateFormat> tl = formatterMap.get(datePattern);
+        if (tl == null) {
+            tl = new _TLFormatter(datePattern);
+            formatterMap.put(datePattern, tl);
+        }
+        return tl.get();
+    }
+    private static final ConcurrentHashMap<String, ThreadLocal<SimpleDateFormat>> formatterMap = new ConcurrentHashMap<>();
+    private static final class _TLFormatter extends ThreadLocal<SimpleDateFormat> {
+        private String p;
+
+        public _TLFormatter(String p) {
+            this.p = p;
+        }
+
+        @Override
+        protected SimpleDateFormat initialValue() {
+            //lenient in former versions
+            SimpleDateFormat ret = new SimpleDateFormat(p);
+            ret.setLenient(false);
+            return ret;
+        }
+    }
+    
+    //##########
+    
+    private <T> boolean isDummy(Class<? extends ModifierHandler<T>> mc) {
+        return mc.getName().startsWith("io.github.zhtmf.annotations.modifiers.PlaceHolderHandler");
+    }
+    
     private Annotation mutualExclusive(Class<? extends Annotation> def, Class<? extends Annotation> another) {
         Annotation local1 = localAnnotation(def);
         Annotation local2 = localAnnotation(another);
@@ -510,8 +688,49 @@ public class FieldInfo{
         return ret;
     } 
     
-    @Override
-    public String toString() {
-        return "FieldInfo:Entity["+enclosingEntityClass+"],Field:["+name+"]";
+    private static class ConditionalConverter implements Converter<Object>{
+        
+        private Converter<Object> wrappedConverter;
+        
+        public ConditionalConverter(Converter<Object> wrapped) {
+            this.wrappedConverter = wrapped;
+        }
+
+        @Override
+        public void serialize(Object value, OutputStream dest, FieldInfo ctx, Object self)
+                throws IOException, ConversionException {
+            if(ctx.shouldSkipFieldForSerializing(self))
+                return;
+            wrappedConverter.serialize(value, dest, ctx, self);
+        }
+
+        @Override
+        public Object deserialize(java.io.InputStream in, FieldInfo fi, Object self)
+                throws IOException, ConversionException {
+            if(fi.conditionalHandler!=null
+          && ! fi.conditionalHandler.handleDeserialize0(fi.name, self, (MarkableInputStream)in).equals(fi.conditionalResult)) {
+                return null;
+            }
+            return wrappedConverter.deserialize(in, fi, self);
+        }
+
+    }
+    
+    static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error) {
+        StringBuilder ret = new StringBuilder();
+        if(entity!=null) {
+            ret.append("Entity:"+entity);
+        }
+        if(field!=null) {
+            if(ret.length()>0) {
+                ret.append(", ");
+            }
+            ret.append("Field:").append(field);
+        }
+        if(ret.length()>0) {
+            ret.append(", ");
+        }
+        ret.append("Error:").append(error);
+        return new UnsatisfiedConstraintException(ret.toString());
     }
 }

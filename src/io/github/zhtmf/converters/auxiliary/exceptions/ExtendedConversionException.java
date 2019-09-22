@@ -1,7 +1,7 @@
 package io.github.zhtmf.converters.auxiliary.exceptions;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
+import io.github.zhtmf.converters.FieldInfo;
 
 /**
  * Sub class for code coverage purposes.

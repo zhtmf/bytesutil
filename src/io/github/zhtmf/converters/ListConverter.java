@@ -6,9 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.AbstractListConverter;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
@@ -18,7 +15,7 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
  * @author dzh
  */
 @SuppressWarnings("rawtypes")
-public class ListConverter extends AbstractListConverter implements Converter<List> {
+class ListConverter extends AbstractListConverter implements Converter<List> {
 
     @Override
     public void serialize(List value, OutputStream dest, FieldInfo fi, Object self)
@@ -50,10 +47,10 @@ public class ListConverter extends AbstractListConverter implements Converter<Li
     }
 
     @Override
-    public List deserialize(MarkableInputStream is, FieldInfo fi, Object self) throws IOException, ConversionException {
+    public List deserialize(java.io.InputStream is, FieldInfo fi, Object self) throws IOException, ConversionException {
         int length = lengthForDeserialize(is, fi, self);
         List<Object> tmp = null;
-        //cv cannot be null as we lifted checking for validity of DataType<>JavaType mapping
+        //cv cannot be null as we lifted checking for validity of DataType <--> JavaType mapping
         //to constructor of FieldInfo
         @SuppressWarnings("unchecked")
         Converter<Object> cv = (Converter<Object>)fi.innerConverter;

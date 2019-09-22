@@ -17,7 +17,6 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.types.UserDefined;
-import io.github.zhtmf.converters.UserDefinedTypeConverter;
 import test.TestUtils;
 
 public class TestCaseUserDefined {
@@ -89,25 +88,6 @@ public class TestCaseUserDefined {
         public Timestamp deserialize(Input context) throws IOException{
             Assert.assertEquals(context.available(), 8);
             return null;
-        }
-    }
-    @Test
-    public void test3() throws Exception {
-        Entity2 entity = new Entity2();
-        entity.ts = Timestamp.valueOf("2011-1-1 23:00:59.333");
-        try {
-            TestUtils.serializeMultipleTimesAndRestore(entity);
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, UserDefinedTypeConverter.class, 1);
-        }
-    }
-    @Test
-    public void test4() throws Exception {
-        Entity2 entity = new Entity2();
-        try {
-            entity.deserialize(TestUtils.newZeroLengthInputStream());
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, UserDefinedTypeConverter.class, 2);
         }
     }
 }

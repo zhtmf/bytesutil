@@ -5,8 +5,6 @@ import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
@@ -15,7 +13,7 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
  * 
  * @author dzh
  */
-public class DataPacketConverter implements Converter<DataPacket> {
+class DataPacketConverter implements Converter<DataPacket> {
 
     @Override
     public void serialize(DataPacket value, OutputStream dest, FieldInfo fi, Object self)
@@ -24,11 +22,11 @@ public class DataPacketConverter implements Converter<DataPacket> {
     }
 
     @Override
-    public DataPacket deserialize(MarkableInputStream is, FieldInfo fi, Object self)
+    public DataPacket deserialize(java.io.InputStream is, FieldInfo fi, Object self)
             throws IOException, ConversionException {
         DataPacket object = null;
         try {
-            object = fi.entityCreator.handleDeserialize(fi.name, self, is);
+            object = fi.entityForDeserializing(self, is);
         } catch (Exception e) {
             throw new ExtendedConversionException(
                     self.getClass(),fi.name,

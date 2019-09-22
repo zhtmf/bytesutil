@@ -1,4 +1,4 @@
-package test.exceptions;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,9 +22,8 @@ import io.github.zhtmf.converters.CharConverter;
 import io.github.zhtmf.converters.DataPacketConverter;
 import io.github.zhtmf.converters.IntArrayConverter;
 import io.github.zhtmf.converters.ListConverter;
-import io.github.zhtmf.converters.auxiliary.AbstractListConverter;
+import io.github.zhtmf.converters.TestCaseDataPacket.Entity11.SubEntity11;
 import test.TestUtils;
-import test.exceptions.TestCaseDataPacket.Entity11.SubEntity11;
 
 public class TestCaseDataPacket {
     
@@ -77,7 +76,7 @@ public class TestCaseDataPacket {
         try {
             entity.serialize(TestUtils.newThrowOnlyOutputStream());
         } catch (Exception e) {
-            TestUtils.assertExactException(e, AbstractListConverter.class, 1);
+            TestUtils.assertExactException(e, "io.github.zhtmf.converters.AbstractListConverter", 1);
             return;
         }
         Assert.fail();
@@ -95,7 +94,7 @@ public class TestCaseDataPacket {
         try {
             entity.serialize(new ByteArrayOutputStream());
         } catch (Exception e) {
-            TestUtils.assertExactException(e, AbstractListConverter.class, 2);
+            TestUtils.assertExactException(e, "io.github.zhtmf.converters.AbstractListConverter", 2);
             return;
         }
         Assert.fail();
@@ -223,7 +222,7 @@ public class TestCaseDataPacket {
         try {
             entity.deserialize(new ByteArrayInputStream(new byte[0]));
         } catch (Exception e) {
-            TestUtils.assertExactException(e, AbstractListConverter.class, 12);
+            TestUtils.assertExactException(e, "io.github.zhtmf.converters.AbstractListConverter", 12);
             return;
         }
         Assert.fail();

@@ -1,16 +1,21 @@
-package io.github.zhtmf.converters.auxiliary;
+package io.github.zhtmf.converters;
 
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 
+import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.converters.auxiliary.DataType;
+import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
+import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedIOException;
 
-public class StreamUtils {
-    
-    private StreamUtils() {}
+class StreamUtils {
     
     public static void writeBYTE(OutputStream os, byte value) throws IOException {
         os.write(value);
@@ -142,19 +147,19 @@ public class StreamUtils {
     
     public static void writeIntegerOfType(OutputStream os, DataType type, int val, boolean bigEndian) throws IOException{
         String error;
-        if((error = type.checkRange(val, true))!=null) {
+        if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
             throw new UnsatisfiedIOException(error)
                 .withSiteAndOrdinal(StreamUtils.class, 1);
         }
         switch(type) {
         case BYTE:
-            StreamUtils.writeBYTE(os, (byte)val);
+            writeBYTE(os, (byte)val);
             break;
         case SHORT:
-            StreamUtils.writeSHORT(os, (short)val, bigEndian);
+            writeSHORT(os, (short)val, bigEndian);
             break;
         case INT:
-            StreamUtils.writeInt(os, val, bigEndian);
+            writeInt(os, val, bigEndian);
             break;
         default:throw new Error("cannot happen");
         }
@@ -320,6 +325,7 @@ public class StreamUtils {
         array[left] = array[right];
         array[right] = tmp;
     }
+    
     public static final String readStringBCD(InputStream is, int len) throws IOException {
         byte[] arr = readBytes(is, len);
         StringBuilder sb = new StringBuilder();
@@ -359,16 +365,16 @@ public class StreamUtils {
         int length = 0;
         switch(type) {
         case BYTE:
-            length = StreamUtils.readByte(src, false);
+            length = readByte(src, false);
             break;
         case SHORT:
-            length = StreamUtils.readShort(src, false, bigEndian);
+            length = readShort(src, false, bigEndian);
             break;
         case INT:
-            long _length = StreamUtils.readInt(src, false, bigEndian);
+            long _length = readInt(src, false, bigEndian);
             String error;
             //array or list length in Java cannot exceed signed 32-bit integer
-            if((error = DataType.INT.checkRange(_length, false))!=null) {
+            if((error = DataTypeOperations.INT.checkRange(_length, false))!=null) {
                 throw new UnsatisfiedIOException(error)
                     .withSiteAndOrdinal(StreamUtils.class, 3);
             }
@@ -377,6 +383,192 @@ public class StreamUtils {
         default:throw new Error("cannot happen");
         }
         return length;
+    }
+    
+    public static final void serializeBCD(String str, OutputStream dest, FieldInfo ctx, Object self) 
+            throws ConversionException, IOException {
+        checkBCDLength(str, ctx.annotation(BCD.class).value());
+        int len = str.length();
+        int[] values = new int[len];
+        for(int i=0;i<len;++i) {
+            char c = str.charAt(i);
+            if(!(c>='0' && c<='9')) {
+                throw new ExtendedConversionException(ctx,
+                        "only numeric value is supported in bcd")
+                            .withSiteAndOrdinal(StreamUtils.class, 14);
+            }
+            values[i] = c-'0';
+        }
+        writeBCD(dest, values);
+    }
+    
+    private static final void checkBCDLength(String src, int length) {
+        if((src.length()>>1)!=length) {
+            throw new UnsatisfiedConstraintException(String.format(
+                    "length of string should be [%d] (double long as declared BCD value), but it was [%d]", length*2, src.length()))
+                        .withSiteAndOrdinal(StreamUtils.class, 17);
+        }
+    }
+    
+    public static final void serializeAsCHAR(String str, OutputStream dest, FieldInfo ctx, Object self)
+            throws ConversionException, IOException {
+        Charset cs = ctx.charsetForSerializingCHAR(self);
+        byte[] bytes = str.getBytes(cs);
+        byte[] ending = ctx.endsWith;
+        int length = ctx.lengthForSerializingCHAR(self);
+        if(length<0) {
+            if(ending==null) {
+                length = bytes.length;
+                writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
+                writeBytes(dest, bytes);
+            }else {
+                writeBytes(dest, bytes);
+                writeBytes(dest, ending);
+            }
+        }else if(length!=bytes.length) {
+            throw new ExtendedConversionException(ctx,
+                    String.format("length of string representation [%s] does not equals with declared CHAR length [%d]"
+                                ,str,length))
+                        .withSiteAndOrdinal(StreamUtils.class, 22);
+        }else {
+            writeBytes(dest, bytes);
+        }
+    }
+    
+    public static final void serializeAsCHAR(long val, OutputStream dest, FieldInfo ctx, Object self)
+            throws ConversionException, IOException {
+        if(val<0) {
+            //implementation choice
+            throw new ExtendedConversionException(ctx,"negative number should not be converted to CHAR")
+                        .withSiteAndOrdinal(StreamUtils.class, 0);
+        }
+        String str = Long.toString(val);
+        serializeAsCHAR(str,dest,ctx,self);
+    }
+    
+    public static final void serializeAsCHAR(BigInteger val, OutputStream dest, FieldInfo ctx, Object self)
+            throws ConversionException, IOException {
+        if(val.compareTo(BigInteger.ZERO)<0) {
+            //implementation choice
+            throw new ExtendedConversionException(ctx,"negative number should not be converted to CHAR")
+                        .withSiteAndOrdinal(StreamUtils.class, 18);
+        }
+        String str = val.toString();
+        serializeAsCHAR(str,dest,ctx,self);
+    }
+    
+    public static final long deserializeAsCHAR(
+            InputStream is, FieldInfo ctx, Object self, DataType type)
+            throws IOException, ConversionException {
+        long ret = 0;
+        String error = null;
+        byte[] numChars = readBytesForDeserializingCHAR(is, ctx, self, type);
+        parsing:{
+            for(byte b:numChars) {
+                if(!(b>='0' && b<='9')) {
+                    error = "streams contains non-numeric characters";
+                    break parsing;
+                }
+                ret = (ret<<3)+(ret<<1)+(b-'0');
+                if(ret<0) {
+                    error = "numeric string overflows:"+Arrays.toString(numChars);
+                    break parsing;
+                }
+            }
+        }
+        if(error!=null) {
+            throw new ExtendedConversionException(ctx, error)
+                    .withSiteAndOrdinal(StreamUtils.class, 13);
+        }
+        if(type!=null) {
+            checkRangeInContext(type, ret, ctx);
+        }
+        return ret;
+    }
+    
+    public static final BigInteger deserializeAsBigCHAR(
+            InputStream is, FieldInfo ctx, Object self, DataType type)
+            throws IOException, ConversionException {
+        long ret = 0;
+        BigInteger ret2 = null;
+        String error = null;
+        byte[] numChars = readBytesForDeserializingCHAR(is, ctx, self, type);
+        parsing:{
+            for(byte b:numChars) {
+                if(!(b>='0' && b<='9')) {
+                    error = "streams contains non-numeric characters";
+                    break parsing;
+                }
+                if(ret2==null) {
+                    long tmp = (ret<<3)+(ret<<1)+(b-'0');
+                    if(tmp<0) {
+                        ret2 = BigInteger.valueOf(ret);
+                        ret2 = ret2.multiply(BigInteger.TEN).add(BigInteger.valueOf(b-'0'));
+                    }else {
+                        ret = tmp;
+                    }
+                }else {
+                    ret2 = ret2.multiply(BigInteger.TEN).add(BigInteger.valueOf(b-'0'));
+                }
+            }
+        }
+        if(error!=null) {
+            throw new ExtendedConversionException(ctx, error)
+                    .withSiteAndOrdinal(StreamUtils.class, 19);
+        }
+        //no need to check the range here
+        //as we do not permit negative sign in the character streams
+        //and BigInteger never overflows a BigInteger except it overflows the memory
+        return ret2==null ? BigInteger.valueOf(ret) : ret2;
+    }
+    
+    public static int[] checkAndConvertToBCD(long val, int bcdBytes) {
+        if(val<0) {
+            throw new UnsatisfiedConstraintException(String.format("negative number [%d] cannot be stored as BCD",val))
+                        .withSiteAndOrdinal(StreamUtils.class, 15);
+        }
+        long copy = val;
+        int[] values = new int[bcdBytes*2];
+        int ptr = values.length-1;
+        while(ptr>=0 && copy>0) {
+            values[ptr--] = (int) (copy % 10);
+            copy /= 10;
+        }
+        if(copy>0 || ptr>0) {
+            throw new UnsatisfiedConstraintException(
+                    String.format("string format of number [%d] cannot fit in [%d]-byte BCD value", val, bcdBytes))
+                        .withSiteAndOrdinal(StreamUtils.class, 16);
+        }
+        return values;
+    }
+    
+    public static final void checkRangeInContext(DataType type,long val,FieldInfo ctx) throws ConversionException {
+        String error;
+        if((error = DataTypeOperations.of(type).checkRange(val, ctx.unsigned))!=null) {
+            throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, error)
+                        .withSiteAndOrdinal(StreamUtils.class, 11);
+        }
+    }
+    
+    private static byte[] readBytesForDeserializingCHAR(
+            InputStream is, FieldInfo ctx, Object self, DataType type) throws IOException, ConversionException {
+        int length = ctx.lengthForDeserializingCHAR(self, is);
+        if(length<0) {
+            length = readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+        }
+        byte[] numChars = readBytes(is, length);
+        /*
+         * such strings causes asymmetry between serialization and deserialization. it
+         * is possible to avoid this problem by using written-ahead length, however such
+         * use case is rare so it is better prevent deserialization from such strings to
+         * a numeric dataType explicitly rather than later cause errors that are hard to
+         * detect.
+         */
+        if(numChars.length>1 && numChars[0]=='0') {
+            throw new ExtendedConversionException(ctx, "streams contains numeric string with leading zero")
+                    .withSiteAndOrdinal(StreamUtils.class, 20);
+        }
+        return numChars;
     }
     
     private static int read(InputStream bis) throws IOException {

@@ -40,6 +40,14 @@ public class TestUtils {
         }
         return true;
     }
+    public static boolean assertExactException(Throwable ex,String fullName, int ordinal) {
+        if(!((ex instanceof ExactException)
+        && ((ExactException)ex).getSite().getName().equals(fullName)
+        && ((ExactException)ex).getOrdinal() == ordinal)){
+            throw new IllegalArgumentException(ex+" "+((ExactException)ex).getSite()+" "+((ExactException)ex).getOrdinal()+" not expected");
+        }
+        return true;
+    }
     public static boolean assertExactExceptionInHierarchy(Throwable ex,Class<?> site, int ordinal) {
         Throwable original = ex;
         while(ex!=null) {

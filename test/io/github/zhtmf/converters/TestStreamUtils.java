@@ -1,4 +1,4 @@
-package test.exceptions;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -18,8 +18,8 @@ import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.StreamUtils;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
 import test.TestUtils;
 
 public class TestStreamUtils {

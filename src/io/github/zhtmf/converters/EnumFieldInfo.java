@@ -1,6 +1,4 @@
-package io.github.zhtmf.converters.auxiliary;
-
-import static io.github.zhtmf.converters.auxiliary.Utils.forContext;
+package io.github.zhtmf.converters;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -9,12 +7,13 @@ import java.util.Map;
 
 import io.github.zhtmf.annotations.enums.NumericEnum;
 import io.github.zhtmf.annotations.enums.StringEnum;
+import io.github.zhtmf.converters.auxiliary.DataType;
 
 /**
  * Dedicated subclass used to eliminate the branches in {@link #get(Object)} and
  * {@link #set(Object, Object)}
  */
-public class EnumFieldInfo extends FieldInfo {
+class EnumFieldInfo extends FieldInfo {
     
     private final Map<Object,Object> mapValueByEnumMember;
     private final Map<Object,Object> mapEnumMemberByValue;
@@ -43,7 +42,7 @@ public class EnumFieldInfo extends FieldInfo {
                     val = Long.parseLong(constant.toString());
                 }
                 String error;
-                if((error = type.checkRange(val, true))!=null) {
+                if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
                     throw forContext(base.entityClass, name, error)
                         .withSiteAndOrdinal(EnumFieldInfo.class, 7);
                 }
@@ -92,7 +91,7 @@ public class EnumFieldInfo extends FieldInfo {
     @Override
     public Class<?> getFieldType() {
         //this method will be called prior to constructor
-        return super.dataType.mappedEnumFieldClass();
+        return DataTypeOperations.of(super.dataType).mappedEnumFieldClass();
     }
 
     @Override

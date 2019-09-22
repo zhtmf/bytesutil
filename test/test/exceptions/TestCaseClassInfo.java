@@ -2,10 +2,6 @@ package test.exceptions;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -23,13 +19,7 @@ import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
-import io.github.zhtmf.converters.Converters;
-import io.github.zhtmf.converters.auxiliary.ClassInfo;
-import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.EntityHandler;
-import io.github.zhtmf.converters.auxiliary.PlaceHolderHandler;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
+import io.github.zhtmf.converters.ClassInfo;
 import test.TestUtils;
 
 public class TestCaseClassInfo {
@@ -213,93 +203,6 @@ public class TestCaseClassInfo {
             Assert.fail();
         } catch (Exception e) {
             TestUtils.assertExactException(e, ClassInfo.class, 9);
-        }
-    }
-    
-    @SuppressWarnings("rawtypes")
-    @Test
-    public void testMakeJacocoHappy() throws Exception {
-        {
-            Constructor c = Utils.class.getDeclaredConstructor();
-            c.setAccessible(true);
-            c.newInstance();
-        }
-        {
-            Constructor c = StreamUtils.class.getDeclaredConstructor();
-            c.setAccessible(true);
-            c.newInstance();
-        }
-        {
-            try {
-                new PlaceHolderHandler().handleDeserialize0(null, null, null);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                new PlaceHolderHandler().handleSerialize0(null, null);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            new PlaceHolderHandler.DefaultCharsetHandler();
-            new PlaceHolderHandler.DefaultLengthHandler();
-        }
-        {
-            class MySub extends EntityHandler{
-                
-                @Override
-                public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-                    return null;
-                }
-            }
-            try {
-                new MySub().handleSerialize0(null,null);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-        }
-        {
-            try {
-                Method mtd = DataType.class.getDeclaredMethod("mappedEnumFieldClass");
-                mtd.setAccessible(true);
-                mtd.invoke(DataType.USER_DEFINED);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                Method mtd = DataType.class.getDeclaredMethod("size");
-                mtd.setAccessible(true);
-                mtd.invoke(DataType.USER_DEFINED);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                Method mtd = DataType.class.getDeclaredMethod("checkRange",long.class,boolean.class);
-                mtd.setAccessible(true);
-                mtd.invoke(DataType.USER_DEFINED,0L,Boolean.FALSE);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                Method mtd = DataType.class.getDeclaredMethod("checkRange",BigInteger.class,boolean.class);
-                mtd.setAccessible(true);
-                mtd.invoke(DataType.USER_DEFINED,BigInteger.ZERO,Boolean.TRUE);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            {
-                class Entity extends DataPacket{@Order(0)@INT int field1;}
-                Entity obj = new Entity();
-                obj.serialize(TestUtils.newByteArrayOutputStream());
-                Method mtd = DataPacket.class.getDeclaredMethod("getClassInfo");
-                mtd.setAccessible(true);
-                ClassInfo ci = (ClassInfo) mtd.invoke(obj);
-                ci.fieldInfoList().get(0).toString();
-            }
-            {
-                Constructor c = Converters.class.getDeclaredConstructor();
-                c.setAccessible(true);
-                c.newInstance();
-            }
         }
     }
 }

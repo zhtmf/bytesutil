@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
@@ -15,7 +12,7 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
  * @author dzh
  *
  */
-public class BooleanConverter implements Converter<Boolean> {
+class BooleanConverter implements Converter<Boolean> {
 
     @Override
     public void serialize(Boolean value, OutputStream dest, FieldInfo ctx, Object self)
@@ -30,7 +27,7 @@ public class BooleanConverter implements Converter<Boolean> {
     }
 
     @Override
-    public Boolean deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public Boolean deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
         byte val;
         switch(ctx.dataType) {

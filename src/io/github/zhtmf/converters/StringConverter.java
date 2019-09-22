@@ -8,23 +8,20 @@ import java.nio.charset.Charset;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
+import static io.github.zhtmf.converters.StreamUtils.*;
 
-public class StringConverter implements Converter<String> {
+class StringConverter implements Converter<String> {
 
     @Override
     public void serialize(String value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case CHAR:
-            Utils.serializeAsCHAR(value, dest, ctx, self);
+            serializeAsCHAR(value, dest, ctx, self);
             break;
         case BCD:{
-            Utils.serializeBCD(value, dest, ctx, self);
+            serializeBCD(value, dest, ctx, self);
             break;
         }
         default:throw new Error("cannot happen");
@@ -32,12 +29,12 @@ public class StringConverter implements Converter<String> {
     }
 
     @Override
-    public String deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public String deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case CHAR:{
-            Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);
-            int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
+            Charset cs = ctx.charsetForDeserializingCHAR(self, is);
+            int length = ctx.lengthForDeserializingCHAR(self, is);
             if(length<0 && ctx.endsWith==null) {
                 length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
                 return new String(StreamUtils.readBytes(is, length),cs);

@@ -1,4 +1,4 @@
-package io.github.zhtmf.converters.auxiliary;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,7 +19,7 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.SHORT;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
+import io.github.zhtmf.converters.MarkableInputStream;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 import test.TestUtils;
 

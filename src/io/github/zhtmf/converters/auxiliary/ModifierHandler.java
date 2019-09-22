@@ -3,8 +3,6 @@ package io.github.zhtmf.converters.auxiliary;
 import java.io.IOException;
 import java.io.InputStream;
 
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
-
 /**
  * Helper class which is called during runtime to obtain dynamic values such as
  * length of list, charset of strings etc.
@@ -14,9 +12,7 @@ import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintExce
  * from input stream if they need to look ahead to make some decisions.
  * <p>
  * The input stream passed as the third parameter is a special one that any
- * reads will be undone after handler method returns, however users cannot read
- * more than {@link #HANDLER_READ_BUFFER_SIZE} bytes. An exception will be
- * thrown <b>after</b> the handler method returns if they do.
+ * reads will be undone after handler method returns.
  * 
  * @author dzh
  *
@@ -26,34 +22,9 @@ import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintExce
  */
 public abstract class ModifierHandler<E> {
     
-    //only set when this class is used as LengthHandler
-    boolean checkLength = false;
-    
-    private ThreadLocal<Integer> currentPosition = new ThreadLocal<>();
+    public ThreadLocal<Integer> currentPosition = new ThreadLocal<>();
     {
         currentPosition.set(-1);
-    }
-    
-    public E handleDeserialize(String fieldName, Object entity, MarkableInputStream is) throws IllegalArgumentException{
-        is.mark(0);
-        E ret = null;
-        try {
-            currentPosition.set(is.actuallyProcessedBytes());
-            ret = handleDeserialize0(fieldName, entity, is);
-            currentPosition.set(-1);
-            checkReturnValue(ret);
-            is.reset();
-        } catch (IOException e) {
-            throw new UnsatisfiedConstraintException(e)
-                .withSiteAndOrdinal(ModifierHandler.class, 3);
-        }
-        return ret;
-    }
-    
-    public E handleSerialize(String fieldName, Object entity)  throws IllegalArgumentException{
-        E ret = handleSerialize0(fieldName, entity);
-        checkReturnValue(ret);
-        return ret;
     }
     
     /**
@@ -73,16 +44,6 @@ public abstract class ModifierHandler<E> {
      */
     protected int currentPosition() {
         return currentPosition.get();
-    }
-    
-    private void checkReturnValue(E ret) {
-        if(ret==null) {
-            throw new UnsatisfiedConstraintException("should return non-null value from handler "+this.getClass())
-                    .withSiteAndOrdinal(ModifierHandler.class, 1);
-        }else if(checkLength && ((Integer)ret)<0) {
-            throw new UnsatisfiedConstraintException("should return positive value from handler "+this.getClass())
-            .withSiteAndOrdinal(ModifierHandler.class, 2);
-        }
     }
     
     public abstract E handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException;

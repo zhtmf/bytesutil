@@ -1,4 +1,4 @@
-package test.exceptions;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
@@ -14,7 +14,6 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.converters.BigIntegerConverter;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import test.TestUtils;
 
 public class TestCaseBigIntegerConverter{
@@ -65,7 +64,7 @@ public class TestCaseBigIntegerConverter{
             entity.serialize(TestUtils.newByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 8);
+            TestUtils.assertExactException(e, StreamUtils.class, 18);
         }
     }
     @Test
@@ -80,19 +79,19 @@ public class TestCaseBigIntegerConverter{
             entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'-',(byte)'1'}));
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 9);
+            TestUtils.assertExactException(e, StreamUtils.class, 19);
         }
         try {
             entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)' ',(byte)'1'}));
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 9);
+            TestUtils.assertExactException(e, StreamUtils.class, 19);
         }
         try {
             entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'a',(byte)'f'}));
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 9);
+            TestUtils.assertExactException(e, StreamUtils.class, 19);
         }
     }
 }

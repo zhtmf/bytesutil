@@ -1,20 +1,21 @@
-package io.github.zhtmf.converters.auxiliary;
+package io.github.zhtmf.converters;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
-public abstract class AbstractListConverter {
+abstract class AbstractListConverter {
 
     @SuppressWarnings("rawtypes")
     protected int lengthForSerialize(List value, OutputStream dest, FieldInfo fi, Object self) throws ConversionException {
         @SuppressWarnings("unchecked")
         List<Object> listValue = (List<Object>)value;
         //validity check is done in ClassInfo
-        int length = Utils.lengthForList(fi, self);
+        int length = fi.lengthForList(self);
         if(length<0) {
             length = listValue.size();
             try {
@@ -36,10 +37,10 @@ public abstract class AbstractListConverter {
         return length;
     }
     
-    protected int lengthForDeserialize(MarkableInputStream is, FieldInfo fi, Object self) throws ConversionException {
-        int length = Utils.lengthForDeserializingListLength(fi, self, is);
+    protected int lengthForDeserialize(InputStream is, FieldInfo fi, Object self) throws ConversionException {
+        int length = fi.lengthForDeserializingListLength(self, is);
         if(length<0) {
-            length = Utils.lengthForDeserializingLength(fi, self, is);
+            length = fi.lengthForDeserializingLength(self, is);
         }
         if(length<0) {
             try {

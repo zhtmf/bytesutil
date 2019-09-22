@@ -2,23 +2,13 @@ package io.github.zhtmf;
 
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.Array;
-import java.nio.charset.Charset;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
-import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.converters.ClassInfo;
 import io.github.zhtmf.converters.Converter;
-import io.github.zhtmf.converters.auxiliary.ClassInfo;
-import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.Utils;
+import io.github.zhtmf.converters.FieldInfo;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
 /**
  * <p>
@@ -81,7 +71,7 @@ public abstract class DataPacket {
         
         for(FieldInfo fi:ci.fieldInfoList()) {
             
-            if(Utils.shouldSkipField(fi, this))
+            if(auxiliaryAccess.shouldSkipFieldForSerializing(fi, this))
                 continue;
             
             Object value = fi.get(this);
@@ -140,10 +130,10 @@ public abstract class DataPacket {
         if(src==null) {
             throw new NullPointerException();
         }
-        deserialize0(MarkableInputStream.wrap(src));
+        deserialize0(auxiliaryAccess.wrap(src));
     }
     
-    private void deserialize0(MarkableInputStream _src) throws ConversionException {
+    private void deserialize0(InputStream _src) throws ConversionException {
         ClassInfo ci = getClassInfo();
         for(FieldInfo fi:ci.fieldInfoList()) {
             Object value = null;
@@ -181,128 +171,27 @@ public abstract class DataPacket {
         ClassInfo ci = getClassInfo();
         int ret = 0;
         for(FieldInfo fi:ci.fieldInfoList()) {
-            if(Utils.shouldSkipField(fi, this)) {
-                continue;
-            }
-            Object value = fi.get(this);
-            if(value==null) {
-                throw new UnsatisfiedConstraintException(
-                        fi.name + " is intended to be processed but its value is null")
-                        .withSiteAndOrdinal(DataPacket.class, 20);
-                        
-            }
-            if(fi.isEntity) {
-                DataPacket dp = (DataPacket)value;
-                ret += dp.length();
-                continue;
-                
-            }
-            int length = 0;
-            if(fi.listComponentClass!=null) {
-                length = Utils.lengthForList(fi, this);
-                @SuppressWarnings("rawtypes")
-                List lst = (List)value;
-                if(length<0) {
-                    //write ahead
-                    //size of the write-ahead length should be considered
-                    //even the list itself is null or empty
-                    ret += fi.lengthType().size();
-                    //use the defined length rather than the actual list size
-                    length = lst.size();
-                }
-                if(fi.isEntityList) {
-                    for(int i=0;i<length;++i) {
-                        ret += ((DataPacket)lst.get(i)).length();
-                    }
-                    continue;
-                }
-            }else {
-                length = 1;
-            }
-            DataType type = fi.dataType;
-            switch(type) {
-            case BCD:
-                ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
-                break;
-            case BYTE:
-            case SHORT:
-            case INT:
-            case LONG:
-            case INT3:
-            case INT5:
-            case INT6:
-            case INT7:
-                ret += type.size() * length;
-                break;
-            case CHAR:{
-                int size = Utils.lengthForSerializingCHAR(fi, this);
-                if(size>=0) {
-                    //explicitly declared size
-                    ret += size * length;
-                }else {
-                    //dynamic length written to stream prior to serializing
-                    //or strings terminated by specific sequence of bytes
-                    //size should be retrieved by inspecting the value itself
-                    //or in case of a list, inspecting values for EACH element
-                    size = 0;
-                    if(value instanceof Date) {
-                        size += fi.annotation(Length.class).type().size();
-                        size += Utils.getThreadLocalDateFormatter(fi.datePattern).format((Date)value).length();
-                    }else {
-                        Charset cs = Utils.charsetForSerializingCHAR(fi, this);
-                        int fixedOverHead;
-                        if(fi.endsWith!=null) {
-                            fixedOverHead = fi.endsWith.length;
-                        }else {
-                            fixedOverHead = fi.annotation(Length.class).type().size();
-                        }
-                        if(value instanceof List) {
-                            @SuppressWarnings("rawtypes")
-                            List lst = (List)value;
-                            int lstSize = lst.size();
-                            size += fixedOverHead*lstSize;
-                            for(int i=0;i<lstSize;++i) {
-                                size += lst.get(i).toString().getBytes(cs).length;
-                            }
-                        }else {
-                            size += fixedOverHead;
-                            size += value.toString().getBytes(cs).length;
-                        }
-                    }
-                    ret += size;
-                }
-                break;
-            }
-            case RAW:{
-                int size = Utils.lengthForSerializingRAW(fi, this);
-                if(size>=0) {
-                    ret += size * length;
-                }else {
-                    size = 0;
-                    DataType lengthType = fi.annotation(Length.class).type();
-                    if(value instanceof List) {
-                        @SuppressWarnings("rawtypes")
-                        List lst = (List)value;
-                        for(int i=0;i<lst.size();++i) {
-                            value = lst.get(i);
-                            size += lengthType.size();
-                            size += Array.getLength(value);
-                        }
-                    }else {
-                        size += lengthType.size();
-                        size += Array.getLength(value);
-                    }
-                    ret += size;
-                }
-                break;
-            }
-            case USER_DEFINED:
-                int size = Utils.lengthForSerializingUserDefinedType(fi, this);
-                ret += size * length;
-                break;
-            }
+            ret += auxiliaryAccess.calculateFieldLength(fi, this);
         }
         return ret;
+    }
+    
+    public static interface AuxiliaryAccess{
+        InputStream wrap(InputStream in);
+        int calculateFieldLength(FieldInfo fi,Object self);
+        boolean shouldSkipFieldForSerializing(FieldInfo fi, Object self);
+    }
+    private static AuxiliaryAccess auxiliaryAccess;
+    public static final void setAuxiliaryAccess(AuxiliaryAccess auxiliaryAccess) {
+        DataPacket.auxiliaryAccess = auxiliaryAccess;
+    }
+    
+    static {
+        try {
+            Class.forName("io.github.zhtmf.converters.ClassInfo");
+        } catch (ClassNotFoundException e) {
+            throw new Error(e);
+        }
     }
     
     //lazy initialization

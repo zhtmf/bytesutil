@@ -1,9 +1,11 @@
-package io.github.zhtmf.converters.auxiliary;
+package io.github.zhtmf.annotations.modifiers;
 
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-public class PlaceHolderHandler<E> extends ModifierHandler<E> {
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
+
+class PlaceHolderHandler<E> extends ModifierHandler<E> {
     @Override
     public E handleDeserialize0(String fieldName, Object entity, InputStream is) {
         throw new UnsupportedOperationException("this implementation should not be called");
@@ -12,7 +14,6 @@ public class PlaceHolderHandler<E> extends ModifierHandler<E> {
     public E handleSerialize0(String fieldName, Object entity) {
         throw new UnsupportedOperationException("this implementation should not be called");
     }
-    
-    public static class DefaultCharsetHandler extends PlaceHolderHandler<Charset>{}
-    public static class DefaultLengthHandler extends PlaceHolderHandler<Integer>{}
+    static class DefaultCharsetHandler extends PlaceHolderHandler<Charset>{}
+    static class DefaultLengthHandler extends PlaceHolderHandler<Integer>{}
 }

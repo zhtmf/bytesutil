@@ -1,6 +1,6 @@
 package io.github.zhtmf;
 
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
+import io.github.zhtmf.converters.FieldInfo;
 
 /**
  * <p>

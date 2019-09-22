@@ -10,22 +10,18 @@ import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.TypeConverter;
 import io.github.zhtmf.TypeConverter.Input;
 import io.github.zhtmf.TypeConverter.Output;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedIOException;
 
-public class UserDefinedTypeConverter implements Converter<Object> {
+class UserDefinedTypeConverter implements Converter<Object> {
     @SuppressWarnings("unchecked")
     @Override
     public void serialize(Object value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         Output output = OutputImpl.getThreadLocalInstance(
                 ctx, dest
-                , Utils.lengthForSerializingUserDefinedType(ctx, self)
-                , Utils.charsetForSerializingCHAR(ctx, self)
+                , ctx.lengthForSerializingUserDefinedType(self)
+                , ctx.charsetForSerializingCHAR(self)
                 );
         ctx.userDefinedConverter.serialize(value,output);
         if(output.written()!=output.length()) {
@@ -36,12 +32,12 @@ public class UserDefinedTypeConverter implements Converter<Object> {
     }
 
     @Override
-    public Object deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public Object deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         Object ret = ctx.userDefinedConverter.deserialize(
                 InputImpl.getThreadLocalInstance(ctx, is
-                        , Utils.lengthForDeserializingUserDefinedType(ctx, self, is)
-                        , Utils.charsetForDeserializingCHAR(ctx, self, is)
+                        , ctx.lengthForDeserializingUserDefinedType(self, is)
+                        , ctx.charsetForDeserializingCHAR(self, is)
                         ));
         if(ret==null) {
             throw new ExtendedConversionException(ctx,

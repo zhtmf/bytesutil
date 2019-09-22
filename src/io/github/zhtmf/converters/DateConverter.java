@@ -8,23 +8,20 @@ import java.util.Date;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
+import static io.github.zhtmf.converters.StreamUtils.*;
 
-public class DateConverter implements Converter<Date>{
+class DateConverter implements Converter<Date>{
     
     @Override
     public void serialize(Date value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case CHAR:
-            Utils.serializeAsCHAR(Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
+            serializeAsCHAR(FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
             break;
         case BCD:
-            Utils.serializeBCD(Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
+            serializeBCD(FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
             break;
         case INT:{
             long millis = value.getTime();
@@ -41,23 +38,23 @@ public class DateConverter implements Converter<Date>{
     }
 
     @Override
-    public Date deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public Date deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         try {
             switch(ctx.dataType) {
             case CHAR:{
-                int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
+                int length = ctx.lengthForDeserializingCHAR(self, is);
                 if(length<0) {
                     length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
                 }
-                return Utils.getThreadLocalDateFormatter(ctx.datePattern)
+                return FieldInfo.getThreadLocalDateFormatter(ctx.datePattern)
                         .parse(new String(
                                 StreamUtils.readBytes(
                                         is, length)
                                 ,StandardCharsets.ISO_8859_1));
             }
             case BCD:
-                    return Utils.getThreadLocalDateFormatter(ctx.datePattern)
+                    return FieldInfo.getThreadLocalDateFormatter(ctx.datePattern)
                             .parse(StreamUtils.readStringBCD(
                                     is,ctx.annotation(BCD.class).value()));
             case INT:{

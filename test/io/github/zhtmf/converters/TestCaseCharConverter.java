@@ -1,4 +1,4 @@
-package test.exceptions;
+package io.github.zhtmf.converters;
 
 import org.junit.Assert;
 import org.junit.Test;

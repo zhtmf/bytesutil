@@ -1,4 +1,4 @@
-package test.exceptions;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayOutputStream;
 
@@ -13,7 +13,6 @@ import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
-import io.github.zhtmf.converters.auxiliary.EnumFieldInfo;
 import test.TestUtils;
 
 public class TestEnumFieldInfo {

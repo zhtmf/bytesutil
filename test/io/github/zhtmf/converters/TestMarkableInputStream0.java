@@ -1,4 +1,4 @@
-package test.general;
+package io.github.zhtmf.converters;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -6,9 +6,9 @@ import java.io.ByteArrayInputStream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
+import io.github.zhtmf.converters.MarkableInputStream;
 
-public class TestCase8{
+public class TestMarkableInputStream0{
     
     @Test
     public void testLength() throws Exception {
@@ -92,10 +92,5 @@ public class TestCase8{
             }
             Assert.assertTrue(str.substring(marklimit).contentEquals(sb));
         }
-    }
-    
-    public static void main(String[] args) throws Exception {
-        TestCase8 tc3 = new TestCase8();
-        tc3.testLength();
     }
 }

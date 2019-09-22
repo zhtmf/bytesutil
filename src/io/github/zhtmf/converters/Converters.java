@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class Converters {
+class Converters {
     private Converters() {}
     //all built-in converters that are initialized on startup
     //this map is made unmodifiable to ensure thread safety

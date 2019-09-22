@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
@@ -15,13 +11,13 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
  * 
  * @author dzh
  */
-public class ByteArrayConverter implements Converter<byte[]>{
+class ByteArrayConverter implements Converter<byte[]>{
     
     @Override
     public void serialize(byte[] value, OutputStream dest, FieldInfo ctx, Object self)throws IOException, ConversionException {
         switch(ctx.dataType) {
         case RAW:
-            int length = Utils.lengthForSerializingRAW(ctx, self);
+            int length = ctx.lengthForSerializingRAW(self);
             if(length<0) {
                 StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
             }else if(length!=value.length) {
@@ -38,11 +34,11 @@ public class ByteArrayConverter implements Converter<byte[]>{
     }
 
     @Override
-    public byte[] deserialize(MarkableInputStream is, FieldInfo fi, Object self)
+    public byte[] deserialize(java.io.InputStream is, FieldInfo fi, Object self)
             throws IOException, ConversionException {
         switch(fi.dataType) {
         case RAW:
-            int length = Utils.lengthForDeserializingRAW(fi, self, is);
+            int length = fi.lengthForDeserializingRAW(self, is);
             if(length<0) {
                 length = StreamUtils.readIntegerOfType(is, fi.lengthType(), fi.bigEndian);
             }

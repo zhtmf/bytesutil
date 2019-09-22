@@ -8,7 +8,6 @@ import java.lang.annotation.Target;
 
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.PlaceHolderHandler;
 
 /**
  * Annotation used to specify length of various data dataType. It is used in the

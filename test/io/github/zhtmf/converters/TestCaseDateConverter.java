@@ -1,4 +1,4 @@
-package test.exceptions;
+package io.github.zhtmf.converters;
 
 import java.util.Date;
 
@@ -12,7 +12,6 @@ import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.converters.DateConverter;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import test.TestUtils;
 
 public class TestCaseDateConverter{
@@ -29,7 +28,7 @@ public class TestCaseDateConverter{
             entity.serialize(TestUtils.newByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 4);
+            TestUtils.assertExactException(e, StreamUtils.class, 14);
         }
         
         //totally nonsense, only to make jacoco happy
@@ -45,7 +44,7 @@ public class TestCaseDateConverter{
             entity.serialize(TestUtils.newByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 4);
+            TestUtils.assertExactException(e, StreamUtils.class, 14);
         }
         @SuppressWarnings("hiding")
         class Entity2 extends DataPacket{
@@ -59,7 +58,7 @@ public class TestCaseDateConverter{
             entity.serialize(TestUtils.newByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 4);
+            TestUtils.assertExactException(e, StreamUtils.class, 14);
         }
     }
     public static class Entity1 extends DataPacket{

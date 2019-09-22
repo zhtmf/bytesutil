@@ -1,4 +1,4 @@
-package test.general;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
@@ -19,7 +19,6 @@ import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.BigIntegerConverter;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import test.TestUtils;
 
 public class TestIntegerRange {
@@ -46,7 +45,7 @@ public class TestIntegerRange {
                 entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)'1',(byte)'2',(byte)'8'}));
                 Assert.fail();
             } catch (Exception e) {
-                TestUtils.assertExactException(e, Utils.class, 1);
+                TestUtils.assertExactException(e, StreamUtils.class, 11);
             }
         }
         {
@@ -90,7 +89,7 @@ public class TestIntegerRange {
                 entity.deserialize(TestUtils.newInputStream(new byte[] {(byte)0b00000001,(byte)0b10011001}));
                 Assert.fail();
             } catch (Exception e) {
-                TestUtils.assertExactException(e, Utils.class, 1);
+                TestUtils.assertExactException(e, StreamUtils.class, 11);
             }
         }
     }
@@ -110,7 +109,7 @@ public class TestIntegerRange {
             entity.serialize(TestUtils.newByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         entity.b = 120;
         try {
@@ -176,7 +175,7 @@ public class TestIntegerRange {
                 entity.serialize(TestUtils.newByteArrayOutputStream());
                 Assert.fail();
             } catch (Exception e) {
-                TestUtils.assertExactException(e, Utils.class, 1);
+                TestUtils.assertExactException(e, StreamUtils.class, 11);
             }
         }
         {
@@ -186,7 +185,7 @@ public class TestIntegerRange {
                 entity.serialize(TestUtils.newByteArrayOutputStream());
                 Assert.fail();
             } catch (Exception e) {
-                TestUtils.assertExactException(e, Utils.class, 1);
+                TestUtils.assertExactException(e, StreamUtils.class, 11);
             }
         }
         {
@@ -196,7 +195,7 @@ public class TestIntegerRange {
                 entity.serialize(TestUtils.newByteArrayOutputStream());
                 Assert.fail();
             } catch (Exception e) {
-                TestUtils.assertExactException(e, Utils.class, 1);
+                TestUtils.assertExactException(e, StreamUtils.class, 11);
             }
         }
         {
@@ -206,7 +205,7 @@ public class TestIntegerRange {
                 entity.serialize(TestUtils.newByteArrayOutputStream());
                 Assert.fail();
             } catch (Exception e) {
-                TestUtils.assertExactException(e, Utils.class, 1);
+                TestUtils.assertExactException(e, StreamUtils.class, 11);
             }
         }
     }
@@ -218,56 +217,56 @@ public class TestIntegerRange {
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@SHORT@Unsigned public long sh = 70000;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@SHORT@Signed public long sh = 65535;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@SHORT@Signed public long sh = -65535;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@INT@Signed public long in = ((long)Integer.MAX_VALUE)+1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@INT@Signed public long in = ((long)Integer.MIN_VALUE)-1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@INT@Unsigned public long in = ((long)Integer.MAX_VALUE)*3+1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@INT@Unsigned public long in = ((long)Integer.MIN_VALUE)*3-1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, Utils.class, 1);
+            TestUtils.assertExactException(e, StreamUtils.class, 11);
         }
         try {
             class Entity extends DataPacket{@Order(0)@LONG@Signed public BigInteger in =

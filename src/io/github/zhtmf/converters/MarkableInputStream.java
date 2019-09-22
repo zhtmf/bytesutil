@@ -1,4 +1,4 @@
-package io.github.zhtmf.converters.auxiliary;
+package io.github.zhtmf.converters;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,7 +16,7 @@ import java.util.Arrays;
  * 
  * @author dzh
  */
-public class MarkableInputStream extends InputStream implements AutoCloseable{
+class MarkableInputStream extends InputStream implements AutoCloseable{
     
     private static final int[] SHARED_EMPTY_BUFFER = new int[0];
     private static final int INITIAL_BUFFER_SIZE = 16;
@@ -26,7 +26,7 @@ public class MarkableInputStream extends InputStream implements AutoCloseable{
     private int fillPos = 0;
     private int bytesProcessed;
     
-    public static MarkableInputStream wrap(InputStream in) {
+    static MarkableInputStream wrap(InputStream in) {
         if(in instanceof MarkableInputStream) {
             return new ResetCounterMarkableInputStream((MarkableInputStream) in);
         }

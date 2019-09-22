@@ -7,10 +7,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.PlaceHolderHandler;
 
 /**
  * <p>
@@ -32,7 +30,7 @@ public @interface CHARSET {
      * 
      * @return  name of the charset
      */
-    String value() default "UTF-8";
+    String value() default DEFAULT_CHARSET;
 
     /**
      * <p>
@@ -45,5 +43,5 @@ public @interface CHARSET {
      */
     Class<? extends ModifierHandler<Charset>> handler() default PlaceHolderHandler.DefaultCharsetHandler.class;
     
-    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    public static final String DEFAULT_CHARSET = "UTF-8";
 }

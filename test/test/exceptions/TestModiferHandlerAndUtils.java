@@ -11,10 +11,8 @@ import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
-import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.Utils;
 import test.TestUtils;
 
 public class TestModiferHandlerAndUtils {
@@ -81,38 +79,6 @@ public class TestModiferHandlerAndUtils {
             Assert.fail();
         } catch (Exception e) {
             TestUtils.assertExactExceptionInHierarchy(e, ModifierHandler.class, 2);
-        }
-    }
-    
-    @Test
-    public void test2() throws ConversionException {
-        try {
-            class Entity extends DataPacket{@Order(0)@BCD(2) public int ts = -1;}
-            new Entity().serialize(new ByteArrayOutputStream());
-            Assert.fail();
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, Utils.class, 5);
-        }
-        try {
-            class Entity extends DataPacket{@Order(0)@BCD(2) public int ts = 133456;}
-            new Entity().serialize(new ByteArrayOutputStream());
-            Assert.fail();
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, Utils.class, 6);
-        }
-        try {
-            class Entity extends DataPacket{@Order(0)@BCD(10) public int ts = 133456;}
-            new Entity().serialize(new ByteArrayOutputStream());
-            Assert.fail();
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, Utils.class, 6);
-        }
-        try {
-            class Entity extends DataPacket{@Order(0)@BCD(7) public String ts = "133456";}
-            new Entity().serialize(new ByteArrayOutputStream());
-            Assert.fail();
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, Utils.class, 7);
         }
     }
     
