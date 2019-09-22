@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,10 +48,9 @@ class ClassInfo {
      */
     private Map<Class<? extends Annotation>, Annotation> globalAnnotations = new HashMap<>();
     /**
-     * {@link FieldInfo} objects that are used internally, in the order specified by
-     * {@link Order} annotation.
+     * {@link FieldInfo} objects in the order specified by {@link Order} annotation.
      */
-    private Map<String,FieldInfo> fieldInfoByField = new LinkedHashMap<>();
+    List<FieldInfo> fieldInfoList = new ArrayList<>();
     
     public ClassInfo(Class<?> cls) {
         
@@ -207,17 +205,10 @@ class ClassInfo {
                         .withSiteAndOrdinal(ClassInfo.class, 9);
             }
             
-            fieldInfoByField.put(name, fieldInfo);
+            fieldInfoList.add(fieldInfo);
         }
-    }
-    
-    /**
-     * TODO: delete this method
-     * Get a <b>copy</b> of FieldInfo list
-     * @return  a <b>copy</b> of FieldInfo list
-     */
-    public List<FieldInfo> fieldInfoList() {
-        return new ArrayList<>(fieldInfoByField.values());
+        
+        fieldInfoList = Collections.unmodifiableList(fieldInfoList);
     }
     
     @SuppressWarnings("unchecked")
@@ -279,7 +270,7 @@ class ClassInfo {
         //lazy initialization
         ClassInfo ci = getClassInfo(self);
         
-        for(FieldInfo ctx:ci.fieldInfoList()) {
+        for(FieldInfo ctx:ci.fieldInfoList) {
             
             if(ctx.shouldSkipFieldForSerializing(self))
                 continue;
@@ -315,7 +306,7 @@ class ClassInfo {
         }
         InputStream _src = MarkableInputStream.wrap(src);
         ClassInfo ci = getClassInfo(self);
-        for(FieldInfo ctx:ci.fieldInfoList()) {
+        for(FieldInfo ctx:ci.fieldInfoList) {
             Object value = null;
             @SuppressWarnings("unchecked")
             Converter<Object> cv = (Converter<Object>)ctx.converter;
@@ -334,7 +325,7 @@ class ClassInfo {
     public static int length(Object self) throws IllegalArgumentException{
         ClassInfo ci = getClassInfo(self);
         int ret = 0;
-        for(FieldInfo ctx:ci.fieldInfoList()) {
+        for(FieldInfo ctx:ci.fieldInfoList) {
             ret += calculateFieldLength(ctx, self);
         }
         return ret;
@@ -462,6 +453,8 @@ class ClassInfo {
         }
         return ret;
     }
+    
+    //---------lang access for this package------------
     
     static {
         

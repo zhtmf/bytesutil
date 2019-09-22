@@ -36,7 +36,7 @@ import io.github.zhtmf.converters.TestCaseFieldInfo.Entity6.CharsetHandler;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseFieldInfo {
     

@@ -19,7 +19,7 @@ import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.BigIntegerConverter;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestIntegerRange {
 

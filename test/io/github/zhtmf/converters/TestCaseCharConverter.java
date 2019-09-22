@@ -9,7 +9,7 @@ import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.converters.CharConverter;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseCharConverter{
     public static class Entity0 extends DataPacket{

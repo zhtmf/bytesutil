@@ -8,7 +8,7 @@ import org.junit.Test;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.INT;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class MakeJacocoHappy {
     @Test
@@ -26,7 +26,7 @@ public class MakeJacocoHappy {
             Method mtd = DataPacket.class.getDeclaredMethod("getClassInfo");
             mtd.setAccessible(true);
             ClassInfo ci = (ClassInfo) mtd.invoke(obj);
-            ci.fieldInfoList().get(0).toString();
+            ci.fieldInfoList.get(0).toString();
         }
     }
     

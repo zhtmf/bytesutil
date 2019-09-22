@@ -21,7 +21,7 @@ import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.MarkableInputStream;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestMarkableInputStream {
     @LittleEndian

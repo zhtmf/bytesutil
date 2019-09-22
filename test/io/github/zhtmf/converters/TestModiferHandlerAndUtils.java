@@ -9,7 +9,7 @@ import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.BCD;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestModiferHandlerAndUtils {
     @Test

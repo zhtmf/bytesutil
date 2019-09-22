@@ -12,7 +12,7 @@ import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.converters.DateConverter;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseDateConverter{
     @Test

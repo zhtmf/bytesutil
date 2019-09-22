@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import org.junit.Test;
 
 import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.TestCaseUserDefined.Converter2;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.DatePattern;
@@ -12,8 +13,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.types.UserDefined;
-import test.TestUtils;
-import test.exceptions.TestCaseUserDefined.Converter2;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseUserDefined {
     @Signed

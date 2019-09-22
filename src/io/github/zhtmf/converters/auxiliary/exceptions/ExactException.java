@@ -1,6 +1,6 @@
 package io.github.zhtmf.converters.auxiliary.exceptions;
 
-public interface ExactException {
+interface ExactException {
     Class<?> getSite();
     int getOrdinal();
 }

@@ -13,7 +13,7 @@ import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestEnumFieldInfo {
     private enum NEnum1 implements NumericEnum{

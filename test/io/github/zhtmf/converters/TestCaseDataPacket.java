@@ -23,7 +23,7 @@ import io.github.zhtmf.converters.DataPacketConverter;
 import io.github.zhtmf.converters.IntArrayConverter;
 import io.github.zhtmf.converters.ListConverter;
 import io.github.zhtmf.converters.TestCaseDataPacket.Entity11.SubEntity11;
-import test.TestUtils;
+import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseDataPacket {
     
