@@ -139,21 +139,21 @@ public class ClassInfo {
                 }
             }
             
-            FieldInfo fi = f.getType().isEnum()
+            FieldInfo fieldInfo = f.getType().isEnum()
                     && f.getAnnotation(UserDefined.class)==null
                     ? new EnumFieldInfo(f, type, this)
                     : new FieldInfo(f,type,this);
             
-            if(fi.listComponentClass!=null) {
-                if(fi.localAnnotation(Length.class)==null
-                        && fi.localAnnotation(ListLength.class)==null) {
+            if(fieldInfo.listComponentClass!=null) {
+                if(fieldInfo.localAnnotation(Length.class)==null
+                        && fieldInfo.localAnnotation(ListLength.class)==null) {
                     throw FieldInfo.forContext(cls, name, "neither Length nor ListLength annotation are present")
                         .withSiteAndOrdinal(ClassInfo.class, 4);
                 }
-                if(((fi.dataType == DataType.RAW && fi.localAnnotation(RAW.class).value()<0)
-                || (fi.dataType == DataType.CHAR && fi.localAnnotation(CHAR.class).value()<0)
-                || (fi.dataType == DataType.USER_DEFINED && fi.localAnnotation(UserDefined.class).length()<0))
-                        && fi.localAnnotation(ListLength.class)==null) {
+                if(((fieldInfo.dataType == DataType.RAW && fieldInfo.localAnnotation(RAW.class).value()<0)
+                || (fieldInfo.dataType == DataType.CHAR && fieldInfo.localAnnotation(CHAR.class).value()<0)
+                || (fieldInfo.dataType == DataType.USER_DEFINED && fieldInfo.localAnnotation(UserDefined.class).length()<0))
+                        && fieldInfo.localAnnotation(ListLength.class)==null) {
                     throw FieldInfo.forContext(cls, name, "this field is a list of type that utilizes @Length, "
                             + "to avoid ambiguity, use @ListLength but not @Length to specify the list length")
                         .withSiteAndOrdinal(ClassInfo.class, 5);
@@ -163,22 +163,22 @@ public class ClassInfo {
             //either specify a positive value property or use a Length annotation to 
             //declare the length
             {
-                CHAR ch = fi.localAnnotation(CHAR.class);
+                CHAR ch = fieldInfo.localAnnotation(CHAR.class);
                 if(ch!=null) {
-                    if(ch.value()<0 &&  ! fi.lengthDefined && fi.endsWith==null) {
+                    if(ch.value()<0 &&  ! fieldInfo.lengthDefined && fieldInfo.endsWith==null) {
                         throw FieldInfo.forContext(cls, name, "this field is defined as CHAR, but its value property is negative"
                                 + " and a Length annotation is not present on it")
                         .withSiteAndOrdinal(ClassInfo.class, 6);
                     }
-                    if(fi.endsWith!=null) {
-                        if(ch.value()>0 || fi.lengthDefined) {
+                    if(fieldInfo.endsWith!=null) {
+                        if(ch.value()>0 || fieldInfo.lengthDefined) {
                             throw FieldInfo.forContext(cls, name, "length of CHAR fields can only be specified by"
                                     + "one of value property, Length annotation or EndsWith")
                             .withSiteAndOrdinal(ClassInfo.class, 10);
                         }
                     }
-                    if(fi.listComponentClass==null
-                   && (ch.value()>=0 && fi.customLengthDefined)) {
+                    if(fieldInfo.listComponentClass==null
+                   && (ch.value()>=0 && fieldInfo.customLengthDefined)) {
                         throw FieldInfo.forContext(cls, name, "length of CHAR fields can only be specified by"
                                     + " one of value property, Length annotation or EndsWith")
                         .withSiteAndOrdinal(ClassInfo.class, 11);
@@ -186,24 +186,24 @@ public class ClassInfo {
                 }
             }
             
-            RAW raw = fi.localAnnotation(RAW.class);
+            RAW raw = fieldInfo.localAnnotation(RAW.class);
             if(raw!=null && raw.value()<0) {
-                if( ! fi.lengthDefined)
+                if( ! fieldInfo.lengthDefined)
                     throw FieldInfo.forContext(cls, name, "this field is defined as RAW, but its value property is negative"
                             + " and a Length annotation is not present on it")
                         .withSiteAndOrdinal(ClassInfo.class, 7);
             }
             
-            UserDefined ud = fi.localAnnotation(UserDefined.class);
+            UserDefined ud = fieldInfo.localAnnotation(UserDefined.class);
             if(ud!=null && ud.length()<0) {
-                if( ! fi.lengthDefined)
+                if( ! fieldInfo.lengthDefined)
                     throw FieldInfo.forContext(cls, name, "this field is defined as UserDefined"
                             + ", but its value property is negative"
                             + " and a Length annotation is not present on it")
                         .withSiteAndOrdinal(ClassInfo.class, 9);
             }
             
-            fieldInfoByField.put(name, fi);
+            fieldInfoByField.put(name, fieldInfo);
         }
     }
     
@@ -256,36 +256,36 @@ public class ClassInfo {
             }
             
             @Override
-            public int calculateFieldLength(FieldInfo fi,Object self) {
-                if(fi.shouldSkipFieldForSerializing(self)) {
+            public int calculateFieldLength(FieldInfo ctx,Object self) {
+                if(ctx.shouldSkipFieldForSerializing(self)) {
                     return 0;
                 }
-                Object value = fi.get(self);
+                Object value = ctx.get(self);
                 if(value==null) {
                     throw new UnsatisfiedConstraintException(
-                            fi.name + " is intended to be processed but its value is null")
+                            ctx.name + " is intended to be processed but its value is null")
                             .withSiteAndOrdinal(DataPacket.class, 20);
                             
                 }
-                if(fi.isEntity) {
+                if(ctx.isEntity) {
                     DataPacket dp = (DataPacket)value;
                     return dp.length();
                 }
                 int ret = 0;
                 int length = 0;
-                if(fi.listComponentClass!=null) {
-                    length = fi.lengthForList(self);
+                if(ctx.listComponentClass!=null) {
+                    length = ctx.lengthForList(self);
                     @SuppressWarnings("rawtypes")
                     List lst = (List)value;
                     if(length<0) {
                         //write ahead
                         //size of the write-ahead length should be considered
                         //even the list itself is null or empty
-                        ret += DataTypeOperations.of(fi.lengthType()).size();
+                        ret += DataTypeOperations.of(ctx.lengthType()).size();
                         //use the defined length rather than the actual list size
                         length = lst.size();
                     }
-                    if(fi.isEntityList) {
+                    if(ctx.isEntityList) {
                         for(int i=0;i<length;++i) {
                             ret += ((DataPacket)lst.get(i)).length();
                         }
@@ -294,10 +294,10 @@ public class ClassInfo {
                 }else {
                     length = 1;
                 }
-                DataType type = fi.dataType;
+                DataType type = ctx.dataType;
                 switch(type) {
                 case BCD:
-                    ret += ((BCD)fi.localAnnotation(BCD.class)).value() * length;
+                    ret += ((BCD)ctx.localAnnotation(BCD.class)).value() * length;
                     break;
                 case BYTE:
                 case SHORT:
@@ -310,7 +310,7 @@ public class ClassInfo {
                     ret += DataTypeOperations.of(type).size() * length;
                     break;
                 case CHAR:{
-                    int size = fi.lengthForSerializingCHAR(self);
+                    int size = ctx.lengthForSerializingCHAR(self);
                     if(size>=0) {
                         //explicitly declared size
                         ret += size * length;
@@ -321,15 +321,15 @@ public class ClassInfo {
                         //or in case of a list, inspecting values for EACH element
                         size = 0;
                         if(value instanceof Date) {
-                            size += DataTypeOperations.of(fi.annotation(Length.class).type()).size();
-                            size += FieldInfo.getThreadLocalDateFormatter(fi.datePattern).format((Date)value).length();
+                            size += DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
+                            size += FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format((Date)value).length();
                         }else {
-                            Charset cs = fi.charsetForSerializingCHAR(self);
+                            Charset cs = ctx.charsetForSerializingCHAR(self);
                             int fixedOverHead;
-                            if(fi.endsWith!=null) {
-                                fixedOverHead = fi.endsWith.length;
+                            if(ctx.endsWith!=null) {
+                                fixedOverHead = ctx.endsWith.length;
                             }else {
-                                fixedOverHead = DataTypeOperations.of(fi.annotation(Length.class).type()).size();
+                                fixedOverHead = DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
                             }
                             if(value instanceof List) {
                                 @SuppressWarnings("rawtypes")
@@ -349,12 +349,12 @@ public class ClassInfo {
                     break;
                 }
                 case RAW:{
-                    int size = fi.lengthForSerializingRAW(self);
+                    int size = ctx.lengthForSerializingRAW(self);
                     if(size>=0) {
                         ret += size * length;
                     }else {
                         size = 0;
-                        DataTypeOperations lengthType = DataTypeOperations.of(fi.annotation(Length.class).type());
+                        DataTypeOperations lengthType = DataTypeOperations.of(ctx.annotation(Length.class).type());
                         if(value instanceof List) {
                             @SuppressWarnings("rawtypes")
                             List lst = (List)value;
@@ -372,7 +372,7 @@ public class ClassInfo {
                     break;
                 }
                 case USER_DEFINED:
-                    int size = fi.lengthForSerializingUserDefinedType(self);
+                    int size = ctx.lengthForSerializingUserDefinedType(self);
                     ret += size * length;
                     break;
                 }
@@ -380,8 +380,8 @@ public class ClassInfo {
             }
 
             @Override
-            public boolean shouldSkipFieldForSerializing(FieldInfo fi, Object self) {
-                return fi.shouldSkipFieldForSerializing(self);
+            public boolean shouldSkipFieldForSerializing(FieldInfo ctx, Object self) {
+                return ctx.shouldSkipFieldForSerializing(self);
             }
         });
     }

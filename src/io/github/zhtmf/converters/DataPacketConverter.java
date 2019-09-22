@@ -16,23 +16,23 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
 class DataPacketConverter implements Converter<DataPacket> {
 
     @Override
-    public void serialize(DataPacket value, OutputStream dest, FieldInfo fi, Object self)
+    public void serialize(DataPacket value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         ((DataPacket)value).serialize(dest);
     }
 
     @Override
-    public DataPacket deserialize(java.io.InputStream is, FieldInfo fi, Object self)
+    public DataPacket deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         DataPacket object = null;
         try {
-            object = fi.entityForDeserializing(self, is);
+            object = ctx.entityForDeserializing(self, is);
         } catch (Exception e) {
             throw new ExtendedConversionException(
-                    self.getClass(),fi.name,
+                    self.getClass(),ctx.name,
                     String.format("field value is null and"
                             + " entity class [%s] cannot be instantiated"
-                            , fi.isEntityList ? fi.listComponentClass : fi.getFieldType()),e)
+                            , ctx.isEntityList ? ctx.listComponentClass : ctx.getFieldType()),e)
                     .withSiteAndOrdinal(DataPacketConverter.class, 11);
         }
         object.deserialize(is);

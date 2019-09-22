@@ -705,13 +705,13 @@ public class FieldInfo{
         }
 
         @Override
-        public Object deserialize(java.io.InputStream in, FieldInfo fi, Object self)
+        public Object deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
                 throws IOException, ConversionException {
-            if(fi.conditionalHandler!=null
-          && ! fi.conditionalHandler.handleDeserialize0(fi.name, self, (MarkableInputStream)in).equals(fi.conditionalResult)) {
+            if(ctx.conditionalHandler!=null
+          && ! ctx.conditionalHandler.handleDeserialize0(ctx.name, self, (MarkableInputStream)in).equals(ctx.conditionalResult)) {
                 return null;
             }
-            return wrappedConverter.deserialize(in, fi, self);
+            return wrappedConverter.deserialize(in, ctx, self);
         }
 
     }

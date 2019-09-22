@@ -11,24 +11,24 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
 abstract class AbstractListConverter {
 
     @SuppressWarnings("rawtypes")
-    protected int lengthForSerialize(List value, OutputStream dest, FieldInfo fi, Object self) throws ConversionException {
+    protected int lengthForSerialize(List value, OutputStream dest, FieldInfo ctx, Object self) throws ConversionException {
         @SuppressWarnings("unchecked")
         List<Object> listValue = (List<Object>)value;
         //validity check is done in ClassInfo
-        int length = fi.lengthForList(self);
+        int length = ctx.lengthForList(self);
         if(length<0) {
             length = listValue.size();
             try {
-                StreamUtils.writeIntegerOfType(dest, fi.lengthType(), listValue.size(), fi.bigEndian);
+                StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), listValue.size(), ctx.bigEndian);
             } catch (IOException e) {
-                throw new ExtendedConversionException(self.getClass(),fi.name,e)
+                throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                     .withSiteAndOrdinal(AbstractListConverter.class, 1);
             }
         }
         //do not use the actual length of the list but the length obtained above
         if(length!=listValue.size()) {
             throw new ExtendedConversionException(
-                    self.getClass(),fi.name,
+                    self.getClass(),ctx.name,
                     String.format(
                             "defined list length [%d] is not the same as length [%d] of list value"
                             ,length,listValue.size()))
@@ -37,16 +37,16 @@ abstract class AbstractListConverter {
         return length;
     }
     
-    protected int lengthForDeserialize(InputStream is, FieldInfo fi, Object self) throws ConversionException {
-        int length = fi.lengthForDeserializingListLength(self, is);
+    protected int lengthForDeserialize(InputStream is, FieldInfo ctx, Object self) throws ConversionException {
+        int length = ctx.lengthForDeserializingListLength(self, is);
         if(length<0) {
-            length = fi.lengthForDeserializingLength(self, is);
+            length = ctx.lengthForDeserializingLength(self, is);
         }
         if(length<0) {
             try {
-                length = StreamUtils.readIntegerOfType(is, fi.lengthType(), fi.bigEndian);
+                length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
             } catch (IOException e) {
-                throw new ExtendedConversionException(self.getClass(),fi.name,e)
+                throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                         .withSiteAndOrdinal(AbstractListConverter.class, 12);
             }
         }

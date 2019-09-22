@@ -34,13 +34,13 @@ class ByteArrayConverter implements Converter<byte[]>{
     }
 
     @Override
-    public byte[] deserialize(java.io.InputStream is, FieldInfo fi, Object self)
+    public byte[] deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
-        switch(fi.dataType) {
+        switch(ctx.dataType) {
         case RAW:
-            int length = fi.lengthForDeserializingRAW(self, is);
+            int length = ctx.lengthForDeserializingRAW(self, is);
             if(length<0) {
-                length = StreamUtils.readIntegerOfType(is, fi.lengthType(), fi.bigEndian);
+                length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
             }
             return StreamUtils.readBytes(is, length);
         default:throw new Error("cannot happen");

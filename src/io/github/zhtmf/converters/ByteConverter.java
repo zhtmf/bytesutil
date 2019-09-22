@@ -18,7 +18,6 @@ import static io.github.zhtmf.converters.StreamUtils.*;
 class ByteConverter implements Converter<Byte> {
 
     @Override
-    //TODO:rename fi to ctx
     public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
         byte val = (byte)value;

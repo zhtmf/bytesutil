@@ -69,31 +69,31 @@ public abstract class DataPacket {
         //lazy initialization
         ClassInfo ci = getClassInfo();
         
-        for(FieldInfo fi:ci.fieldInfoList()) {
+        for(FieldInfo ctx:ci.fieldInfoList()) {
             
-            if(auxiliaryAccess.shouldSkipFieldForSerializing(fi, this))
+            if(auxiliaryAccess.shouldSkipFieldForSerializing(ctx, this))
                 continue;
             
-            Object value = fi.get(this);
+            Object value = ctx.get(this);
             if(value==null) {
                 /*
                  * null values shall not be permitted as it may be impossible 
                  * to deserialize the byte sequence generated
                  * Note: this modification causes incompatibility with former releases
                  */
-                throw new ExtendedConversionException(this.getClass(),fi.name,
+                throw new ExtendedConversionException(this.getClass(),ctx.name,
                         "this field is intended to be processed but its value is null")
                         .withSiteAndOrdinal(DataPacket.class, 0);
             }
             
             try {
                 @SuppressWarnings("unchecked")
-                Converter<Object> cv = (Converter<Object>)fi.converter;
-                cv.serialize(value, dest, fi, this);
+                Converter<Object> cv = (Converter<Object>)ctx.converter;
+                cv.serialize(value, dest, ctx, this);
             } catch(ConversionException e) {
                 throw e;
             } catch (Exception e) {
-                throw new ExtendedConversionException(this.getClass(),fi.name,e)
+                throw new ExtendedConversionException(this.getClass(),ctx.name,e)
                 .withSiteAndOrdinal(DataPacket.class, 4);
             }
         }
@@ -135,19 +135,19 @@ public abstract class DataPacket {
     
     private void deserialize0(InputStream _src) throws ConversionException {
         ClassInfo ci = getClassInfo();
-        for(FieldInfo fi:ci.fieldInfoList()) {
+        for(FieldInfo ctx:ci.fieldInfoList()) {
             Object value = null;
             @SuppressWarnings("unchecked")
-            Converter<Object> cv = (Converter<Object>)fi.converter;
+            Converter<Object> cv = (Converter<Object>)ctx.converter;
             try {
-                value = cv.deserialize(_src, fi, this);
+                value = cv.deserialize(_src, ctx, this);
             } catch(ConversionException e) {
                 throw e;
             } catch (Exception e) {
-                throw new ExtendedConversionException(this.getClass(),fi.name,e)
+                throw new ExtendedConversionException(this.getClass(),ctx.name,e)
                         .withSiteAndOrdinal(DataPacket.class, 14);
             }
-            fi.set(this, value);
+            ctx.set(this, value);
         }
     }
 
@@ -170,16 +170,16 @@ public abstract class DataPacket {
     public int length() throws IllegalArgumentException{
         ClassInfo ci = getClassInfo();
         int ret = 0;
-        for(FieldInfo fi:ci.fieldInfoList()) {
-            ret += auxiliaryAccess.calculateFieldLength(fi, this);
+        for(FieldInfo ctx:ci.fieldInfoList()) {
+            ret += auxiliaryAccess.calculateFieldLength(ctx, this);
         }
         return ret;
     }
     
     public static interface AuxiliaryAccess{
         InputStream wrap(InputStream in);
-        int calculateFieldLength(FieldInfo fi,Object self);
-        boolean shouldSkipFieldForSerializing(FieldInfo fi, Object self);
+        int calculateFieldLength(FieldInfo ctx,Object self);
+        boolean shouldSkipFieldForSerializing(FieldInfo ctx, Object self);
     }
     private static AuxiliaryAccess auxiliaryAccess;
     public static final void setAuxiliaryAccess(AuxiliaryAccess auxiliaryAccess) {
