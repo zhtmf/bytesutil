@@ -3,7 +3,7 @@ package io.github.zhtmf.annotations.enums;
 import io.github.zhtmf.annotations.modifiers.Length;
 
 /**
- * Marker interface used to make an enum-typed field eligible to be mapped to
+ * Interface used to make an enum-typed field eligible to be mapped to
  * string values (byte sequences interpreted as human-readable text).
  * <p>
  * The enum class implementing this interface should return non-null and
@@ -11,8 +11,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
  * also restricted by annotations like {@link Length}.
  * <p>
  * If for some reason the enum class cannot implement this interface, it should
- * return numbers as string values in <code>toString</code> methods for each enum
- * member.
+ * return string values from <code>toString</code> methods of each enum member.
  * 
  * @author dzh
  */

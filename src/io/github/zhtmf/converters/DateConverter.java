@@ -1,6 +1,7 @@
 package io.github.zhtmf.converters;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -8,23 +9,20 @@ import java.util.Date;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
-public class DateConverter implements Converter<Date>{
+import static io.github.zhtmf.converters.StreamUtils.*;
+
+class DateConverter implements Converter<Date>{
     
     @Override
     public void serialize(Date value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case CHAR:
-            Utils.serializeAsCHAR(Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
+            serializeAsCHAR(FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
             break;
         case BCD:
-            Utils.serializeBCD(Utils.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
+            serializeBCD(FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format(value), dest, ctx, self);
             break;
         case INT:{
             long millis = value.getTime();
@@ -36,41 +34,42 @@ public class DateConverter implements Converter<Date>{
             StreamUtils.writeLong(dest, millis, ctx.bigEndian);
             break;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Date deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public Date deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         try {
             switch(ctx.dataType) {
             case CHAR:{
-                int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
+                int length = ctx.lengthForDeserializingCHAR(self, in);
                 if(length<0) {
-                    length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+                    length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
                 }
-                return Utils.getThreadLocalDateFormatter(ctx.datePattern)
+                return FieldInfo.getThreadLocalDateFormatter(ctx.datePattern)
                         .parse(new String(
                                 StreamUtils.readBytes(
-                                        is, length)
+                                        in, length)
                                 ,StandardCharsets.ISO_8859_1));
             }
             case BCD:
-                    return Utils.getThreadLocalDateFormatter(ctx.datePattern)
+                    return FieldInfo.getThreadLocalDateFormatter(ctx.datePattern)
                             .parse(StreamUtils.readStringBCD(
-                                    is,ctx.annotation(BCD.class).value()));
+                                    in,ctx.annotation(BCD.class).value()));
             case INT:{
-                long val = StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
+                long val = StreamUtils.readInt(in, ctx.signed, ctx.bigEndian);
                 return new Date(val*1000);
             }
             case LONG:{
-                return new Date(StreamUtils.readLong(is, ctx.bigEndian));
+                return new Date(StreamUtils.readLong(in, ctx.bigEndian));
             }
-            default:throw new Error("cannot happen");
+            default:throw new Error("should not reach here");
             }
         } catch (ParseException e) {
-            throw new ExtendedConversionException(ctx,
+            throw new ExtendedConversionException(
+                    ctx.enclosingEntityClass,ctx.name,
                     "parser error",e)
                         .withSiteAndOrdinal(DateConverter.class, 2);
         }

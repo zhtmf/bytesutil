@@ -10,41 +10,35 @@ import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.TypeConverter;
 import io.github.zhtmf.TypeConverter.Input;
 import io.github.zhtmf.TypeConverter.Output;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedIOException;
 
-public class UserDefinedTypeConverter implements Converter<Object> {
+class UserDefinedTypeConverter implements Converter<Object> {
     @SuppressWarnings("unchecked")
     @Override
     public void serialize(Object value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         Output output = OutputImpl.getThreadLocalInstance(
                 ctx, dest
-                , Utils.lengthForSerializingUserDefinedType(ctx, self)
-                , Utils.charsetForSerializingCHAR(ctx, self)
+                , ctx.lengthForSerializingUserDefinedType(self)
+                , ctx.charsetForSerializingCHAR(self)
                 );
         ctx.userDefinedConverter.serialize(value,output);
         if(output.written()!=output.length()) {
-            throw new ExtendedConversionException(ctx,
+            throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name,
                     "should write exactly "+output.length()+" bytes to output for this user defined type")
                         .withSiteAndOrdinal(UserDefinedTypeConverter.class, 1);
         }
     }
 
     @Override
-    public Object deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public Object deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         Object ret = ctx.userDefinedConverter.deserialize(
-                InputImpl.getThreadLocalInstance(ctx, is
-                        , Utils.lengthForDeserializingUserDefinedType(ctx, self, is)
-                        , Utils.charsetForDeserializingCHAR(ctx, self, is)
+                InputImpl.getThreadLocalInstance(ctx, in
+                        , ctx.lengthForDeserializingUserDefinedType(self, in)
+                        , ctx.charsetForDeserializingCHAR(self, in)
                         ));
         if(ret==null) {
-            throw new ExtendedConversionException(ctx,
+            throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name,
                     "should return non-null value from custom TypeConverters")
                         .withSiteAndOrdinal(UserDefinedTypeConverter.class, 2);
         }
@@ -175,7 +169,7 @@ public class UserDefinedTypeConverter implements Converter<Object> {
 
     private static class InputImpl implements TypeConverter.Input{
         private FieldInfo fieldInfo;
-        private InputStream src;
+        private InputStream in;
         private Charset fastCharset;
         private int read;
         private int fastLength;
@@ -187,9 +181,9 @@ public class UserDefinedTypeConverter implements Converter<Object> {
         
         private InputImpl() {}
         
-        private void reset(FieldInfo fieldInfo,InputStream src, int length, Charset cs) {
+        private void reset(FieldInfo fieldInfo,InputStream in, int length, Charset cs) {
             this.fieldInfo = fieldInfo;
-            this.src = src;
+            this.in = in;
             this.read = 0;
             this.fastLength = length;
             this.fastCharset = cs;
@@ -201,9 +195,9 @@ public class UserDefinedTypeConverter implements Converter<Object> {
             }
             read += n;
         }
-        public static InputImpl getThreadLocalInstance(FieldInfo fieldInfo,InputStream src, int length, Charset cs) {
+        public static InputImpl getThreadLocalInstance(FieldInfo fieldInfo,InputStream in, int length, Charset cs) {
             InputImpl ret = threadLocal.get();
-            ret.reset(fieldInfo, src, length, cs);
+            ret.reset(fieldInfo, in, length, cs);
             return ret;
         }
 
@@ -260,55 +254,55 @@ public class UserDefinedTypeConverter implements Converter<Object> {
         @Override
         public byte readByte() throws IOException {
             checkBytesToRead(1);
-            return (byte) StreamUtils.readByte(src, true);
+            return (byte) StreamUtils.readByte(in, true);
         }
 
         @Override
         public byte[] readBytes(int n) throws IOException {
             checkBytesToRead(n);
-            return StreamUtils.readBytes(src, n);
+            return StreamUtils.readBytes(in, n);
         }
 
         @Override
         public short readShort() throws IOException {
             checkBytesToRead(2);
-            return (short) StreamUtils.readShort(src, true, isBigEndian());
+            return (short) StreamUtils.readShort(in, true, isBigEndian());
         }
 
         @Override
         public int readInt() throws IOException {
             checkBytesToRead(4);
-            return (int)StreamUtils.readInt(src, true, isBigEndian());
+            return (int)StreamUtils.readInt(in, true, isBigEndian());
         }
 
         @Override
         public long readLong() throws IOException {
             checkBytesToRead(8);
-            return StreamUtils.readLong(src, isBigEndian());
+            return StreamUtils.readLong(in, isBigEndian());
         }
 
         @Override
         public int readUnsignedByte() throws IOException {
             checkBytesToRead(1);
-            return StreamUtils.readByte(src, false);
+            return StreamUtils.readByte(in, false);
         }
 
         @Override
         public int readUnsignedShort() throws IOException {
             checkBytesToRead(2);
-            return (short) StreamUtils.readShort(src, false, isBigEndian());
+            return (short) StreamUtils.readShort(in, false, isBigEndian());
         }
 
         @Override
         public long readUnsignedInt() throws IOException {
             checkBytesToRead(4);
-            return (int)StreamUtils.readInt(src, false, isBigEndian());
+            return (int)StreamUtils.readInt(in, false, isBigEndian());
         }
 
         @Override
         public BigInteger readUnsignedLong() throws IOException {
             checkBytesToRead(8);
-            return StreamUtils.readUnsignedLong(src, isBigEndian());
+            return StreamUtils.readUnsignedLong(in, isBigEndian());
         }
 
         @Override

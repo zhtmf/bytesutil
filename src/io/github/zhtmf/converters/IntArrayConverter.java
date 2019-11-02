@@ -1,53 +1,53 @@
 package io.github.zhtmf.converters;
 
+import static io.github.zhtmf.converters.StreamUtils.checkRangeInContext;
+import static io.github.zhtmf.converters.StreamUtils.writeIntegerOfType;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
  * Converters that handles serialization and deserialization of <tt>int[].class</tt>
  * 
  * @author dzh
  */
-public class IntArrayConverter implements Converter<int[]>{
+class IntArrayConverter implements Converter<int[]>{
     
     @Override
     public void serialize(int[] value, OutputStream dest, FieldInfo ctx, Object self)throws IOException, ConversionException {
         switch(ctx.dataType) {
         case RAW:
-            int length = Utils.lengthForSerializingRAW(ctx, self);
+            int length = ctx.lengthForSerializingRAW(self);
             if(length<0) {
-                StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
+                writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
             }else if(length!=value.length) {
-                throw new ExtendedConversionException(ctx,
+                throw new ExtendedConversionException(
+                        ctx.enclosingEntityClass,ctx.name,
                         "defined length "+length+" is not the same as length "+value.length+" of the array")
                             .withSiteAndOrdinal(IntArrayConverter.class, 1);
             }
             for(int i:value) {
-                Utils.checkRangeInContext(DataType.BYTE, i, ctx);
+                checkRangeInContext(DataType.BYTE, i, ctx);
             }
             StreamUtils.writeBytes(dest, value);
             break;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public int[] deserialize(MarkableInputStream is, FieldInfo ctx, Object self)throws IOException, ConversionException {
+    public int[] deserialize(InputStream in, FieldInfo ctx, Object self)throws IOException, ConversionException {
         switch(ctx.dataType) {
         case RAW:
-            int length = Utils.lengthForDeserializingRAW(ctx, self, is);
+            int length = ctx.lengthForDeserializingRAW(self, in);
             if(length<0) {
-                length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
             }
-            byte[] raw = StreamUtils.readBytes(is, length);
+            byte[] raw = StreamUtils.readBytes(in, length);
             int[] ret = new int[length];
             if(ctx.unsigned) {
                 for(int i=0;i<raw.length;++i) {
@@ -59,7 +59,7 @@ public class IntArrayConverter implements Converter<int[]>{
                 }
             }
             return ret;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }    
     }
 }

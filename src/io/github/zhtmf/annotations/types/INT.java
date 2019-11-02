@@ -14,21 +14,23 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 /**
  * 4-byte integral dataType.
  * <p>
- * Signed/Unsigned is specified with {@link Signed} / {@link Unsigned}
- * annotation. Endianness is specified with {@link BigEndian} /
- * {@link LittleEndian} annotation.
+ * Signed/Unsigned-ness is specified with {@link Signed} / {@link Unsigned} ,
+ * while Endianness is specified with {@link BigEndian} / {@link LittleEndian}.
  * <p>
- * Convertible with <code>byte</code>, <code>short</code>,<code>int</code> and
- * their wrapper classes and {@link java.util.Date}.
+ * It is compatible with:
+ * <ul>
+ * <li><code>int, long</code> and their wrapper classes</li>
+ * <li><code>java.util.Date</code></li>
+ * <li><code>enum</code> types that match specific conditions</li>
+ * </ul>
  * <p>
  * When interpreted as a date, it is assumed that this integer stores seconds
- * since epoch. Java {@link java.util.Date} values are stripped of millisecond
- * part (divide by 1000) before serialized into streams and integer values in
- * streams are multiplied by 1000 before converted to a {@link java.util.Date}
- * value.
+ * since epoch. Java {@link java.util.Date}s are divide by 1000 before
+ * serialized into stream and integers in stream are multiplied by 1000 before
+ * converted to a {@link java.util.Date}.
  * <p>
- * It is not an error to store an {@link Unsigned} value in such a field,
- * however incorrect values may be observed in Java code due to overflow.
+ * It is not an error to store an unsigned value in such a field, however
+ * incorrect values may be observed in Java code due to wrap-around.
  * 
  * @author dzh
  */

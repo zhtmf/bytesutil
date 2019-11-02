@@ -10,7 +10,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import examples.javaclass.entities.JavaClass;
-import test.TestUtils;
+import io.github.zhtmf.converters.TestUtils;
 
 public class TestClassParsing {
 

@@ -6,12 +6,10 @@ import java.io.OutputStream;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
 
-public class LongConverter implements Converter<Long> {
+import static io.github.zhtmf.converters.StreamUtils.*;
+
+class LongConverter implements Converter<Long> {
 
     @Override
     public void serialize(Long value, OutputStream dest, FieldInfo ctx, Object self)
@@ -19,58 +17,90 @@ public class LongConverter implements Converter<Long> {
         long val = value;
         switch(ctx.dataType) {
         case BYTE:{
-            Utils.checkRangeInContext(DataType.BYTE, val, ctx);
-            StreamUtils.writeBYTE(dest, (byte)val);
+            checkRangeInContext(DataType.BYTE, val, ctx);
+            writeBYTE(dest, (byte)val);
             return;
         }
         case SHORT:{
-            Utils.checkRangeInContext(DataType.SHORT, val, ctx);
-            StreamUtils.writeSHORT(dest, (short) val, ctx.bigEndian);
+            checkRangeInContext(DataType.SHORT, val, ctx);
+            writeSHORT(dest, (short) val, ctx.bigEndian);
             return;
         }
         case INT:{
-            Utils.checkRangeInContext(DataType.INT, val, ctx);
-            StreamUtils.writeInt(dest, (int) val, ctx.bigEndian);
+            checkRangeInContext(DataType.INT, val, ctx);
+            writeInt(dest, (int) val, ctx.bigEndian);
+            return;
+        }
+        case INT3:{
+            checkRangeInContext(DataType.INT3, val, ctx);
+            writeInt3(dest, (int)val, ctx.bigEndian);
+            return;
+        }
+        case INT5:{
+            checkRangeInContext(DataType.INT5, val, ctx);
+            writeInt5(dest, val, ctx.bigEndian);
+            return;
+        }
+        case INT6:{
+            checkRangeInContext(DataType.INT6, val, ctx);
+            writeInt6(dest, val, ctx.bigEndian);
+            return;
+        }
+        case INT7:{
+            checkRangeInContext(DataType.INT7, val, ctx);
+            writeInt7(dest, val, ctx.bigEndian);
             return;
         }
         case LONG:{
-            StreamUtils.writeLong(dest, val, ctx.bigEndian);
+            writeLong(dest, val, ctx.bigEndian);
             return;
         }
         case CHAR:
-            Utils.serializeAsCHAR(val, dest, ctx, self);
+            serializeAsCHAR(val, dest, ctx, self);
             return;
         case BCD:
-            StreamUtils.writeBCD(
-                    dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
+            writeBCD(dest, checkAndConvertToBCD(
+                    val, ctx.localAnnotation(BCD.class).value()));
             return;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Long deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public Long deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case BYTE:{
-            return (long)StreamUtils.readByte(is, ctx.signed);
+            return (long)readByte(in, ctx.signed);
         }
         case SHORT:{
-            return (long)StreamUtils.readShort(is, ctx.signed, ctx.bigEndian);
+            return (long)readShort(in, ctx.signed, ctx.bigEndian);
         }
         case INT:{
-            return StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
+            return readInt(in, ctx.signed, ctx.bigEndian);
+        }
+        case INT3:{
+            return (long)readInt3(in, ctx.signed, ctx.bigEndian);
+        }
+        case INT5:{
+            return readInt5(in, ctx.signed, ctx.bigEndian);
+        }
+        case INT6:{
+            return readInt6(in, ctx.signed, ctx.bigEndian);
+        }
+        case INT7:{
+            return readInt7(in, ctx.signed, ctx.bigEndian);
         }
         case LONG:{
-            return StreamUtils.readLong(is, ctx.bigEndian);
+            return readLong(in, ctx.bigEndian);
         }
         case CHAR:{
-            return Utils.deserializeAsCHAR(is, ctx, self, null);
+            return deserializeAsCHAR(in, ctx, self, null);
         }
         case BCD:{
-            return StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+            return readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 }

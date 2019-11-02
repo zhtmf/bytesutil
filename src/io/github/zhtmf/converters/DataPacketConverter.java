@@ -1,13 +1,11 @@
 package io.github.zhtmf.converters;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
  * Wrapper class for eliminating branches in {@link DataPacket} when converting
@@ -15,29 +13,29 @@ import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionExcepti
  * 
  * @author dzh
  */
-public class DataPacketConverter implements Converter<DataPacket> {
+class DataPacketConverter implements Converter<DataPacket> {
 
     @Override
-    public void serialize(DataPacket value, OutputStream dest, FieldInfo fi, Object self)
+    public void serialize(DataPacket value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         ((DataPacket)value).serialize(dest);
     }
 
     @Override
-    public DataPacket deserialize(MarkableInputStream is, FieldInfo fi, Object self)
+    public DataPacket deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         DataPacket object = null;
         try {
-            object = fi.entityCreator.handleDeserialize(fi.name, self, is);
+            object = ctx.entityForDeserializing(self, in);
         } catch (Exception e) {
             throw new ExtendedConversionException(
-                    self.getClass(),fi.name,
+                    self.getClass(),ctx.name,
                     String.format("field value is null and"
                             + " entity class [%s] cannot be instantiated"
-                            , fi.name, fi.isEntityList ? fi.listComponentClass : fi.getFieldType()),e)
+                            , ctx.isEntityList ? ctx.listComponentClass : ctx.getFieldType()),e)
                     .withSiteAndOrdinal(DataPacketConverter.class, 11);
         }
-        object.deserialize(is);
+        object.deserialize(in);
         return object;
     }
 }

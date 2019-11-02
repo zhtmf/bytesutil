@@ -13,13 +13,13 @@ import io.github.zhtmf.annotations.modifiers.DatePattern;
  * Binary-Coded-Decimal data which uses one byte to represent two decimal
  * digits.
  * <p>
- * Following Java types are convertible to/from it:
+ * It is compatible with:
  * <ul>
  * <li><code>java.util.Date</code>, format for such date or date-values are
  * defined by {@link DatePattern} annotation. Only date formats that produces
- * numeric characters are considered valid in this situation.</li>
+ * numeric characters are considered valid in this case.</li>
  * <li><code>String</code> composed of only numeric characters</li>
- * <li>Integral types</li>
+ * <li>Integral types and their wrapper classes</li>
  * </ul>
  * 
  * @author dzh

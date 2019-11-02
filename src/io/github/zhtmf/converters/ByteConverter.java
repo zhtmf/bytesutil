@@ -6,10 +6,8 @@ import java.io.OutputStream;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
+
+import static io.github.zhtmf.converters.StreamUtils.*;
 
 /**
  * Converter for a single byte
@@ -17,44 +15,43 @@ import io.github.zhtmf.converters.auxiliary.Utils;
  * @author dzh
  *
  */
-public class ByteConverter implements Converter<Byte> {
+class ByteConverter implements Converter<Byte> {
 
     @Override
     public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
-        byte val = (byte)value;
         switch(ctx.dataType) {
         case BYTE:
-            StreamUtils.writeBYTE(dest, val);
+            StreamUtils.writeBYTE(dest, (byte)value);
             return;
         case CHAR:
-            Utils.serializeAsCHAR(val, dest, ctx, self);
+            serializeAsCHAR((byte)value, dest, ctx, self);
             return;
         case BCD:{
             StreamUtils.writeBCD(
-                    dest, Utils.checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
+                    dest, checkAndConvertToBCD((byte)value, ctx.localAnnotation(BCD.class).value()));
             return;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Byte deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public Byte deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
         switch(ctx.dataType) {
         case BYTE:{
-            return (byte)(StreamUtils.readByte(is, ctx.signed));
+            return (byte)(StreamUtils.readByte(in, ctx.signed));
         }
         case CHAR:{
-            return (byte)Utils.deserializeAsCHAR(is, ctx, self, DataType.BYTE);
+            return (byte)deserializeAsCHAR(in, ctx, self, DataType.BYTE);
         }
         case BCD:{
-            long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
-            Utils.checkRangeInContext(DataType.BYTE, val, ctx);
+            long val = StreamUtils.readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
+            checkRangeInContext(DataType.BYTE, val, ctx);
             return (byte)val;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 }

@@ -8,46 +8,43 @@ import java.nio.charset.Charset;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
-import io.github.zhtmf.converters.auxiliary.FieldInfo;
-import io.github.zhtmf.converters.auxiliary.MarkableInputStream;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
-import io.github.zhtmf.converters.auxiliary.Utils;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
-public class StringConverter implements Converter<String> {
+import static io.github.zhtmf.converters.StreamUtils.*;
+
+class StringConverter implements Converter<String> {
 
     @Override
     public void serialize(String value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case CHAR:
-            Utils.serializeAsCHAR(value, dest, ctx, self);
+            serializeAsCHAR(value, dest, ctx, self);
             break;
         case BCD:{
-            Utils.serializeBCD(value, dest, ctx, self);
+            serializeBCD(value, dest, ctx, self);
             break;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public String deserialize(MarkableInputStream is, FieldInfo ctx, Object self)
+    public String deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case CHAR:{
-            Charset cs = Utils.charsetForDeserializingCHAR(ctx, self, is);
-            int length = Utils.lengthForDeserializingCHAR(ctx, self, is);
+            Charset cs = ctx.charsetForDeserializingCHAR(self, in);
+            int length = ctx.lengthForDeserializingCHAR(self, in);
             if(length<0 && ctx.endsWith==null) {
-                length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
-                return new String(StreamUtils.readBytes(is, length),cs);
+                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
+                return new String(StreamUtils.readBytes(in, length),cs);
             }
             if(length>=0) {
-                return new String(StreamUtils.readBytes(is, length),cs);
+                return new String(StreamUtils.readBytes(in, length),cs);
             }
             
             //EndsWith
-            byte[] found = KMPSearch(ctx.endsWith,ctx.endingArrayAux,is);
+            byte[] found = KMPSearch(ctx.endsWith,ctx.endingArrayAux,in);
             if(found!=null) {
                 return new String(found,0,found.length-ctx.endsWith.length+1,cs);
             }
@@ -56,8 +53,8 @@ public class StringConverter implements Converter<String> {
                         .withSiteAndOrdinal(StringConverter.class, 1);
         }
         case BCD:
-            return StreamUtils.readStringBCD(is, ctx.localAnnotation(BCD.class).value());
-        default:throw new Error("cannot happen");
+            return StreamUtils.readStringBCD(in, ctx.localAnnotation(BCD.class).value());
+        default:throw new Error("should not reach here");
         }
     }
     

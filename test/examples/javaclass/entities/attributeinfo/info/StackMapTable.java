@@ -19,7 +19,6 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
-import io.github.zhtmf.converters.auxiliary.StreamUtils;
 
 @Unsigned
 public class StackMapTable extends DataPacket{
@@ -34,7 +33,7 @@ public class StackMapTable extends DataPacket{
         @Override
         public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
             //read frame_type ahead
-            int frameType = StreamUtils.readByte(is, false);
+            int frameType = is.read();
             if(frameType>=0 && frameType<=63) {
                 return new SameFrame();
             }else if(frameType >=64 && frameType<=127) {
