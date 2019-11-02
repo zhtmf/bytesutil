@@ -38,7 +38,7 @@ public @interface Conditional {
      * Whether result of calling the handler specified by {@link #value()} should be
      * reversed before referred to.
      * 
-     * @return
+     * @return whether result of calling the handler should be reversed.
      */
     boolean negative() default false;
 }

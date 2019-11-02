@@ -60,8 +60,8 @@ public abstract class ModifierHandler<E> {
      * @param in
      *            input stream object, it is a special one that any reads will be
      *            undone after this method returns
-     * @return dynamic values as required by various annotations
-     * @throws IOException
+     * @return  dynamic values as required by various annotations
+     * @throws  IOException Exception during deserialization
      */
     public abstract E handleDeserialize0(String fieldName, Object entity, InputStream in) throws IOException;
     /**
@@ -72,7 +72,6 @@ public abstract class ModifierHandler<E> {
      * @param entity
      *            the half-constructed object
      * @return dynamic values as required by various annotations
-     * @throws IOException
      */
     public abstract E handleSerialize0(String fieldName, Object entity);
 }
