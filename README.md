@@ -89,6 +89,12 @@ LONG|⚪|⚪|⚪|⚪|||||⚪||⚪|⚪
 BCD|⚪|⚪|⚪|⚪|⚪||||⚪||||
 CHAR|⚪|⚪|⚪|⚪|⚪|⚪|||⚪||⚪|⚪
 RAW||||||||⚪||⚪|||
+INT3\*|||⚪|⚪|||||||||
+INT5\*||||⚪|||||||||
+INT6\*||||⚪|||||||||
+INT7\*||||⚪|||||||||
+
+\* INT3, 5, 6 and 7 are non-standard integers which occupy 3, 5, 6 and 7 bytes. They are supported to implement protocols (like mysql's client-server binary protocol) which possesses such data types.
 
 
 ### Modifiers
@@ -104,6 +110,7 @@ DatePattern| Specifies date pattern string for java.util.Date fields.
 Variant| Specifies this field is of a sub type of ````DataPacket```` and requires custom initialization logic during runtime, refer to dedicated chapter below for more info.
 Length/ListLength| Statically or dyanmically determines length of an array or a list at compile time or runtime, refer to dedicated chapter below for more info.
 EndsWith| Specifies a string is of indeterministic length and ends with special sequence of bytes, refer to dedicated chapter below for more info.
+Conditional| Optionally skips processing certain fields.
 
 These annotations can be found under the package ````io.github.zhtmf.annotations.modifiers````. They can be specified both at  type level and at field level, which applies to all fields in one class or to a single field. 
 By combining modifiers and data types, this library enables implementing protocols that adopts different endian-ness and signedness, even ones that mix them.
@@ -346,7 +353,7 @@ There is a third method, `length()` in `DataPacket`, which calculates length in 
 Note that this method is ***NOT*** a constant-time operation though it does not calculate by doing a serialization.
 
 ## Variant
-As is already covered above, this annotation specifies a handler which wraps custom initialization logic at runtime. It is useful whenever you need additional logic rather than calling no-arg constructor, like copying field value from "parent" object to sub objects which are dynamic parts of the data packet structure. 
+As is already covered above, this annotation specifies a handler which wraps custom initialization logic at runtime. It is useful whenever you need additional logic other than calling no-arg constructor, like copying field value from "parent" object to sub objects. 
 
 It applies to a single object as well as to ````List```` of objects.
 
@@ -422,8 +429,14 @@ private enum NEnum2{
 ````
 You can choose to not extending the interface but returns distinct values as strings in the ````toString```` method.
 
+## Conditional Processing
+The ````Conditional```` annotation is used to indicate that a field should be skipped under certain situations. Users should always supply a ````ModifierHandler```` defined like examples above but returns a ````boolean```` value. When this handler returns false, processing of this field will be skipped. 
+
+For this reason, this handler should return same value for the same field during both serialization/deserialization processes.
+
 ## Lazy-Initialization
 This library lazily initializes internal status for a class when it is first encountered in a thread-safe way. So the first serialization or deserialization will be slow but later ones will be fast.
 
 ## Examples
 <a href='test/examples/javaclass'>Parsing Java class file</a>
+<a href='test/examples/mysql/connector'>Simple Mysql connector</a>
