@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.zhtmf</groupId>
 	<artifactId>bytes-util</artifactId>
-	<version>1.1.3-SNAPSHOT</version>
+	<version>1.1.3</version>
 	<name>bytes-util</name>
 	<description>A Java library that handles serialization/deserialization between Java classes and
 	 byte streams defined by arbitrary binary protocols</description>
