@@ -12,11 +12,6 @@ import org.junit.Test;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.converters.TestUtils;
-import io.github.zhtmf.entities.MyEntity;
-import io.github.zhtmf.entities.Sub1;
-import io.github.zhtmf.entities.Sub2;
-import io.github.zhtmf.entities.SubEntity;
-import io.github.zhtmf.entities.WeirdEntity;
 
 public class TestCase1 {
     
@@ -36,12 +31,12 @@ public class TestCase1 {
         entity.bcd = "20180909";
         entity.status = 'Y';
         entity.status2 = 'N';
-        entity.sub = new SubEntity(30, "0123456789abcde");
+        entity.sub = new MyEntity.SubEntity(30, "0123456789abcde");
         entity.strList = Arrays.asList("1234","2456","haha");
         entity.list3 = Arrays.asList("1234","abcd","defg","hijk","lmno");
-        entity.subEntityList = Arrays.asList(new SubEntity(-3142, "0123456789abcde"),new SubEntity(5000,"0123456789fffff"));
+        entity.subEntityList = Arrays.asList(new MyEntity.SubEntity(-3142, "0123456789abcde"),new MyEntity.SubEntity(5000,"0123456789fffff"));
         entity.unusedLength = 0;
-        entity.entityList2 = new ArrayList<SubEntity>();
+        entity.entityList2 = new ArrayList<MyEntity.SubEntity>();
         entity.bytes = new byte[] {0x1,0x2};
         entity.byteList = Arrays.asList(new byte[] {0x1,0x2,0x5},new byte[]{0x3,0x4,0x6});
         entity.bytes2Len = 5;
@@ -49,7 +44,7 @@ public class TestCase1 {
         entity.date = new Date(0);
         entity.date2 = new Date(0); //milliseconds different?
         entity.veryLong = ((long)Integer.MAX_VALUE)*2;
-        Sub2 s2 = new Sub2();
+        MyEntity.Sub2 s2 = new MyEntity.Sub2();
         s2.type = 2;
         s2.time = "19990101";
         s2.str1 = "123456";
@@ -58,14 +53,14 @@ public class TestCase1 {
         s2.type2 = 1;
         s2.str4 = "hahahahaha";
         entity.variantEntity = s2;
-        Sub1 s1 = new Sub1();
+        MyEntity.Sub1 s1 = new MyEntity.Sub1();
         s1.type = 1;
         s1.time = "20000202";
         s1.field1 = -350;
         s1.field2 = 30000;
         entity.anotherEntity = s1;
         
-        WeirdEntity we = new WeirdEntity();
+        MyEntity.WeirdEntity we = new MyEntity.WeirdEntity();
         we.char1 = "abcdef";
         we.char2 = "hahahahahaha";
         we.char3 = we.char1;
@@ -129,7 +124,7 @@ public class TestCase1 {
         entity.serialize(baos);
         MyEntity entity2 = new MyEntity();
         //for testing of a rare case
-        entity2.sub = new SubEntity(3,4.0f);
+        entity2.sub = new MyEntity.SubEntity(3,4.0f);
         final byte[] bts = baos.toByteArray();
         entity2.deserialize(new ByteArrayInputStream(bts));
         Assert.assertTrue(TestUtils.equalsOrderFields(entity,entity2));

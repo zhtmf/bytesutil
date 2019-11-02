@@ -1,8 +1,8 @@
 package io.github.zhtmf.annotations.enums;
 
 /**
- * Marker interface used to make an enum-typed field eligible to be mapped to
- * numeric values.
+ * Interface used to make an enum-typed field eligible to be mapped to numeric
+ * values.
  * <p>
  * The enum class implementing this interface should return distinct value for
  * each enum member from {@link #getValue()} and those values should be within

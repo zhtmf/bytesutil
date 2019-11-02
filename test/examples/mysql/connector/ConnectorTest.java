@@ -37,8 +37,8 @@ import io.github.zhtmf.DataPacket;
  * It connects to the mysql server, print system variables and content of 'city'
  * table in 'sakila' schema and then exits.
  * <p>
- * This example has been tested on 5.6.44 and 5.6.2. As the protocol should
- * remain the same it should be working on other releases too.
+ * This example has been tested on 5.6.44 and 5.6.2. As the protocol largely
+ * remains the same it should be working on other releases too.
  * 
  * @author dzh
  */

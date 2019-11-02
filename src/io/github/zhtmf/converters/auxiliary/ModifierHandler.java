@@ -25,7 +25,7 @@ public abstract class ModifierHandler<E> {
     public interface OffsetAccess{
         int offset();
     }
-    public static OffsetAccess access;
+    static OffsetAccess access;
     public static void setAccess(OffsetAccess access) {
         if(ModifierHandler.access==null) {
             ModifierHandler.access = access;

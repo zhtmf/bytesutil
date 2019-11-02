@@ -825,7 +825,7 @@ class FieldInfo{
         @Override
         public void serialize(Object value, OutputStream dest, FieldInfo ctx, Object self)
                 throws IOException, ConversionException {
-            //this check is already done in ClassInfo.serialize
+            //this check has already been done in ClassInfo.serialize
 //            if(ctx.shouldSkipFieldForSerializing(self))
 //                return;
             wrappedConverter.serialize(value, dest, ctx, self);

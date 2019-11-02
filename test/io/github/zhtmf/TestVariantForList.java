@@ -13,11 +13,21 @@ import org.junit.Test;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
-import io.github.zhtmf.entities.ListEntity;
 
 public class TestVariantForList {
+    
+    public static class ListEntity extends DataPacket{
+        public static final int DEFAULT_TEMP = 3;
+        public int temp = DEFAULT_TEMP;
+        @BYTE
+        @Signed
+        @Order(0)
+        public byte a;
+    }
 
     public static class Entity extends DataPacket{
         
