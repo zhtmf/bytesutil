@@ -18,9 +18,9 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.converters.TestUtils;
+import io.github.zhtmf.converters.TestUtils.Provider;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils.Provider;
 
 public class TestConditional {
     @CHARSET("UTF-8")

@@ -1,4 +1,4 @@
-package io.github.zhtmf.converters.auxiliary.exceptions;
+package io.github.zhtmf.converters;
 
 /**
  * A simple subclass of {@link IllegalArgumentException} that enables
@@ -6,7 +6,7 @@ package io.github.zhtmf.converters.auxiliary.exceptions;
  * 
  * @author dzh
  */
-public class UnsatisfiedConstraintException extends IllegalArgumentException implements ExactException{
+class UnsatisfiedConstraintException extends IllegalArgumentException implements ExactException{
     private static final long serialVersionUID = 1L;
     private Class<?> site;
     private int ordinal;

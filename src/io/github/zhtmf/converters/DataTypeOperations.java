@@ -110,7 +110,7 @@ enum DataTypeOperations{
                 || javaType == long.class
                 || javaType == Integer.class
                 || javaType == Long.class
-                || javaType.isEnum();
+                ;
         }
     },
     INT5{
@@ -126,7 +126,7 @@ enum DataTypeOperations{
         boolean supports(Class<?> javaType) {
             return javaType == long.class
                 || javaType == Long.class
-                || javaType.isEnum();
+                ;
         }
     },
     INT6{
@@ -142,7 +142,7 @@ enum DataTypeOperations{
         boolean supports(Class<?> javaType) {
             return javaType == long.class
                 || javaType == Long.class
-                || javaType.isEnum();
+                ;
         }
     },
     INT7{
@@ -158,7 +158,7 @@ enum DataTypeOperations{
         boolean supports(Class<?> javaType) {
             return javaType == long.class
                 || javaType == Long.class
-                || javaType.isEnum();
+                ;
         }
     },
     BCD {
@@ -345,9 +345,6 @@ enum DataTypeOperations{
         long tmp = base;
         while(power-->1) {
             base = base*tmp;
-            if(base<0) {
-                throw new ArithmeticException();
-            }
         }
         return base;
     }

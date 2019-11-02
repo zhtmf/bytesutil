@@ -1,4 +1,4 @@
-package io.github.zhtmf.converters.auxiliary.exceptions;
+package io.github.zhtmf.converters;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -19,7 +19,7 @@ import org.junit.Assert;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Order;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExactException;
+import io.github.zhtmf.converters.ExactException;
 
 public class TestUtils {
     public static boolean assertException(Throwable leaf, Class<? extends Throwable> expected) {

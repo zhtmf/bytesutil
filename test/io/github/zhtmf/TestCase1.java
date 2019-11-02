@@ -11,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
+import io.github.zhtmf.converters.TestUtils;
 import io.github.zhtmf.entities.MyEntity;
 import io.github.zhtmf.entities.Sub1;
 import io.github.zhtmf.entities.Sub2;

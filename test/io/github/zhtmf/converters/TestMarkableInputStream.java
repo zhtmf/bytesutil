@@ -1,5 +1,6 @@
 package io.github.zhtmf.converters;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,7 +22,6 @@ import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.MarkableInputStream;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestMarkableInputStream {
     @LittleEndian
@@ -295,6 +295,123 @@ public class TestMarkableInputStream {
                     break;
                 }
                 Assert.assertEquals((byte)ret, array[pos++]);
+            }
+        }
+    }
+    @Test
+    public void testLength() throws Exception {
+        String str = "1234567890abcdefghijklmnopqrstuvwxyz1234567890abcdefghijklmnopqrstuvwxyz";
+        try(MarkableInputStream bs = MarkableInputStream.wrap(new ByteArrayInputStream(str.getBytes()))){
+            StringBuilder sb = new StringBuilder();
+            for(int i=0;i<str.length();++i) {
+                sb.append((char)bs.read());
+            }
+            bs.close();
+            Assert.assertTrue(str.contentEquals(sb));
+        }
+        try(MarkableInputStream bs = MarkableInputStream.wrap(new ByteArrayInputStream(str.getBytes()))){
+            StringBuilder sb = new StringBuilder();
+            int marklimit = 23;
+            bs.mark(marklimit);
+            for(int k=0;k<4;++k) {
+                bs.reset();
+                sb.setLength(0);
+                for(int i=0;i<marklimit;++i) {
+                    sb.append((char)bs.read());
+                }
+                Assert.assertTrue(str.substring(0, marklimit).contentEquals(sb));
+            }
+            for(int k=0;k<4;++k) {
+                bs.reset();
+                sb.setLength(0);
+                for(int i=0;i<marklimit/2;++i) {
+                    sb.append((char)bs.read());
+                }
+                Assert.assertTrue(str.substring(0, marklimit/2).contentEquals(sb));
+            }
+            for(int i=0;i<str.length()-marklimit/2;++i) {
+                sb.append((char)bs.read());
+            }
+            Assert.assertTrue(str.contentEquals(sb));
+        }
+        {
+            BufferedInputStream bis = new BufferedInputStream(new ByteArrayInputStream(str.getBytes()));
+            bis.mark(1000);
+            int pre = 2;
+            for(int k=0;k<pre;++k) {
+                bis.read();
+            }
+            MarkableInputStream bs = MarkableInputStream.wrap(bis);
+            int marklimit = 10;
+            bs.mark(marklimit);
+            StringBuilder sb = new StringBuilder();
+            for(int k=0;k<4;++k) {
+                bs.reset();
+                sb.setLength(0);
+                for(int i=0;i<marklimit;++i) {
+                    sb.append((char)bs.read());
+                }
+                Assert.assertTrue(str.substring(pre, pre+marklimit).contentEquals(sb));
+            }
+            for(int i=0;i<str.length()-marklimit-pre;++i) {
+                sb.append((char)bs.read());
+            }
+            bs.close();
+            Assert.assertTrue(str.substring(pre).contentEquals(sb));
+            bis.reset();
+            sb.setLength(0);
+            for(int i=0;i<str.length();++i) {
+                sb.append((char)bis.read());
+            }
+            Assert.assertTrue(str.contentEquals(sb));
+        }
+        {
+            ByteArrayInputStream bais = new ByteArrayInputStream(str.getBytes());
+            MarkableInputStream bs = MarkableInputStream.wrap(bais);
+            bs.mark(10);
+            StringBuilder sb = new StringBuilder();
+            int marklimit = 10;
+            for(int i=0;i<marklimit;++i) {
+                bs.read();
+            }
+            bs.close();
+            for(int i=0;i<str.length()-marklimit;++i) {
+                sb.append((char)bais.read());
+            }
+            Assert.assertTrue(str.substring(marklimit).contentEquals(sb));
+        }
+    }
+    
+    @Test
+    public void testDelegate() throws IOException {
+        {
+            MarkableInputStream stream = MarkableInputStream.wrap(
+                    TestUtils.newInputStream(TestUtils.pseudoRandomArray(300)));
+            for(int i=0;i<150;++i) {
+                stream.read();
+            }
+            MarkableInputStream sub = MarkableInputStream.wrap(stream);
+            Assert.assertTrue(MarkableInputStream.class.isAssignableFrom(sub.getClass()));
+            Assert.assertNotEquals(MarkableInputStream.class, sub.getClass());
+            
+            Assert.assertEquals(sub.remaining(), stream.remaining());
+            Assert.assertEquals(sub.available(), stream.available());
+            Assert.assertEquals(sub.markSupported(), stream.markSupported());
+            int rem = stream.actuallyProcessedBytes();
+            sub.read(new byte[3]);
+            Assert.assertEquals(stream.actuallyProcessedBytes(), rem+3);
+            Assert.assertEquals(sub.actuallyProcessedBytes(), rem-150+3);
+            rem += 3;
+            sub.skip(3);
+            Assert.assertEquals(stream.actuallyProcessedBytes(), rem+3);
+            Assert.assertEquals(sub.actuallyProcessedBytes(), rem-150+3);
+            
+            sub.close();
+            try {
+                stream.read();
+                Assert.fail();
+            } catch (Exception e) {
+                TestUtils.assertException(e, IOException.class);
             }
         }
     }

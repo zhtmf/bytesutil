@@ -59,48 +59,48 @@ class LongConverter implements Converter<Long> {
             serializeAsCHAR(val, dest, ctx, self);
             return;
         case BCD:
-            writeBCD(
-                    dest, checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
+            writeBCD(dest, checkAndConvertToBCD(
+                    val, ctx.localAnnotation(BCD.class).value()));
             return;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Long deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
+    public Long deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case BYTE:{
-            return (long)readByte(is, ctx.signed);
+            return (long)readByte(in, ctx.signed);
         }
         case SHORT:{
-            return (long)readShort(is, ctx.signed, ctx.bigEndian);
+            return (long)readShort(in, ctx.signed, ctx.bigEndian);
         }
         case INT:{
-            return readInt(is, ctx.signed, ctx.bigEndian);
+            return readInt(in, ctx.signed, ctx.bigEndian);
         }
         case INT3:{
-            return (long)readInt3(is, ctx.signed, ctx.bigEndian);
+            return (long)readInt3(in, ctx.signed, ctx.bigEndian);
         }
         case INT5:{
-            return readInt5(is, ctx.signed, ctx.bigEndian);
+            return readInt5(in, ctx.signed, ctx.bigEndian);
         }
         case INT6:{
-            return readInt6(is, ctx.signed, ctx.bigEndian);
+            return readInt6(in, ctx.signed, ctx.bigEndian);
         }
         case INT7:{
-            return readInt7(is, ctx.signed, ctx.bigEndian);
+            return readInt7(in, ctx.signed, ctx.bigEndian);
         }
         case LONG:{
-            return readLong(is, ctx.bigEndian);
+            return readLong(in, ctx.bigEndian);
         }
         case CHAR:{
-            return deserializeAsCHAR(is, ctx, self, null);
+            return deserializeAsCHAR(in, ctx, self, null);
         }
         case BCD:{
-            return readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+            return readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 }

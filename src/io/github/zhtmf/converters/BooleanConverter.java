@@ -1,10 +1,10 @@
 package io.github.zhtmf.converters;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
  * Converter for boolean value
@@ -17,24 +17,24 @@ class BooleanConverter implements Converter<Boolean> {
     @Override
     public void serialize(Boolean value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
-        byte val = (byte) (value.booleanValue() == true ? 1 : 0);
         switch(ctx.dataType) {
         case BYTE:
+            byte val = (byte) (value.booleanValue() == true ? 1 : 0);
             StreamUtils.writeBYTE(dest, val);
             return;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Boolean deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
+    public Boolean deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
         byte val;
         switch(ctx.dataType) {
         case BYTE:{
-            val = (byte) StreamUtils.readByte(is, ctx.signed);break;
+            val = (byte) StreamUtils.readByte(in, ctx.signed);break;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
         switch(val) {
         case 1:return Boolean.TRUE;

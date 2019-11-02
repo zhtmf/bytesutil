@@ -1,12 +1,14 @@
 package io.github.zhtmf.converters;
 
+import static io.github.zhtmf.converters.StreamUtils.checkRangeInContext;
+import static io.github.zhtmf.converters.StreamUtils.writeIntegerOfType;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
-import static io.github.zhtmf.converters.StreamUtils.*;
 
 /**
  * Converters that handles serialization and deserialization of <tt>int[].class</tt>
@@ -33,19 +35,19 @@ class IntArrayConverter implements Converter<int[]>{
             }
             StreamUtils.writeBytes(dest, value);
             break;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public int[] deserialize(java.io.InputStream is, FieldInfo ctx, Object self)throws IOException, ConversionException {
+    public int[] deserialize(InputStream in, FieldInfo ctx, Object self)throws IOException, ConversionException {
         switch(ctx.dataType) {
         case RAW:
-            int length = ctx.lengthForDeserializingRAW(self, is);
+            int length = ctx.lengthForDeserializingRAW(self, in);
             if(length<0) {
-                length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
             }
-            byte[] raw = StreamUtils.readBytes(is, length);
+            byte[] raw = StreamUtils.readBytes(in, length);
             int[] ret = new int[length];
             if(ctx.unsigned) {
                 for(int i=0;i<raw.length;++i) {
@@ -57,7 +59,7 @@ class IntArrayConverter implements Converter<int[]>{
                 }
             }
             return ret;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }    
     }
 }

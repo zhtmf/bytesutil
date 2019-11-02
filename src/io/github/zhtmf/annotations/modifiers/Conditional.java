@@ -8,9 +8,37 @@ import java.lang.annotation.Target;
 
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
+/**
+ * Used to indicate that a field should be omitted under certain situations.
+ * <p>
+ * Users should always supply a <code>ModifierHandler&lt;Boolean&gt;</code>
+ * class whose instance will always be called in prior to and in addition to
+ * other conversions that normally would apply. If this handler returns
+ * <code>false</code>, no conversion will happen and this field will be omitted
+ * during serialization/deserialization progress.
+ * <p>
+ * If {@link #negative()} is true, result of calling the handler specified by
+ * {@link #value()} is reversed before referred to.
+ * 
+ * @author dzh
+ */
 @Retention(RUNTIME)
 @Target({FIELD})
 public @interface Conditional {
+    /**
+     * <code>ModifierHandler&lt;Boolean&gt;</code> class whose instance will always
+     * be called in prior to and in addition to other conversions that normally
+     * would apply
+     * 
+     * @return whether this field should be omitted
+     */
     Class<? extends ModifierHandler<Boolean>> value();
+
+    /**
+     * Whether result of calling the handler specified by {@link #value()} should be
+     * reversed before referred to.
+     * 
+     * @return
+     */
     boolean negative() default false;
 }

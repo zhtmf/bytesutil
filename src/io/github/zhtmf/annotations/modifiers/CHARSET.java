@@ -12,13 +12,11 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 /**
  * <p>
- * Specified charset for all CHAR dataType fields in a class or for a single field.
+ * Specify charset for all CHAR fields in a class or for a single field.
  * <p>
- * Annotations on a specific field always override annotation at the class
- * level.
+ * Annotations applied to a field always override annotation at the class level.
  * <p>
- * {@link #DEFAULT_CHARSET} is assumed if no CHARSET annotation is specified for
- * the current target.
+ * {@link #DEFAULT_CHARSET} is assumed if no CHARSET annotation is specified.
  * 
  * @author dzh
  */
@@ -35,7 +33,7 @@ public @interface CHARSET {
     /**
      * <p>
      * Implementation class of {@link ModifierHandler} to be referred to when the
-     * charset of current target cannot be determined statically.
+     * charset should be determined at runtime.
      * <p>
      * If this property is set, {@link #value() value} is ignored.
      * 

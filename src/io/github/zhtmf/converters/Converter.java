@@ -6,10 +6,10 @@ import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
 
-public interface Converter<T> {
+interface Converter<T> {
     void serialize(T value, OutputStream dest
             , FieldInfo ctx, Object self) 
             throws IOException,ConversionException;
-    T deserialize(InputStream is, FieldInfo ctx, Object self)
+    T deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException,ConversionException;
 }

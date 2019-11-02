@@ -17,7 +17,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.types.UserDefined;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
+import io.github.zhtmf.converters.TestUtils;
 
 public class TestCaseUserDefined {
     @Signed

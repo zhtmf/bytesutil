@@ -1,6 +1,7 @@
 package io.github.zhtmf.converters;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
@@ -8,7 +9,7 @@ import java.util.Date;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
+
 import static io.github.zhtmf.converters.StreamUtils.*;
 
 class DateConverter implements Converter<Date>{
@@ -33,38 +34,38 @@ class DateConverter implements Converter<Date>{
             StreamUtils.writeLong(dest, millis, ctx.bigEndian);
             break;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Date deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
+    public Date deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         try {
             switch(ctx.dataType) {
             case CHAR:{
-                int length = ctx.lengthForDeserializingCHAR(self, is);
+                int length = ctx.lengthForDeserializingCHAR(self, in);
                 if(length<0) {
-                    length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+                    length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
                 }
                 return FieldInfo.getThreadLocalDateFormatter(ctx.datePattern)
                         .parse(new String(
                                 StreamUtils.readBytes(
-                                        is, length)
+                                        in, length)
                                 ,StandardCharsets.ISO_8859_1));
             }
             case BCD:
                     return FieldInfo.getThreadLocalDateFormatter(ctx.datePattern)
                             .parse(StreamUtils.readStringBCD(
-                                    is,ctx.annotation(BCD.class).value()));
+                                    in,ctx.annotation(BCD.class).value()));
             case INT:{
-                long val = StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
+                long val = StreamUtils.readInt(in, ctx.signed, ctx.bigEndian);
                 return new Date(val*1000);
             }
             case LONG:{
-                return new Date(StreamUtils.readLong(is, ctx.bigEndian));
+                return new Date(StreamUtils.readLong(in, ctx.bigEndian));
             }
-            default:throw new Error("cannot happen");
+            default:throw new Error("should not reach here");
             }
         } catch (ParseException e) {
             throw new ExtendedConversionException(

@@ -1,4 +1,4 @@
-package io.github.zhtmf.converters.auxiliary.exceptions;
+package io.github.zhtmf.converters;
 
 import io.github.zhtmf.ConversionException;
 
@@ -6,7 +6,7 @@ import io.github.zhtmf.ConversionException;
  * Sub class for code coverage purposes.
  * @author dzh
  */
-public class ExtendedConversionException extends ConversionException implements ExactException{
+class ExtendedConversionException extends ConversionException implements ExactException{
     private static final long serialVersionUID = 1L;
     private Class<?> site;
     private int ordinal;

@@ -15,8 +15,8 @@ import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.converters.TestUtils;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestPositionRecording {
     
@@ -93,7 +93,7 @@ public class TestPositionRecording {
             case "checkPoint4":
                 expected = 31;break;
             }
-            Assert.assertEquals(expected,super.currentPosition());
+            Assert.assertEquals(expected,super.offset());
             return 1;
         }
         @Override
@@ -154,7 +154,7 @@ public class TestPositionRecording {
 
         @Override
         public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            int offset = super.currentPosition();
+            int offset = super.offset();
             switch(fieldName) {
             case "level1Field1":Assert.assertEquals(offset, 0);break;
             case "level1Field2":Assert.assertEquals(offset, 1);break;
@@ -181,5 +181,6 @@ public class TestPositionRecording {
         level1.level2 = new Level2();
         level1.level2.level3 = new Level3();
         TestUtils.serializeAndRestore(level1);
+        TestUtils.serializeMultipleTimesAndRestoreConcurrently(level1, 1530);
     }
 }

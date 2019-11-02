@@ -19,7 +19,7 @@ import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
+import io.github.zhtmf.converters.TestUtils;
 
 public class TestCase9{
     

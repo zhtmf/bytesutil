@@ -3,17 +3,14 @@ package io.github.zhtmf.converters;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,8 +26,8 @@ import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler.OffsetAccess;
 
 /**
  * Internal class that records info about annotations, fields of a specific
@@ -44,7 +41,7 @@ class ClassInfo {
     final Class<?> entityClass;
     
     /**
-     * Annotations that are present on the class (on the dataType)
+     * Annotations that are present on the class
      */
     private Map<Class<? extends Annotation>, Annotation> globalAnnotations = new HashMap<>();
     /**
@@ -272,6 +269,10 @@ class ClassInfo {
         
         for(FieldInfo ctx:ci.fieldInfoList) {
             
+            // it is necessary to do it here instead of in ConditionalConverter 
+            // to prevent null check for fields that are
+            // deemed as unnecessary for serialization and set null
+            // throwing an exception will be rather confusing in such a circumstance
             if(ctx.shouldSkipFieldForSerializing(self))
                 continue;
             
@@ -300,11 +301,11 @@ class ClassInfo {
         }
     }
     
-    public static void deserialize(Object self,InputStream src) throws ConversionException, IllegalArgumentException {
-        if(src==null) {
+    public static void deserialize(Object self,InputStream in) throws ConversionException, IllegalArgumentException {
+        if(in==null) {
             throw new NullPointerException();
         }
-        InputStream _src = MarkableInputStream.wrap(src);
+        InputStream _src = MarkableInputStream.wrap(in);
         ClassInfo ci = getClassInfo(self);
         for(FieldInfo ctx:ci.fieldInfoList) {
             Object value = null;
@@ -326,130 +327,7 @@ class ClassInfo {
         ClassInfo ci = getClassInfo(self);
         int ret = 0;
         for(FieldInfo ctx:ci.fieldInfoList) {
-            ret += calculateFieldLength(ctx, self);
-        }
-        return ret;
-    }
-    
-    private static int calculateFieldLength(FieldInfo ctx,Object self) {
-        if(ctx.shouldSkipFieldForSerializing(self)) {
-            return 0;
-        }
-        Object value = ctx.get(self);
-        if(value==null) {
-            throw new UnsatisfiedConstraintException(
-                    ctx.name + " is intended to be processed but its value is null")
-                    .withSiteAndOrdinal(DataPacket.class, 20);
-                    
-        }
-        if(ctx.isEntity) {
-            DataPacket dp = (DataPacket)value;
-            return dp.length();
-        }
-        int ret = 0;
-        int length = 0;
-        if(ctx.listComponentClass!=null) {
-            length = ctx.lengthForList(self);
-            @SuppressWarnings("rawtypes")
-            List lst = (List)value;
-            if(length<0) {
-                //write ahead
-                //size of the write-ahead length should be considered
-                //even the list itself is null or empty
-                ret += DataTypeOperations.of(ctx.lengthType()).size();
-                //use the defined length rather than the actual list size
-                length = lst.size();
-            }
-            if(ctx.isEntityList) {
-                for(int i=0;i<length;++i) {
-                    ret += ((DataPacket)lst.get(i)).length();
-                }
-                return ret;
-            }
-        }else {
-            length = 1;
-        }
-        DataType type = ctx.dataType;
-        switch(type) {
-        case BCD:
-            ret += ((BCD)ctx.localAnnotation(BCD.class)).value() * length;
-            break;
-        case BYTE:
-        case SHORT:
-        case INT:
-        case LONG:
-        case INT3:
-        case INT5:
-        case INT6:
-        case INT7:
-            ret += DataTypeOperations.of(type).size() * length;
-            break;
-        case CHAR:{
-            int size = ctx.lengthForSerializingCHAR(self);
-            if(size>=0) {
-                //explicitly declared size
-                ret += size * length;
-            }else {
-                //dynamic length written to stream prior to serializing
-                //or strings terminated by specific sequence of bytes
-                //size should be retrieved by inspecting the value itself
-                //or in case of a list, inspecting values for EACH element
-                size = 0;
-                if(value instanceof Date) {
-                    size += DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
-                    size += FieldInfo.getThreadLocalDateFormatter(ctx.datePattern).format((Date)value).length();
-                }else {
-                    Charset cs = ctx.charsetForSerializingCHAR(self);
-                    int fixedOverHead;
-                    if(ctx.endsWith!=null) {
-                        fixedOverHead = ctx.endsWith.length;
-                    }else {
-                        fixedOverHead = DataTypeOperations.of(ctx.annotation(Length.class).type()).size();
-                    }
-                    if(value instanceof List) {
-                        @SuppressWarnings("rawtypes")
-                        List lst = (List)value;
-                        int lstSize = lst.size();
-                        size += fixedOverHead*lstSize;
-                        for(int i=0;i<lstSize;++i) {
-                            size += lst.get(i).toString().getBytes(cs).length;
-                        }
-                    }else {
-                        size += fixedOverHead;
-                        size += value.toString().getBytes(cs).length;
-                    }
-                }
-                ret += size;
-            }
-            break;
-        }
-        case RAW:{
-            int size = ctx.lengthForSerializingRAW(self);
-            if(size>=0) {
-                ret += size * length;
-            }else {
-                size = 0;
-                DataTypeOperations lengthType = DataTypeOperations.of(ctx.annotation(Length.class).type());
-                if(value instanceof List) {
-                    @SuppressWarnings("rawtypes")
-                    List lst = (List)value;
-                    for(int i=0;i<lst.size();++i) {
-                        value = lst.get(i);
-                        size += lengthType.size();
-                        size += Array.getLength(value);
-                    }
-                }else {
-                    size += lengthType.size();
-                    size += Array.getLength(value);
-                }
-                ret += size;
-            }
-            break;
-        }
-        case USER_DEFINED:
-            int size = ctx.lengthForSerializingUserDefinedType(self);
-            ret += size * length;
-            break;
+            ret += ctx.fieldLength(self);
         }
         return ret;
     }
@@ -470,6 +348,13 @@ class ClassInfo {
             
             public int length(Object self) throws IllegalArgumentException{
                 return ClassInfo.length(self);
+            }
+        });
+        ModifierHandler.setAccess(new OffsetAccess() {
+            
+            @Override
+            public int offset() {
+                return DelegateModifierHandler.offset.get();
             }
         });
     }

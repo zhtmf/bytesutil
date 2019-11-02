@@ -33,7 +33,7 @@ import io.github.zhtmf.annotations.types.INT7;
 import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
+import io.github.zhtmf.converters.TestUtils;
 
 public class TestCase91{
     
@@ -351,7 +351,7 @@ public class TestCase91{
         @INT3
         @Unsigned
         @LittleEndian
-        public int int3_1 = (int)(TestUtils.pow(2, 24)-1);
+        public Integer int3_1 = (int)(TestUtils.pow(2, 24)-1);
         @Order(62)
         @INT3
         @Unsigned
@@ -415,7 +415,7 @@ public class TestCase91{
         @INT5
         @Unsigned
         @LittleEndian
-        public long int5_1 = (long)(TestUtils.pow(2, 40)-1);
+        public Long int5_1 = (long)(TestUtils.pow(2, 40)-1);
         @Order(74)
         @INT5
         @Unsigned
@@ -479,7 +479,7 @@ public class TestCase91{
         @INT6
         @Unsigned
         @LittleEndian
-        public long int6_1 = (long)(TestUtils.pow(2, 48)-1);
+        public Long int6_1 = (long)(TestUtils.pow(2, 48)-1);
         @Order(86)
         @INT6
         @Unsigned
@@ -543,7 +543,7 @@ public class TestCase91{
         @INT7
         @Unsigned
         @LittleEndian
-        public long int7_1 = (long)(TestUtils.pow(2, 56)-1);
+        public Long int7_1 = (long)(TestUtils.pow(2, 56)-1);
         @Order(98)
         @INT7
         @Unsigned
@@ -600,6 +600,70 @@ public class TestCase91{
         @Signed
         @BigEndian
         public long int7_12 = -(long)(TestUtils.pow(2, 56)/2)+19447;
+        
+        //int3
+        @Order(109)
+        @INT3
+        @Unsigned
+        @LittleEndian
+        public Long int3_long_1 = (long)(TestUtils.pow(2, 24)-1);
+        @Order(110)
+        @INT3
+        @Unsigned
+        @LittleEndian
+        public long int3_long_2 = 0;
+        @Order(111)
+        @INT3
+        @Signed
+        @LittleEndian
+        public long int3_long_3 = (int)(TestUtils.pow(2, 24)/2-1);
+        @Order(112)
+        @INT3
+        @Signed
+        @LittleEndian
+        public long int3_long_4 = -(int)(TestUtils.pow(2, 24)/2);
+        @Order(113)
+        @INT3
+        @Signed
+        @LittleEndian
+        public long int3_long_5 = (int)(TestUtils.pow(2, 24)/2-12339);
+        @Order(114)
+        @INT3
+        @Signed
+        @LittleEndian
+        public long int3_long_6 = -(int)(TestUtils.pow(2, 24)/2)+19447;
+        
+        @Order(115)
+        @INT3
+        @Unsigned
+        @BigEndian
+        public long int3_long_7 = (int)(TestUtils.pow(2, 24)-1);
+        @Order(116)
+        @INT3
+        @Unsigned
+        @BigEndian
+        public long int3_long_8 = 0;
+        @Order(117)
+        @INT3
+        @Signed
+        @BigEndian
+        public long int3_long_9 = (int)(TestUtils.pow(2, 24)/2-1);
+        @Order(118)
+        @INT3
+        @Signed
+        @BigEndian
+        public long int3_long_10 = -(int)(TestUtils.pow(2, 24)/2);
+        @Order(119)
+        @INT3
+        @Signed
+        @BigEndian
+        public long int3_long_11 = (int)(TestUtils.pow(2, 24)/2-12339);
+        @Order(120)
+        @INT3
+        @Signed
+        @BigEndian
+        public long int3_long_12 = -(int)(TestUtils.pow(2, 24)/2)+19447;
+        
     }
     
     @Test

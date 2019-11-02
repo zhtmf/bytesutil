@@ -27,16 +27,18 @@ import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.annotations.types.INT3;
+import io.github.zhtmf.annotations.types.INT5;
+import io.github.zhtmf.annotations.types.INT6;
+import io.github.zhtmf.annotations.types.INT7;
 import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.annotations.types.UserDefined;
-import io.github.zhtmf.converters.FieldInfo;
 import io.github.zhtmf.converters.TestCaseFieldInfo.Entity6.CharsetHandler;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseFieldInfo {
     
@@ -176,6 +178,57 @@ public class TestCaseFieldInfo {
             Assert.fail();
         } catch (Exception e) {
             TestUtils.assertExactException(e, FieldInfo.class, 0);
+        }
+    }
+    
+    static enum Enum17{
+        a,b;
+    }
+    @Test
+    public void test17() throws ConversionException {
+        class Entity17 extends DataPacket{
+            @Order(0)
+            @INT3
+            public Enum17 enum17;
+        }
+        class Entity18 extends DataPacket{
+            @Order(0)
+            @INT5
+            public Enum17 enum17;
+        }
+        class Entity19 extends DataPacket{
+            @Order(0)
+            @INT6
+            public Enum17 enum17;
+        }
+        class Entity20 extends DataPacket{
+            @Order(0)
+            @INT7
+            public Enum17 enum17;
+        }
+        try {
+            new Entity17().deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 1);
+        }
+        try {
+            new Entity18().deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 1);
+        }
+        try {
+            new Entity19().deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 1);
+        }
+        try {
+            new Entity20().deserialize(new ByteArrayInputStream(new byte[] {0x0,0x1,0x2}));
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 1);
         }
     }
     

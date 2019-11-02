@@ -38,7 +38,7 @@ public class AuthSwitchRequest extends DataPacket implements PayLoadLengthAware{
         @Override
         public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             AuthSwitchRequest ret = (AuthSwitchRequest)entity;
-            return ret.payLoadLength - currentPosition();
+            return ret.payLoadLength - offset();
         }
 
         @Override

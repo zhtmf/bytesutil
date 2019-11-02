@@ -4,13 +4,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
 
+import examples.mysql.connector.datatypes.string.LengthEncodedString;
 import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.MySQLPacket;
 import examples.mysql.connector.packet.command.COMInitDB;
 import examples.mysql.connector.packet.command.COMQuery;
 import examples.mysql.connector.packet.command.ColumnDefinition;
+import examples.mysql.connector.packet.command.NULLValue;
 import examples.mysql.connector.packet.command.QueryResultColumnCount;
 import examples.mysql.connector.packet.command.TextResultsetRow;
 import examples.mysql.connector.packet.common.EOFPacket;
@@ -21,18 +27,18 @@ import examples.mysql.connector.packet.connection.HandshakeResponse41;
 import examples.mysql.connector.packet.connection.HandshakeV10;
 import examples.mysql.connector.packet.connection.PasswordResponsePacket;
 import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.DataPacket;
 
 /**
  * <p>
- * An example which demonstrates features of this library by implementing a
- * basic mysql connector.
+ * A working example which demonstrates features of this library by implementing
+ * a basic mysql connector.
  * <p>
- * It connects to the mysql server running on specified address, runs sample
- * queries which print system variables and content of 'city' table in 'sakila'
- * schema and then exits.
+ * It connects to the mysql server, print system variables and content of 'city'
+ * table in 'sakila' schema and then exits.
  * <p>
- * This example is tested on 5.6.44 and 5.6.2, as the protocol should remain the
- * same it should be working on other releases too.
+ * This example has been tested on 5.6.44 and 5.6.2. As the protocol should
+ * remain the same it should be working on other releases too.
  * 
  * @author dzh
  */
@@ -178,6 +184,9 @@ public class ConnectorTest {
         MySQLPacket packet = new MySQLPacket(query,seq.get());
         System.out.println("[send]query:"+packet);
         packet.serialize(os);
+        
+        List<String> columnNames = new ArrayList<>();
+        List<List<String>> values = new LinkedList<>();
         /*
          * The column definitions part starts with a packet containing the column-count,
          * followed by as many Column Definition packets as there are columns and
@@ -193,7 +202,7 @@ public class ConnectorTest {
         for(int i=0;i<columnCount;++i) {
             resp.payload = new ColumnDefinition();
             resp.deserialize(in);
-            System.out.println("[recv]column metadata:"+resp);
+            columnNames.add(((ColumnDefinition)resp.payload).name.actualString);
         }
         resp.deserialize(in);
         System.out.println("[recv]eof marking end of column metadata:"+resp);
@@ -204,6 +213,7 @@ public class ConnectorTest {
          * ERR_Packet in case of error. Otherwise: If the CLIENT_DEPRECATE_EOF client
          * capability flag is set, OK_Packet; else EOF_Packet.
          */
+        
         for(;;) {
             TextResultsetRow row = new TextResultsetRow();
             row.columnCount = columnCount;
@@ -216,10 +226,61 @@ public class ConnectorTest {
                 System.out.println("[recv]eof marking end of result set data:"+resp);
                 break;
             }else if(resp.payload instanceof TextResultsetRow){
-                System.out.println("[recv]result set data:"+resp);
+                List<String> rowValues = new ArrayList<>();
+                for(DataPacket value:((TextResultsetRow)resp.payload).value) {
+                    if(value instanceof NULLValue) {
+                        rowValues.add("NULL");
+                    }else {
+                        rowValues.add(((LengthEncodedString)value).actualString);
+                    }
+                }
+                values.add(rowValues);
+                continue;
             }else {
                 System.err.println("[recv]unexpected response during receiving result set data:"+resp);
                 System.exit(1);
+            }
+        }
+        
+        //print column names and values as a table
+        int columnWidth = -1;
+        for(String column:columnNames) {
+            columnWidth = Math.max(columnWidth, column.length());
+        }
+        columnWidth = columnWidth + 5;
+        int max = columnWidth-1;
+        values.add(0,columnNames);
+        ListIterator<List<String>> iterator = values.listIterator();
+        while(iterator.hasNext()) {
+            List<String> additionalRow = null;
+            List<String> row = iterator.next();
+            for(int i=0;i<row.size();++i) {
+                String str = row.get(i);
+                if(str==null) {
+                    str = "";
+                }
+                if(str.length()>columnWidth-1) {
+                    if(additionalRow==null) {
+                        additionalRow = new ArrayList<>();
+                        while(additionalRow.size()<row.size()) {
+                            additionalRow.add(null);
+                        }
+                    }
+                    additionalRow.set(i,str.substring(max));
+                    str = str.substring(0,max);
+                }
+                System.out.printf("%-"+columnWidth+"s|",str);
+            }
+            System.out.println();
+            if(iterator.nextIndex()==1) {
+                for(int k=0;k<columnCount*(columnWidth+1);++k) {
+                    System.out.print("-");
+                }
+                System.out.println();
+            }
+            if(additionalRow!=null) {
+                iterator.add(additionalRow);
+                iterator.previous();
             }
         }
     }

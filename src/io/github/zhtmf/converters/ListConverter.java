@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
  * Wrapper class for eliminating branches in {@link io.github.zhtmf.DataPacket} when converting
@@ -47,8 +46,8 @@ class ListConverter extends AbstractListConverter implements Converter<List> {
     }
 
     @Override
-    public List deserialize(java.io.InputStream is, FieldInfo ctx, Object self) throws IOException, ConversionException {
-        int length = lengthForDeserialize(is, ctx, self);
+    public List deserialize(java.io.InputStream in, FieldInfo ctx, Object self) throws IOException, ConversionException {
+        int length = lengthForDeserialize(in, ctx, self);
         List<Object> tmp = null;
         //cv cannot be null as we lifted checking for validity of DataType <--> JavaType mapping
         //to constructor of FieldInfo
@@ -57,7 +56,7 @@ class ListConverter extends AbstractListConverter implements Converter<List> {
         try {
             tmp = new ArrayList<>(length);
             while(length-->0) {
-                tmp.add(cv.deserialize(is, ctx, self));
+                tmp.add(cv.deserialize(in, ctx, self));
             }
         } catch(ConversionException e) {
             throw e;

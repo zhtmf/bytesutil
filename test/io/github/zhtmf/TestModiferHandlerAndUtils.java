@@ -12,8 +12,8 @@ import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.RAW;
+import io.github.zhtmf.converters.TestUtils;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestModiferHandlerAndUtils {
     public static class Handler extends ModifierHandler<Integer>{

@@ -9,7 +9,6 @@ import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.converters.ByteArrayConverter;
 import io.github.zhtmf.converters.IntArrayConverter;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseArrayConverters {
     public static class Entity0 extends DataPacket{

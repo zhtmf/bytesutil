@@ -17,8 +17,8 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.TestUtils;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 /*
  * test nested marking for MarkableInputStream

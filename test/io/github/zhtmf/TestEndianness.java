@@ -17,7 +17,7 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.annotations.types.SHORT;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
+import io.github.zhtmf.converters.TestUtils;
 
 public class TestEndianness {
     

@@ -15,8 +15,8 @@ import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils.Provider;
+import io.github.zhtmf.converters.TestUtils;
+import io.github.zhtmf.converters.TestUtils.Provider;
 
 public class TestEndsWith {
     @Test

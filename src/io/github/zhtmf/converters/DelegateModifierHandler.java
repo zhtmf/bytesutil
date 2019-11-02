@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
 class DelegateModifierHandler<T> extends ModifierHandler<T>{
     
@@ -16,22 +15,21 @@ class DelegateModifierHandler<T> extends ModifierHandler<T>{
     
     boolean checkLength = false;
     
-    public static interface ModifierHandlerAccess{
-        public void setCurrentPosition(int pos);
+    static final ThreadLocal<Integer> offset = new ThreadLocal<>();
+    {
+        offset.set(-1);
     }
     
-    public static ModifierHandlerAccess access;
-    
     @Override
-    public T handleDeserialize0(String fieldName, Object entity, InputStream is) {
-        is.mark(0);
+    public T handleDeserialize0(String fieldName, Object entity, InputStream in) {
+        in.mark(0);
         T ret = null;
         try {
-            impl.currentPosition.set(((MarkableInputStream)is).actuallyProcessedBytes());
-            ret = impl.handleDeserialize0(fieldName, entity, is);
-            impl.currentPosition.set(-1);
+            offset.set(((MarkableInputStream)in).actuallyProcessedBytes());
+            ret = impl.handleDeserialize0(fieldName, entity, in);
+            offset.set(-1);
             checkReturnValue(ret);
-            is.reset();
+            in.reset();
         } catch (IOException e) {
             throw new UnsatisfiedConstraintException(e)
                 .withSiteAndOrdinal(ModifierHandler.class, 3);

@@ -1,4 +1,4 @@
-package io.github.zhtmf.converters.auxiliary.exceptions;
+package io.github.zhtmf.converters;
 
 import java.io.IOException;
 
@@ -8,7 +8,7 @@ import java.io.IOException;
  * 
  * @author dzh
  */
-public class UnsatisfiedIOException extends IOException implements ExactException{
+class UnsatisfiedIOException extends IOException implements ExactException{
     private static final long serialVersionUID = 1L;
     private Class<?> site;
     private int ordinal;

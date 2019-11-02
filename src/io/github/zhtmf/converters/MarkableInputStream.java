@@ -36,11 +36,11 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
     protected MarkableInputStream() {
     }
     
-    private MarkableInputStream(InputStream is) {
-        if(is==null) {
+    private MarkableInputStream(InputStream in) {
+        if(in==null) {
             throw new NullPointerException();
         }
-        this.in = is;
+        this.in = in;
     }
     
     @Override
@@ -141,15 +141,7 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
     private void ensureCapacity() {
         int length = buffer.length;
         if(fillPos == length) {
-            length <<= 1;
-            if(length<=0) {
-                //max array size
-                length = Integer.MAX_VALUE - 8;
-            }
-            if(length == buffer.length) {
-                throw new OutOfMemoryError();
-            }
-            buffer = Arrays.copyOf(buffer, length);
+            buffer = Arrays.copyOf(buffer, length <<= 1);
         }
     }
     
@@ -171,8 +163,8 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
         private int delta;
         public ResetCounterMarkableInputStream(MarkableInputStream delegate) {
             this.delegate = delegate;
-            //don't use value of bytesProcessed field directly
-            //, as this object may wrap another ResetCounterMarkableInputStream
+            //don't refer to value of bytesProcessed field directly
+            //as this object may wrap another ResetCounterMarkableInputStream
             this.delta = - delegate.actuallyProcessedBytes();
         }
         @Override
@@ -182,9 +174,6 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
         
         public int read() throws IOException {
             return delegate.read();
-        }
-        public int hashCode() {
-            return delegate.hashCode();
         }
         public void reset() throws IOException {
             delegate.reset();
@@ -212,9 +201,6 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
         }
         public long skip(long n) throws IOException {
             return delegate.skip(n);
-        }
-        public boolean equals(Object obj) {
-            return delegate.equals(obj);
         }
     }
 }

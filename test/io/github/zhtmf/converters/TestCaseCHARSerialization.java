@@ -12,7 +12,6 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.CHAR;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseCHARSerialization {
     @Test

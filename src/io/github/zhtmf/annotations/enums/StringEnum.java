@@ -11,8 +11,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
  * also restricted by annotations like {@link Length}.
  * <p>
  * If for some reason the enum class cannot implement this interface, it should
- * return numbers as string values in <code>toString</code> methods for each enum
- * member.
+ * return string values from <code>toString</code> methods of each enum member.
  * 
  * @author dzh
  */

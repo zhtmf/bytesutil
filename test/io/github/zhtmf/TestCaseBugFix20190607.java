@@ -14,7 +14,7 @@ import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.types.SHORT;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
+import io.github.zhtmf.converters.TestUtils;
 
 //testing conversion of datapacket when called from within ListConverter
 //a bug-fix

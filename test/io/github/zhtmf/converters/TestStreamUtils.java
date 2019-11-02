@@ -20,7 +20,6 @@ import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.StreamUtils;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestStreamUtils {
     @Test

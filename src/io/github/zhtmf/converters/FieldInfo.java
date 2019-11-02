@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,13 +31,13 @@ import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
 
 /**
  * Internal class that stores compile-time information of a {@link Field}
@@ -468,7 +470,7 @@ class FieldInfo{
     
     @Override
     public String toString() {
-        return "FieldInfo:Entity["+enclosingEntityClass+"],Field:["+name+"]";
+        return "FieldInfo:["+enclosingEntityClass.getName()+"]["+name+"]";
     }
     
     //utility methods used by converters
@@ -481,11 +483,11 @@ class FieldInfo{
         return cs;
     }
     
-    final Charset charsetForDeserializingCHAR(Object self, InputStream is) {
+    final Charset charsetForDeserializingCHAR(Object self, InputStream in) {
         Charset cs = this.charset;
         if(cs==null) {
             //avoid the exception declaration
-            cs = ((DelegateModifierHandler<Charset>)this.charsetHandler).handleDeserialize0(this.name,self,is);
+            cs = ((DelegateModifierHandler<Charset>)this.charsetHandler).handleDeserialize0(this.name,self,in);
         }
         return cs;
     }
@@ -617,6 +619,129 @@ class FieldInfo{
         }
     }
     
+    final int fieldLength(Object self) {
+        if(this.shouldSkipFieldForSerializing(self)) {
+            return 0;
+        }
+        Object value = this.get(self);
+        if(value==null) {
+            throw new UnsatisfiedConstraintException(
+                    this.name + " is intended to be processed but its value is null")
+                    .withSiteAndOrdinal(DataPacket.class, 20);
+                    
+        }
+        if(this.isEntity) {
+            DataPacket dp = (DataPacket)value;
+            return dp.length();
+        }
+        int ret = 0;
+        int length = 0;
+        if(this.listComponentClass!=null) {
+            length = this.lengthForList(self);
+            @SuppressWarnings("rawtypes")
+            List lst = (List)value;
+            if(length<0) {
+                //write ahead
+                //size of the write-ahead length should be considered
+                //even the list itself is null or empty
+                ret += DataTypeOperations.of(this.lengthType()).size();
+                //use the defined length rather than the actual list size
+                length = lst.size();
+            }
+            if(this.isEntityList) {
+                for(int i=0;i<length;++i) {
+                    ret += ((DataPacket)lst.get(i)).length();
+                }
+                return ret;
+            }
+        }else {
+            length = 1;
+        }
+        DataType type = this.dataType;
+        switch(type) {
+        case BCD:
+            ret += ((BCD)this.localAnnotation(BCD.class)).value() * length;
+            break;
+        case BYTE:
+        case SHORT:
+        case INT:
+        case LONG:
+        case INT3:
+        case INT5:
+        case INT6:
+        case INT7:
+            ret += DataTypeOperations.of(type).size() * length;
+            break;
+        case CHAR:{
+            int size = this.lengthForSerializingCHAR(self);
+            if(size>=0) {
+                //explicitly declared size
+                ret += size * length;
+            }else {
+                //dynamic length written to stream prior to serializing
+                //or strings terminated by specific sequence of bytes
+                //size should be retrieved by inspecting the value itself
+                //or in case of a list, inspecting values for EACH element
+                size = 0;
+                if(value instanceof Date) {
+                    size += DataTypeOperations.of(this.annotation(Length.class).type()).size();
+                    size += FieldInfo.getThreadLocalDateFormatter(this.datePattern).format((Date)value).length();
+                }else {
+                    Charset cs = this.charsetForSerializingCHAR(self);
+                    int fixedOverHead;
+                    if(this.endsWith!=null) {
+                        fixedOverHead = this.endsWith.length;
+                    }else {
+                        fixedOverHead = DataTypeOperations.of(this.annotation(Length.class).type()).size();
+                    }
+                    if(value instanceof List) {
+                        @SuppressWarnings("rawtypes")
+                        List lst = (List)value;
+                        int lstSize = lst.size();
+                        size += fixedOverHead*lstSize;
+                        for(int i=0;i<lstSize;++i) {
+                            size += lst.get(i).toString().getBytes(cs).length;
+                        }
+                    }else {
+                        size += fixedOverHead;
+                        size += value.toString().getBytes(cs).length;
+                    }
+                }
+                ret += size;
+            }
+            break;
+        }
+        case RAW:{
+            int size = this.lengthForSerializingRAW(self);
+            if(size>=0) {
+                ret += size * length;
+            }else {
+                size = 0;
+                DataTypeOperations lengthType = DataTypeOperations.of(this.annotation(Length.class).type());
+                if(value instanceof List) {
+                    @SuppressWarnings("rawtypes")
+                    List lst = (List)value;
+                    for(int i=0;i<lst.size();++i) {
+                        value = lst.get(i);
+                        size += lengthType.size();
+                        size += Array.getLength(value);
+                    }
+                }else {
+                    size += lengthType.size();
+                    size += Array.getLength(value);
+                }
+                ret += size;
+            }
+            break;
+        }
+        case USER_DEFINED:
+            int size = this.lengthForSerializingUserDefinedType(self);
+            ret += size * length;
+            break;
+        }
+        return ret;
+    }
+    
     //↑ utility methods used by converters
     
     private <T> boolean isDummy(Class<? extends ModifierHandler<T>> mc) {
@@ -658,7 +783,7 @@ class FieldInfo{
         }
 
         @Override
-        public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+        public DataPacket handle0(String fieldName, Object entity, InputStream in) throws IOException {
             try {
                 return (DataPacket) classToCreate.newInstance();
             } catch (InstantiationException | IllegalAccessException e) {
@@ -700,16 +825,17 @@ class FieldInfo{
         @Override
         public void serialize(Object value, OutputStream dest, FieldInfo ctx, Object self)
                 throws IOException, ConversionException {
-            if(ctx.shouldSkipFieldForSerializing(self))
-                return;
+            //this check is already done in ClassInfo.serialize
+//            if(ctx.shouldSkipFieldForSerializing(self))
+//                return;
             wrappedConverter.serialize(value, dest, ctx, self);
         }
 
         @Override
         public Object deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
                 throws IOException, ConversionException {
-            if(ctx.conditionalHandler!=null
-          && ! ctx.conditionalHandler.handleDeserialize0(ctx.name, self, (MarkableInputStream)in).equals(ctx.conditionalResult)) {
+            if(! ctx.conditionalHandler.handleDeserialize0(
+                    ctx.name, self, (MarkableInputStream)in).equals(ctx.conditionalResult)) {
                 return null;
             }
             return wrappedConverter.deserialize(in, ctx, self);

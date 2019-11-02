@@ -11,9 +11,6 @@ import java.util.Arrays;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedConstraintException;
-import io.github.zhtmf.converters.auxiliary.exceptions.UnsatisfiedIOException;
 
 class StreamUtils {
     
@@ -161,20 +158,20 @@ class StreamUtils {
         case INT:
             writeInt(os, val, bigEndian);
             break;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
     
     //---------------------------------
     
-    public static int readByte(InputStream is,boolean signed) throws IOException{
-        return signed ? (byte)read(is) : read(is);
+    public static int readByte(InputStream in,boolean signed) throws IOException{
+        return signed ? (byte)read(in) : read(in);
     }
     
-    public static int readShort(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+    public static int readShort(InputStream in,boolean signed, boolean bigEndian) throws IOException{
         int ret = 0;
-        int b1 = read(is);
-        int b2 = read(is);
+        int b1 = read(in);
+        int b2 = read(in);
         if(bigEndian) {
             ret = ((b1<<8) | b2);
         }else {
@@ -183,33 +180,33 @@ class StreamUtils {
         return signed ? (short)ret : ret;
     }
     
-    public static long readInt(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+    public static long readInt(InputStream in,boolean signed, boolean bigEndian) throws IOException{
         int ret = 0;
         if(bigEndian) {
-            ret |= (read(is) <<24);
-            ret |= (read(is) << 16);
-            ret |= (read(is) << 8);
-            ret |= read(is);
+            ret |= (read(in) <<24);
+            ret |= (read(in) << 16);
+            ret |= (read(in) << 8);
+            ret |= read(in);
         }else {
-            ret |= read(is);
-            ret |= (read(is) << 8);
-            ret |= (read(is) << 16);
-            ret |= (read(is)<<24);
+            ret |= read(in);
+            ret |= (read(in) << 8);
+            ret |= (read(in) << 16);
+            ret |= (read(in)<<24);
         }
         long tmp = (((long)ret) & 0xFFFFFFFFL);
         return signed ? (int)tmp : tmp;
     }
     
-    public static int readInt3(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+    public static int readInt3(InputStream in,boolean signed, boolean bigEndian) throws IOException{
         int ret = 0;
         if(bigEndian) {
-            ret |= (read(is) << 16);
-            ret |= (read(is) << 8);
-            ret |= read(is);
+            ret |= (read(in) << 16);
+            ret |= (read(in) << 8);
+            ret |= read(in);
         }else {
-            ret |= read(is);
-            ret |= (read(is) <<  8);
-            ret |= (read(is) << 16);
+            ret |= read(in);
+            ret |= (read(in) <<  8);
+            ret |= (read(in) << 16);
         }
         if(signed && ((ret & 0b10000000_00000000_00000000) !=0)) {
             ret |= 0b11111111_00000000_00000000_00000000;
@@ -217,20 +214,20 @@ class StreamUtils {
         return ret;
     }
     
-    public static long readInt5(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+    public static long readInt5(InputStream in,boolean signed, boolean bigEndian) throws IOException{
         long ret = 0;
         if(bigEndian) {
-            ret |= (((long)read(is)) << 32);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 8);
-            ret |= ((long)read(is));
+            ret |= (((long)read(in)) << 32);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 8);
+            ret |= ((long)read(in));
         }else {
-            ret |= ((long)read(is));
-            ret |= (((long)read(is)) <<  8);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 32);
+            ret |= ((long)read(in));
+            ret |= (((long)read(in)) <<  8);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 32);
         }
         if(signed && ((ret & 0b10000000_00000000_00000000_00000000_00000000L) !=0)) {
             ret |= 0b11111111_11111111_11111111_00000000_00000000_00000000_00000000_00000000L;
@@ -238,22 +235,22 @@ class StreamUtils {
         return ret;
     }
     
-    public static long readInt6(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+    public static long readInt6(InputStream in,boolean signed, boolean bigEndian) throws IOException{
         long ret = 0;
         if(bigEndian) {
-            ret |= (((long)read(is)) << 40);
-            ret |= (((long)read(is)) << 32);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 8);
-            ret |= ((long)read(is));
+            ret |= (((long)read(in)) << 40);
+            ret |= (((long)read(in)) << 32);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 8);
+            ret |= ((long)read(in));
         }else {
-            ret |= ((long)read(is));
-            ret |= (((long)read(is)) <<  8);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 32);
-            ret |= (((long)read(is)) << 40);
+            ret |= ((long)read(in));
+            ret |= (((long)read(in)) <<  8);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 32);
+            ret |= (((long)read(in)) << 40);
         }
         if(signed && ((ret & 0b10000000_00000000_00000000_00000000_00000000_00000000L) !=0)) {
             ret |= 0b11111111_11111111_00000000_00000000_00000000_00000000_00000000_00000000L;
@@ -261,24 +258,24 @@ class StreamUtils {
         return ret;
     }
     
-    public static long readInt7(InputStream is,boolean signed, boolean bigEndian) throws IOException{
+    public static long readInt7(InputStream in,boolean signed, boolean bigEndian) throws IOException{
         long ret = 0;
         if(bigEndian) {
-            ret |= (((long)read(is)) << 48);
-            ret |= (((long)read(is)) << 40);
-            ret |= (((long)read(is)) << 32);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 8);
-            ret |= ((long)read(is));
+            ret |= (((long)read(in)) << 48);
+            ret |= (((long)read(in)) << 40);
+            ret |= (((long)read(in)) << 32);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 8);
+            ret |= ((long)read(in));
         }else {
-            ret |= ((long)read(is));
-            ret |= (((long)read(is)) <<  8);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 32);
-            ret |= (((long)read(is)) << 40);
-            ret |= (((long)read(is)) << 48);
+            ret |= ((long)read(in));
+            ret |= (((long)read(in)) <<  8);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 32);
+            ret |= (((long)read(in)) << 40);
+            ret |= (((long)read(in)) << 48);
         }
         if(signed && ((ret & 0b10000000_00000000_00000000_00000000_00000000_00000000_00000000L) !=0)) {
             ret |= 0b11111111_00000000_00000000_00000000_00000000_00000000_00000000_00000000L;
@@ -286,32 +283,32 @@ class StreamUtils {
         return ret;
     }
     
-    public static long readLong(InputStream is, boolean bigEndian) throws IOException{
+    public static long readLong(InputStream in, boolean bigEndian) throws IOException{
         long ret = 0;
         if(bigEndian) {
-            ret |= (((long)read(is)) << 56);
-            ret |= (((long)read(is)) << 48);
-            ret |= (((long)read(is)) << 40);
-            ret |= (((long)read(is)) << 32);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 8);
-            ret |= ((long)read(is));
+            ret |= (((long)read(in)) << 56);
+            ret |= (((long)read(in)) << 48);
+            ret |= (((long)read(in)) << 40);
+            ret |= (((long)read(in)) << 32);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 8);
+            ret |= ((long)read(in));
         }else {
-            ret |= ((long)read(is));
-            ret |= (((long)read(is)) << 8);
-            ret |= (((long)read(is)) << 16);
-            ret |= (((long)read(is)) << 24);
-            ret |= (((long)read(is)) << 32);
-            ret |= (((long)read(is)) << 40);
-            ret |= (((long)read(is)) << 48);
-            ret |= (((long)read(is)) << 56);
+            ret |= ((long)read(in));
+            ret |= (((long)read(in)) << 8);
+            ret |= (((long)read(in)) << 16);
+            ret |= (((long)read(in)) << 24);
+            ret |= (((long)read(in)) << 32);
+            ret |= (((long)read(in)) << 40);
+            ret |= (((long)read(in)) << 48);
+            ret |= (((long)read(in)) << 56);
         }
         return ret;
     }
     
-    public static BigInteger readUnsignedLong(InputStream is, boolean bigEndian) throws IOException{
-        byte[] array = readBytes(is, 8);
+    public static BigInteger readUnsignedLong(InputStream in, boolean bigEndian) throws IOException{
+        byte[] array = readBytes(in, 8);
         if(!bigEndian) {
             swap(array,0,7);
             swap(array,1,6);
@@ -326,8 +323,8 @@ class StreamUtils {
         array[right] = tmp;
     }
     
-    public static final String readStringBCD(InputStream is, int len) throws IOException {
-        byte[] arr = readBytes(is, len);
+    public static final String readStringBCD(InputStream in, int len) throws IOException {
+        byte[] arr = readBytes(in, len);
         StringBuilder sb = new StringBuilder();
         for(int i=0;i<arr.length;++i) {
             sb.append((char)(((arr[i] >> 4) & 0x0F)+'0'));
@@ -335,8 +332,8 @@ class StreamUtils {
         }
         return sb.toString();
     }
-    public static final long readIntegerBCD(InputStream is, int len) throws IOException {
-        byte[] arr = readBytes(is, len);
+    public static final long readIntegerBCD(InputStream in, int len) throws IOException {
+        byte[] arr = readBytes(in, len);
         long ret = 0;
         for(int i=0;i<arr.length;++i) {
             ret = ret * 10 + ((arr[i] >> 4) & 0x0F);
@@ -348,11 +345,11 @@ class StreamUtils {
         }
         return ret;
     }
-    public static byte[] readBytes(InputStream is, int numBytes) throws IOException{
+    public static byte[] readBytes(InputStream in, int numBytes) throws IOException{
         byte[] arr = new byte[numBytes];
         int len = 0;
         while(len<arr.length) {
-            int l = is.read(arr,len,arr.length-len);
+            int l = in.read(arr,len,arr.length-len);
             if(l==-1) {
                 throw new EOFException();
             }
@@ -361,17 +358,17 @@ class StreamUtils {
         return arr;
     }
     
-    public static int readIntegerOfType(InputStream src, DataType type, boolean bigEndian) throws IOException{
+    public static int readIntegerOfType(InputStream in, DataType type, boolean bigEndian) throws IOException{
         int length = 0;
         switch(type) {
         case BYTE:
-            length = readByte(src, false);
+            length = readByte(in, false);
             break;
         case SHORT:
-            length = readShort(src, false, bigEndian);
+            length = readShort(in, false, bigEndian);
             break;
         case INT:
-            long _length = readInt(src, false, bigEndian);
+            long _length = readInt(in, false, bigEndian);
             String error;
             //array or list length in Java cannot exceed signed 32-bit integer
             if((error = DataTypeOperations.INT.checkRange(_length, false))!=null) {
@@ -380,7 +377,7 @@ class StreamUtils {
             }
             length = (int)_length;
             break;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
         return length;
     }
@@ -464,11 +461,11 @@ class StreamUtils {
     }
     
     public static final long deserializeAsCHAR(
-            InputStream is, FieldInfo ctx, Object self, DataType type)
+            InputStream in, FieldInfo ctx, Object self, DataType type)
             throws IOException, ConversionException {
         long ret = 0;
         String error = null;
-        byte[] numChars = readBytesForDeserializingCHAR(is, ctx, self, type);
+        byte[] numChars = readBytesForDeserializingCHAR(in, ctx, self, type);
         parsing:{
             for(byte b:numChars) {
                 if(!(b>='0' && b<='9')) {
@@ -495,12 +492,12 @@ class StreamUtils {
     }
     
     public static final BigInteger deserializeAsBigCHAR(
-            InputStream is, FieldInfo ctx, Object self, DataType type)
+            InputStream in, FieldInfo ctx, Object self, DataType type)
             throws IOException, ConversionException {
         long ret = 0;
         BigInteger ret2 = null;
         String error = null;
-        byte[] numChars = readBytesForDeserializingCHAR(is, ctx, self, type);
+        byte[] numChars = readBytesForDeserializingCHAR(in, ctx, self, type);
         parsing:{
             for(byte b:numChars) {
                 if(!(b>='0' && b<='9')) {
@@ -559,12 +556,12 @@ class StreamUtils {
     }
     
     private static byte[] readBytesForDeserializingCHAR(
-            InputStream is, FieldInfo ctx, Object self, DataType type) throws IOException, ConversionException {
-        int length = ctx.lengthForDeserializingCHAR(self, is);
+            InputStream in, FieldInfo ctx, Object self, DataType type) throws IOException, ConversionException {
+        int length = ctx.lengthForDeserializingCHAR(self, in);
         if(length<0) {
-            length = readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+            length = readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
         }
-        byte[] numChars = readBytes(is, length);
+        byte[] numChars = readBytes(in, length);
         /*
          * such strings causes asymmetry between serialization and deserialization. it
          * is possible to avoid this problem by using written-ahead length, however such
@@ -581,8 +578,8 @@ class StreamUtils {
         return numChars;
     }
     
-    private static int read(InputStream bis) throws IOException {
-        int b = bis.read();
+    private static int read(InputStream in) throws IOException {
+        int b = in.read();
         if(b==-1) {
             throw new EOFException();
         }

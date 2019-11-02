@@ -54,7 +54,7 @@ public class ERRPacket extends DataPacket implements ClientCapabilityAware, PayL
         @Override
         public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
             ERRPacket ret = (ERRPacket)entity;
-            return ret.payLoadLength - currentPosition();
+            return ret.payLoadLength - offset();
         }
 
         @Override

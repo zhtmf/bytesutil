@@ -6,6 +6,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
@@ -15,8 +16,8 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
  * <p>
  * To achieve backwards compatibility, {@link Length} can also be used to
  * specify length of a list but only when the component class is not a data type
- * that utilizes {@link Length} annotation. To avoid ambiguity, an exception
- * will be thrown in such case.
+ * that also utilizes {@link Length} annotation (such as {@link CHAR}). To avoid
+ * ambiguity, an exception will be raised in this case.
  * 
  * @author dzh
  *
@@ -26,16 +27,20 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 public @interface ListLength {
     /**
      * Specify static length value
-     * @return  static length value
+     * 
+     * @return static length value
      */
     int value() default -1;
+
     /**
      * How the length value itself is stored in the stream.<br>
      * by default it is treated as a single byte value.
-     * @return    the data dataType which describes how the length value itself is stored in the stream
+     * 
+     * @return the data type which describes how the length value itself is stored
+     *         in the stream
      */
     DataType type() default DataType.BYTE;
-    
+
     /**
      * Specify a handler class which should be referred to at runtime to retrieve
      * the length value

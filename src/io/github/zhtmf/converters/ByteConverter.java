@@ -20,39 +20,38 @@ class ByteConverter implements Converter<Byte> {
     @Override
     public void serialize(Byte value, OutputStream dest, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
-        byte val = (byte)value;
         switch(ctx.dataType) {
         case BYTE:
-            StreamUtils.writeBYTE(dest, val);
+            StreamUtils.writeBYTE(dest, (byte)value);
             return;
         case CHAR:
-            serializeAsCHAR(val, dest, ctx, self);
+            serializeAsCHAR((byte)value, dest, ctx, self);
             return;
         case BCD:{
             StreamUtils.writeBCD(
-                    dest, checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
+                    dest, checkAndConvertToBCD((byte)value, ctx.localAnnotation(BCD.class).value()));
             return;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Byte deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
+    public Byte deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
         switch(ctx.dataType) {
         case BYTE:{
-            return (byte)(StreamUtils.readByte(is, ctx.signed));
+            return (byte)(StreamUtils.readByte(in, ctx.signed));
         }
         case CHAR:{
-            return (byte)deserializeAsCHAR(is, ctx, self, DataType.BYTE);
+            return (byte)deserializeAsCHAR(in, ctx, self, DataType.BYTE);
         }
         case BCD:{
-            long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+            long val = StreamUtils.readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
             checkRangeInContext(DataType.BYTE, val, ctx);
             return (byte)val;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 }

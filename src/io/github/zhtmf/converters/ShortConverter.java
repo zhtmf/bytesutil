@@ -33,29 +33,29 @@ class ShortConverter implements Converter<Short> {
                     dest, checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
             return;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Short deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
+    public Short deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
             throws IOException,ConversionException {
         switch(ctx.dataType) {
         case BYTE:{
-            return (short)readByte(is, ctx.signed);
+            return (short)readByte(in, ctx.signed);
         }
         case SHORT:{
-            return (short)readShort(is, ctx.signed, ctx.bigEndian);
+            return (short)readShort(in, ctx.signed, ctx.bigEndian);
         }
         case CHAR:{
-            return (short)deserializeAsCHAR(is, ctx, self, DataType.SHORT);
+            return (short)deserializeAsCHAR(in, ctx, self, DataType.SHORT);
         }
         case BCD:{
-            long val = readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+            long val = readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
             checkRangeInContext(DataType.SHORT, val, ctx);
             return (short)val;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 }

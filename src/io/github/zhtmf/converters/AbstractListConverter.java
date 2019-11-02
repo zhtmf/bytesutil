@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.util.List;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 abstract class AbstractListConverter {
 
@@ -37,14 +36,14 @@ abstract class AbstractListConverter {
         return length;
     }
     
-    protected int lengthForDeserialize(InputStream is, FieldInfo ctx, Object self) throws ConversionException {
-        int length = ctx.lengthForDeserializingListLength(self, is);
+    protected int lengthForDeserialize(InputStream in, FieldInfo ctx, Object self) throws ConversionException {
+        int length = ctx.lengthForDeserializingListLength(self, in);
         if(length<0) {
-            length = ctx.lengthForDeserializingLength(self, is);
+            length = ctx.lengthForDeserializingLength(self, in);
         }
         if(length<0) {
             try {
-                length = StreamUtils.readIntegerOfType(is, ctx.lengthType(), ctx.bigEndian);
+                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
             } catch (IOException e) {
                 throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                         .withSiteAndOrdinal(AbstractListConverter.class, 12);

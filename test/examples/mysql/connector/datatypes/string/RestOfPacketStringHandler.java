@@ -20,7 +20,7 @@ public class RestOfPacketStringHandler extends ModifierHandler<Integer>{
         }else {
             throw new IllegalArgumentException(entity.getClass()+"");
         }
-        return length - currentPosition();
+        return length - offset();
     }
 
     @Override

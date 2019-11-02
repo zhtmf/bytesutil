@@ -1,11 +1,11 @@
 package io.github.zhtmf.converters;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
 
 /**
  * Wrapper class for eliminating branches in {@link DataPacket} when converting
@@ -22,11 +22,11 @@ class DataPacketConverter implements Converter<DataPacket> {
     }
 
     @Override
-    public DataPacket deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
+    public DataPacket deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         DataPacket object = null;
         try {
-            object = ctx.entityForDeserializing(self, is);
+            object = ctx.entityForDeserializing(self, in);
         } catch (Exception e) {
             throw new ExtendedConversionException(
                     self.getClass(),ctx.name,
@@ -35,7 +35,7 @@ class DataPacketConverter implements Converter<DataPacket> {
                             , ctx.isEntityList ? ctx.listComponentClass : ctx.getFieldType()),e)
                     .withSiteAndOrdinal(DataPacketConverter.class, 11);
         }
-        object.deserialize(is);
+        object.deserialize(in);
         return object;
     }
 }

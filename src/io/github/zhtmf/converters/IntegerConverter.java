@@ -42,35 +42,35 @@ class IntegerConverter implements Converter<Integer> {
             writeBCD(
                     dest, checkAndConvertToBCD(val, ctx.localAnnotation(BCD.class).value()));
             return;
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 
     @Override
-    public Integer deserialize(java.io.InputStream is, FieldInfo ctx, Object self)
+    public Integer deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case BYTE:{
-            return StreamUtils.readByte(is, ctx.signed);
+            return StreamUtils.readByte(in, ctx.signed);
         }
         case SHORT:{
-            return StreamUtils.readShort(is, ctx.signed, ctx.bigEndian);
+            return StreamUtils.readShort(in, ctx.signed, ctx.bigEndian);
         }
         case INT:{
-            return (int)StreamUtils.readInt(is, ctx.signed, ctx.bigEndian);
+            return (int)StreamUtils.readInt(in, ctx.signed, ctx.bigEndian);
         }
         case INT3:{
-            return StreamUtils.readInt3(is, ctx.signed, ctx.bigEndian);
+            return StreamUtils.readInt3(in, ctx.signed, ctx.bigEndian);
         }
         case CHAR:{
-            return (int)deserializeAsCHAR(is, ctx, self, DataType.INT);
+            return (int)deserializeAsCHAR(in, ctx, self, DataType.INT);
         }
         case BCD:{
-            long val = StreamUtils.readIntegerBCD(is, ctx.localAnnotation(BCD.class).value());
+            long val = StreamUtils.readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
             checkRangeInContext(DataType.INT, val, ctx);
             return (int) val;
         }
-        default:throw new Error("cannot happen");
+        default:throw new Error("should not reach here");
         }
     }
 }

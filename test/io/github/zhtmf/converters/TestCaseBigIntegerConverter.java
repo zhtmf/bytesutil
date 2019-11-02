@@ -14,7 +14,6 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.LONG;
 import io.github.zhtmf.converters.BigIntegerConverter;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseBigIntegerConverter{
     @Test

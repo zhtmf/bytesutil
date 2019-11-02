@@ -9,11 +9,10 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- * Specifies that a single integral-typed field or all integral-typed fields in
- * a class should be interpreted as signed.
+ * Specifies that a single integral type field or all integral type fields in a
+ * class should be interpreted as signed.
  * <p>
- * Annotations on a specific field always override annotation at the class
- * level.
+ * Annotations applied to a field always override annotation at the class level.
  * 
  * @author dzh
  */

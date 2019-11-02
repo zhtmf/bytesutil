@@ -8,9 +8,9 @@ import java.math.BigInteger;
 import org.junit.Test;
 
 import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.converters.TestUtils;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class MakeJacocoHappy {
     @SuppressWarnings("rawtypes")

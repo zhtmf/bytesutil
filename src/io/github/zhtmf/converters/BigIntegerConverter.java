@@ -6,7 +6,7 @@ import java.io.OutputStream;
 import java.math.BigInteger;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.auxiliary.exceptions.ExtendedConversionException;
+
 import static io.github.zhtmf.converters.StreamUtils.*;
 
 class BigIntegerConverter implements Converter<BigInteger>{
@@ -26,20 +26,20 @@ class BigIntegerConverter implements Converter<BigInteger>{
         case CHAR:
             serializeAsCHAR(value, dest, ctx, self);
             return;
-        default: throw new Error("cannot happen");
+        default: throw new Error("should not reach here");
         }
     }
 
     @Override
-    public BigInteger deserialize(InputStream is, FieldInfo ctx, Object self)
+    public BigInteger deserialize(InputStream in, FieldInfo ctx, Object self)
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case LONG:
             BigInteger ret = null;
             if(ctx.signed) {
-                ret = BigInteger.valueOf(StreamUtils.readLong(is, ctx.bigEndian));
+                ret = BigInteger.valueOf(StreamUtils.readLong(in, ctx.bigEndian));
             }else {
-                ret = StreamUtils.readUnsignedLong(is, ctx.bigEndian);
+                ret = StreamUtils.readUnsignedLong(in, ctx.bigEndian);
             }
             String error = null;
             if((error = DataTypeOperations.LONG.checkRange(ret, ctx.unsigned))!=null) {
@@ -48,8 +48,8 @@ class BigIntegerConverter implements Converter<BigInteger>{
             }
             return ret;
         case CHAR:
-            return deserializeAsBigCHAR(is, ctx, self, ctx.dataType);
-        default: throw new Error("cannot happen");
+            return deserializeAsBigCHAR(in, ctx, self, ctx.dataType);
+        default: throw new Error("should not reach here");
         }
     }
 }

@@ -20,7 +20,6 @@ import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.ClassInfo;
-import io.github.zhtmf.converters.auxiliary.exceptions.TestUtils;
 
 public class TestCaseClassInfo {
     @Test

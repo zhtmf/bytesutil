@@ -57,7 +57,7 @@ class EnumFieldInfo extends FieldInfo {
             break;
         case CHAR:
             if(NumericEnum.class.isAssignableFrom(fieldClass)) {
-                throw forContext(base.entityClass, name, "CHAR should implements StringEnum, not NumericEnum")
+                throw forContext(base.entityClass, name, "CHAR should implement StringEnum, not NumericEnum")
                     .withSiteAndOrdinal(EnumFieldInfo.class, 3);
             }
             for(Object constant:constants) {
@@ -82,7 +82,7 @@ class EnumFieldInfo extends FieldInfo {
             }
             break;
         default:
-            throw new Error("cannot happen");
+            throw new Error("should not reach here");
         }
         this.mapValueByEnumMember = Collections.unmodifiableMap(mapValueByEnumMember);
         this.mapEnumMemberByValue = Collections.unmodifiableMap(mapEnumMemberByValue);
