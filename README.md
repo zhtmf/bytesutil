@@ -352,6 +352,11 @@ There is a third method, `length()` in `DataPacket`, which calculates length in 
 
 Note that this method is ***NOT*** a constant-time operation though it does not calculate by doing a serialization.
 
+### Determine where you are in the stream
+From 1.1.3, a new method ````offset```` has been added to ````ModifierHandler```` class. This method returns an ````int```` telling the current offset (position) in bytes relative to beginning of current DataPacket.
+
+This is useful to implement some data structures (mainly strings) which does not have a deterministic length but just occupies all remaining spaces in a data packet.
+
 ## Variant
 As is already covered above, this annotation specifies a handler which wraps custom initialization logic at runtime. It is useful whenever you need additional logic other than calling no-arg constructor, like copying field value from "parent" object to sub objects. 
 
