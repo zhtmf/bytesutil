@@ -22,6 +22,9 @@ class BooleanConverter implements Converter<Boolean> {
             byte val = (byte) (value.booleanValue() == true ? 1 : 0);
             StreamUtils.writeBYTE(dest, val);
             return;
+        case BIT:
+            StreamUtils.writeBit((BitOutputStream) dest, value);
+            return;
         default:throw new Error("should not reach here");
         }
     }
@@ -33,6 +36,9 @@ class BooleanConverter implements Converter<Boolean> {
         switch(ctx.dataType) {
         case BYTE:{
             val = (byte) StreamUtils.readByte(in, ctx.signed);break;
+        }
+        case BIT:{
+            val = StreamUtils.readBit((MarkableInputStream) in, ctx.bitCount, ctx.bigEndian);break;
         }
         default:throw new Error("should not reach here");
         }

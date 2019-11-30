@@ -282,6 +282,23 @@ enum DataTypeOperations{
         }
         
     }
+    ,BIT{
+
+        @Override
+        Class<? extends Annotation> annotationClassOfThisType() {
+            return io.github.zhtmf.annotations.types.BIT.class;
+        }
+
+        @Override
+        boolean supports(Class<?> javaType) {
+            return javaType == boolean.class
+                    || javaType == Boolean.class
+                    || javaType == java.lang.Byte.class
+                    || javaType == byte.class
+                    ;
+        }
+        
+    }
     ;
     
     Class<?> mappedEnumFieldClass(){throw new UnsupportedOperationException();}

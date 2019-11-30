@@ -26,6 +26,20 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
     private int fillPos = 0;
     private int bytesProcessed;
     
+    private byte bitMap;
+    private int offset = -1;
+    private static final byte[] masks = new byte[] {
+            0x0,
+            (byte) 0b00000001,
+            (byte) 0b00000011,
+            (byte) 0b00000111,
+            (byte) 0b00001111,
+            (byte) 0b00011111,
+            (byte) 0b00111111,
+            (byte) 0b01111111,
+            (byte) 0b11111111,
+    };
+    
     static MarkableInputStream wrap(InputStream in) {
         if(in instanceof MarkableInputStream) {
             return new ResetCounterMarkableInputStream((MarkableInputStream) in);
@@ -43,9 +57,57 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
         this.in = in;
     }
     
+    /**
+     * Read <code>num</code> bits of current byte.
+     * <p>
+     * After calling this method once and before fully reading all bits of this
+     * byte, calling {@link #read()} or related methods will result in an
+     * {@link IllegalStateException}. While other methods like {@link #remaining()}
+     * will act as if the byte has been fully read.
+     * <p>
+     * Fully reading current byte here means accumulatively reading 8 bits by
+     * calling this method. After reading 8 bits this method can be called again to
+     * start reading bits from another byte.
+     * <p>
+     * However one call to this method cannot read past the boundary of a byte, for
+     * example if the first 7 bits of current byte has already been read, the next
+     * call to this method can only read the remaining 1 bit but not a mixture of
+     * bits from both the current byte and the next byte.
+     * <p>
+     * Bit values will be read from left to right. The result is a <code>byte</code>
+     * whose right most bits being set to bits read from current byte.
+     * 
+     * @param num
+     *            number of bits to read which should be in the range (0,8], reading
+     *            8 bits will result in reading a <code>signed</code> byte which is
+     *            consistent in binary format but different in value with what
+     *            directly read from {@link #read()}.
+     * @return a byte value whose right most <code>num</code> bits being set to bits
+     *         read from the current byte.
+     * @throws IOException
+     *             if the underlying stream throws an exception.
+     * @throws IllegalArgumentException
+     *             If <code>num</code> is out of range or larger than number of
+     *             remaining unread bits in the current byte.
+     */
+    public byte readBits(int num) throws IOException, IllegalArgumentException{
+        if(offset==-1 || offset == 0) {
+            bitMap = (byte) read();
+            offset = 8;
+        }
+        if(num<0 || num>8) {
+            throw new IllegalArgumentException();
+        }
+        if(offset<num) {
+            throw new IllegalArgumentException("cannot read more than 8 bits from the same byte");
+        }
+        return (byte) (bitMap >> (offset -= num) & masks[num]);
+    }
+    
     @Override
     public int read() throws IOException {
         checkClosed();
+        checkNotReadingBits();
         if(readPos < fillPos) {
             ++bytesProcessed;
             return buffer[readPos++];
@@ -67,6 +129,7 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
     @Override
     public void reset() throws IOException {
         checkClosed();
+        checkNotReadingBits();
         bytesProcessed -= (readPos);
         readPos = 0;
     }
@@ -89,6 +152,7 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
      */
     @Override
     public void mark(int readlimit){
+        checkNotReadingBits();
         if(readlimit<=0) {
             readlimit = INITIAL_BUFFER_SIZE;
         }
@@ -101,6 +165,7 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
     }
     
     public void close() throws IOException {
+        checkNotReadingBits();
         in = null;//intended
     }
     
@@ -138,6 +203,12 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
         return bytesProcessed;
     }
     
+    private void checkNotReadingBits() {
+        if(offset>0) {
+            throw new IllegalStateException("this method should not be called while reading bits from a byte");
+        }
+    }
+    
     private void ensureCapacity() {
         int length = buffer.length;
         if(fillPos == length) {
@@ -172,6 +243,10 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
             return delegate.actuallyProcessedBytes() + delta;
         }
         
+        @Override
+        public byte readBits(int num) throws IOException {
+            return delegate.readBits(num);
+        }
         public int read() throws IOException {
             return delegate.read();
         }

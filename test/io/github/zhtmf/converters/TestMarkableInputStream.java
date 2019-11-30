@@ -415,4 +415,129 @@ public class TestMarkableInputStream {
             }
         }
     }
+    
+    @Test
+    public void testReadBIT() throws IOException{
+        MarkableInputStream stream = MarkableInputStream.wrap(
+                TestUtils.newInputStream(new byte[] {120,110,(byte) 0b11011011,39,40,0b01010111}));
+        stream.mark(0);
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        Assert.assertEquals(stream.readBits(1),0b0);
+        Assert.assertEquals(stream.readBits(3),0b110);
+        Assert.assertEquals(stream.readBits(1),1);
+        Assert.assertEquals(stream.readBits(1),1);
+        Assert.assertEquals(stream.read(),39);
+        stream.reset();
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(5),0b11011);
+        Assert.assertEquals(stream.readBits(3),0b011);
+        Assert.assertEquals(stream.read(),39);
+        stream.reset();
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(6),0b110110);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        Assert.assertEquals(stream.read(),39);
+        stream.reset();
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(7),0b1101101);
+        Assert.assertEquals(stream.readBits(1),1);
+        Assert.assertEquals(stream.read(),39);
+        stream.reset();
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(8),(byte)0b11011011);
+        Assert.assertEquals(stream.read(),39);
+        
+        Assert.assertEquals(stream.read(),40);
+        Assert.assertEquals(stream.readBits(4),0b0101);
+        Assert.assertEquals(stream.readBits(4),0b0111);
+    }
+    
+    @Test
+    public void testReadBIT2() throws IOException{
+        MarkableInputStream stream = MarkableInputStream.wrap(
+                TestUtils.newInputStream(new byte[] {120,110,(byte) 0b11011011,0b01010111}));
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        try {
+            stream.read();
+            Assert.fail();
+        } catch (IllegalStateException e) {
+        }
+        Assert.assertEquals(stream.readBits(2),0b01);
+        try {
+            stream.read();
+            Assert.fail();
+        } catch (IllegalStateException e) {
+        }
+        Assert.assertEquals(stream.readBits(1),0b1);
+        try {
+            stream.read();
+            Assert.fail();
+        } catch (IllegalStateException e) {
+        }
+        try {
+            stream.mark(0);
+            Assert.fail();
+        } catch (IllegalStateException e) {
+            return;
+        }
+        try {
+            stream.reset();
+            Assert.fail();
+        } catch (IllegalStateException e) {
+            return;
+        }
+        try {
+            stream.close();
+            Assert.fail();
+        } catch (IllegalStateException e) {
+            return;
+        }
+    }
+    
+    @Test
+    public void testReadBIT3() throws IOException{
+        MarkableInputStream stream = MarkableInputStream.wrap(
+                TestUtils.newInputStream(new byte[] {120,110,(byte) 0b11011011,0b01010111}));
+        stream.mark(0);
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        Assert.assertEquals(stream.readBits(2),0b01);
+        Assert.assertEquals(stream.readBits(2),0b10);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        Assert.assertEquals(stream.readBits(1),0b0);
+        Assert.assertEquals(stream.readBits(3),0b101);
+        Assert.assertEquals(stream.readBits(4),0b0111);
+        stream.reset();
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        Assert.assertEquals(stream.readBits(2),0b01);
+        Assert.assertEquals(stream.readBits(2),0b10);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        Assert.assertEquals(stream.readBits(1),0b0);
+        Assert.assertEquals(stream.readBits(3),0b101);
+        Assert.assertEquals(stream.readBits(4),0b0111);
+        Assert.assertEquals(stream.remaining(),0);
+        stream.reset();
+        Assert.assertEquals(stream.read(),120);
+        Assert.assertEquals(stream.read(),110);
+        Assert.assertEquals(stream.readBits(2),0b11);
+        Assert.assertEquals(stream.readBits(2),0b01);
+        Assert.assertEquals(stream.readBits(2),0b10);
+        try {
+            Assert.assertEquals(stream.readBits(3),0b11);
+            Assert.fail(); 
+        } catch (IllegalArgumentException e) {
+            return;
+        }
+    }
 }

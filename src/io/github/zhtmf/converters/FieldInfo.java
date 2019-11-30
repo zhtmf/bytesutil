@@ -20,6 +20,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.TypeConverter;
+import io.github.zhtmf.annotations.enums.NumericEnum;
+import io.github.zhtmf.annotations.enums.StringEnum;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.Conditional;
@@ -32,6 +34,7 @@ import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.annotations.types.BIT;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
@@ -45,7 +48,7 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
  * @author dzh
  */
 class FieldInfo{
-    private final Field field;
+    protected final Field field;
     protected final ClassInfo base;
     private final Map<Class<? extends Annotation>,Annotation> annotations;
     private final Class<?> fieldClass;
@@ -133,6 +136,11 @@ class FieldInfo{
      * a concrete length (not dynamic length)
      */
     final boolean customLengthDefined;
+    
+    /**
+     * value of {@link BIT} annotation
+     */
+    final int bitCount;
     
     @SuppressWarnings("unchecked")
     FieldInfo(Field field, DataType dataType, ClassInfo base) {
@@ -320,6 +328,27 @@ class FieldInfo{
                 this.datePattern = df.value();
             }
         }
+        {
+            BIT bit = localAnnotation(BIT.class);
+            if(bit!=null) {
+                int value = bit == null ? 0 : bit.value();
+                if(value==8) {
+                    throw FieldInfo.forContext(base.entityClass, name, "use BYTE instead of BIT if this field represents a whole byte")
+                    .withSiteAndOrdinal(FieldInfo.class, 12);
+                }
+                if(value>8 || value<=0) {
+                    throw FieldInfo.forContext(base.entityClass, name, "value of BIT annotation should be between 0 and 8 exclusively")
+                    .withSiteAndOrdinal(FieldInfo.class, 13);
+                }
+                if(localAnnotation(Conditional.class)!=null) {
+                    throw FieldInfo.forContext(base.entityClass, name, "BIT fields do not support conditional processing")
+                    .withSiteAndOrdinal(FieldInfo.class, 14);
+                }
+                this.bitCount = bit == null ? 0 : bit.value();
+            }else {
+                this.bitCount = 0;
+            }
+        }
         
         TypeConverter<?> typeConverter = null;
         UserDefined userDefined = annotation(UserDefined.class);
@@ -363,6 +392,7 @@ class FieldInfo{
             this.innerConverter = null;
         }else {
             //a plain field
+            //in case of a BIT field, this FieldInfo is always a 
             converter = typeConverter!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(getFieldType());
             this.innerConverter = null;
         }
@@ -380,6 +410,9 @@ class FieldInfo{
      * @return  field value
      */
     public Object get(Object self) {
+        return getFieldValue(field, self);
+    }
+    protected static Object getFieldValue(Field field,Object self) {
         try {
             return field.get(self);
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -397,6 +430,9 @@ class FieldInfo{
     public void set(Object self, Object val) {
         if(val==null)
             return;
+        setFieldValue(field,self,val);
+    }
+    protected static void setFieldValue(Field field,Object self,Object val) {
         try {
             field.set(self, val);
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -548,10 +584,10 @@ class FieldInfo{
         return length;
     }
     
-    final int lengthForDeserializingLength(Object self, InputStream bis) {
+    final int lengthForDeserializingLength(Object self, InputStream in) {
         Integer length = this.length;
         if(length<0 && this.lengthHandler!=null) {
-            length = this.lengthHandler.handleDeserialize0(this.name, self, (MarkableInputStream)bis);
+            length = this.lengthHandler.handleDeserialize0(this.name, self, in);
         }
         return length;
     }
@@ -578,13 +614,13 @@ class FieldInfo{
     }
     
     final DataPacket entityForDeserializing(Object self,InputStream in) {
-        return entityCreator.handleDeserialize0(this.name, self, (MarkableInputStream)in);
+        return entityCreator.handleDeserialize0(this.name, self, in);
     }
     
-    final int lengthForDeserializingListLength(Object self, InputStream bis){
+    final int lengthForDeserializingListLength(Object self, InputStream in){
         Integer length = this.listLength;
         if(length<0 && this.listLengthHandler!=null) {
-            length = this.listLengthHandler.handleDeserialize0(this.name, self, (MarkableInputStream)bis);
+            length = this.listLengthHandler.handleDeserialize0(this.name, self, in);
         }
         return length;
     }
@@ -659,6 +695,11 @@ class FieldInfo{
         }
         DataType type = this.dataType;
         switch(type) {
+        case BIT:
+            //integrity check has been done elsewhere
+            //superfluous BIT type fields has been removed from the list
+            ret += 1;
+            break;
         case BCD:
             ret += ((BCD)this.localAnnotation(BCD.class)).value() * length;
             break;
@@ -835,7 +876,7 @@ class FieldInfo{
         public Object deserialize(java.io.InputStream in, FieldInfo ctx, Object self)
                 throws IOException, ConversionException {
             if(! ctx.conditionalHandler.handleDeserialize0(
-                    ctx.name, self, (MarkableInputStream)in).equals(ctx.conditionalResult)) {
+                    ctx.name, self, in).equals(ctx.conditionalResult)) {
                 return null;
             }
             return wrappedConverter.deserialize(in, ctx, self);
@@ -867,5 +908,108 @@ class FieldInfo{
     
     static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error) {
         return forContext(entity,field,error,null);
+    }
+    
+    //--------------dedicated subclasses--------------------
+    
+    /**
+     * Dedicated subclass used to eliminate the branches in {@link #get(Object)} and
+     * {@link #set(Object, Object)}
+     */
+    static class EnumFieldInfo extends FieldInfo {
+        
+        private final Map<Object,Object> mapValueByEnumMember;
+        private final Map<Object,Object> mapEnumMemberByValue;
+
+        EnumFieldInfo(Field field, DataType type, ClassInfo base) {
+            super(field, type, base);
+            Class<?> fieldClass = field.getType();
+            
+            Map<Object,Object> mapEnumMemberByValue = new HashMap<>();
+            Map<Object,Object> mapValueByEnumMember = new HashMap<>();
+            Object[] constants = fieldClass.getEnumConstants();
+            switch(type) {
+            case BYTE:
+            case SHORT:
+            case INT:
+            case LONG:
+                if(StringEnum.class.isAssignableFrom(fieldClass)) {
+                    throw forContext(base.entityClass, name, "numeric enum dataType should implement NumericEnum, not StringEnum")
+                        .withSiteAndOrdinal(EnumFieldInfo.class, 1);
+                }
+                for(Object constant:constants) {
+                    long val = 0;
+                    if(NumericEnum.class.isAssignableFrom(fieldClass)) {
+                        val = ((NumericEnum)constant).getValue();
+                    }else {
+                        val = Long.parseLong(constant.toString());
+                    }
+                    String error;
+                    if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
+                        throw forContext(base.entityClass, name, error)
+                            .withSiteAndOrdinal(EnumFieldInfo.class, 7);
+                    }
+                    Long key = Long.valueOf(val);
+                    if(mapEnumMemberByValue.containsKey(key)) {
+                        throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
+                        .withSiteAndOrdinal(EnumFieldInfo.class, 2);
+                    }
+                    mapEnumMemberByValue.put(key, constant);
+                    mapValueByEnumMember.put(constant, key);
+                }
+                break;
+            case CHAR:
+                if(NumericEnum.class.isAssignableFrom(fieldClass)) {
+                    throw forContext(base.entityClass, name, "CHAR should implement StringEnum, not NumericEnum")
+                        .withSiteAndOrdinal(EnumFieldInfo.class, 3);
+                }
+                for(Object constant:constants) {
+                    String key = null;
+                    if(StringEnum.class.isAssignableFrom(fieldClass)) {
+                        key = ((StringEnum)constant).getValue();
+                    }else {
+                        key = constant.toString();
+                    }
+                    if(key==null) {
+                        throw forContext(base.entityClass, name,
+                                "members of an enum mapped to string values should return"
+                                + " non-null string as values")
+                        .withSiteAndOrdinal(EnumFieldInfo.class, 4);
+                    }
+                    if(mapEnumMemberByValue.containsKey(key)) {
+                        throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
+                        .withSiteAndOrdinal(EnumFieldInfo.class, 5);
+                    }
+                    mapEnumMemberByValue.put(key, constant);
+                    mapValueByEnumMember.put(constant, key);
+                }
+                break;
+            default:
+                throw new Error("should not reach here");
+            }
+            this.mapValueByEnumMember = Collections.unmodifiableMap(mapValueByEnumMember);
+            this.mapEnumMemberByValue = Collections.unmodifiableMap(mapEnumMemberByValue);
+        }
+        
+        @Override
+        public Class<?> getFieldType() {
+            //this method will be called prior to constructor
+            return DataTypeOperations.of(super.dataType).mappedEnumFieldClass();
+        }
+
+        @Override
+        public Object get(Object self) {
+            return mapValueByEnumMember.get(super.get(self));
+        }
+        
+        @Override
+        public void set(Object self, Object val) {
+            val = mapEnumMemberByValue.get(val);
+            if(val==null) {
+                throw forContext(base.entityClass, name, "unmapped enum value:"+val)
+                    .withSiteAndOrdinal(EnumFieldInfo.class, 6);
+            }
+            super.set(self, val);
+        }
     }
 }

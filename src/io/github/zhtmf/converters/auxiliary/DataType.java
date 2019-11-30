@@ -26,4 +26,5 @@ public enum DataType{
     ,CHAR
     ,LONG
     ,USER_DEFINED
+    ,BIT
 }

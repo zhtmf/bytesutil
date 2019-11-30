@@ -162,6 +162,24 @@ class StreamUtils {
         }
     }
     
+    public static void writeBit(BitOutputStream os, byte value, int num, boolean bigEndian) throws IOException {
+        if(!bigEndian)
+            value = reverseNBits(value, num);
+        os.writeBits(value, num);
+    }
+    
+    public static void writeBit(BitOutputStream os, boolean value) throws IOException {
+        os.writeBits(value);
+    }
+    
+    public static byte readBit(MarkableInputStream in, int num, boolean bigEndian) throws IOException {
+        byte ret = in.readBits(num);
+        if(!bigEndian)
+            ret = reverseNBits(ret, num);
+        return ret;
+    }
+    
+    
     //---------------------------------
     
     public static int readByte(InputStream in,boolean signed) throws IOException{
@@ -584,5 +602,31 @@ class StreamUtils {
             throw new EOFException();
         }
         return b;
+    }
+    
+    //reverse count bits to the right of specified byte
+    //not the whole byte
+    static byte reverseNBits(byte src, int count) {
+        byte ret = 0;
+        int pos = 0;
+        switch(count-- % 8) {
+        case 0:
+            ret |= ((src >> count--) & 1) << pos++;
+        case 7:
+            ret |= ((src >> count--) & 1) << pos++;
+        case 6:
+            ret |= ((src >> count--) & 1) << pos++;
+        case 5:
+            ret |= ((src >> count--) & 1) << pos++;
+        case 4:
+            ret |= ((src >> count--) & 1) << pos++;
+        case 3:
+            ret |= ((src >> count--) & 1) << pos++;
+        case 2:
+            ret |= ((src >> count--) & 1) << pos++;
+        case 1:
+            ret |= ((src >> count--) & 1) << pos++;
+        }
+        return ret;
     }
 }

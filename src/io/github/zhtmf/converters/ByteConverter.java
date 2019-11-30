@@ -32,6 +32,10 @@ class ByteConverter implements Converter<Byte> {
                     dest, checkAndConvertToBCD((byte)value, ctx.localAnnotation(BCD.class).value()));
             return;
         }
+        case BIT:{
+            StreamUtils.writeBit((BitOutputStream) dest, (byte)value, ctx.bitCount, ctx.bigEndian);
+            return;
+        }
         default:throw new Error("should not reach here");
         }
     }
@@ -50,6 +54,9 @@ class ByteConverter implements Converter<Byte> {
             long val = StreamUtils.readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
             checkRangeInContext(DataType.BYTE, val, ctx);
             return (byte)val;
+        }
+        case BIT:{
+            return StreamUtils.readBit((MarkableInputStream) in, ctx.bitCount, ctx.bigEndian);
         }
         default:throw new Error("should not reach here");
         }

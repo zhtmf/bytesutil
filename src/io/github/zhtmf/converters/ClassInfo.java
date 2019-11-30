@@ -48,6 +48,7 @@ class ClassInfo {
      * {@link FieldInfo} objects in the order specified by {@link Order} annotation.
      */
     List<FieldInfo> fieldInfoList = new ArrayList<>();
+    List<FieldInfo> fieldInfoListForLength = new ArrayList<FieldInfo>();
     
     public ClassInfo(Class<?> cls) {
         
@@ -120,28 +121,30 @@ class ClassInfo {
                     type = dataType;
                 }
             }
+            
             if(type==null){
                 Class<?> componentClass;
                 if( ! DataPacket.class.isAssignableFrom(f.getType())
-                && ((componentClass = firstTypeParameterClass(f))==null
-                || ! DataPacket.class.isAssignableFrom(componentClass))) {
+                        && ((componentClass = firstTypeParameterClass(f))==null
+                        || ! DataPacket.class.isAssignableFrom(componentClass))) {
                     throw FieldInfo.forContext(cls, name, "field not marked with a DataType")
-                        .withSiteAndOrdinal(ClassInfo.class, 2);
+                    .withSiteAndOrdinal(ClassInfo.class, 2);
                 }
-            }
-            
-            if(type == DataType.BCD) {
+            }else if(type == DataType.BCD) {
                 BCD anno = f.getAnnotation(BCD.class);
                 if(anno.value()<0) {
                     throw FieldInfo.forContext(cls, name, "BCD length should not be negative")
-                        .withSiteAndOrdinal(ClassInfo.class, 3);
+                    .withSiteAndOrdinal(ClassInfo.class, 3);
                 }
             }
             
-            FieldInfo fieldInfo = f.getType().isEnum()
-                    && f.getAnnotation(UserDefined.class)==null
-                    ? new EnumFieldInfo(f, type, this)
-                    : new FieldInfo(f,type,this);
+            FieldInfo fieldInfo;
+            if(f.getType().isEnum()
+               && f.getAnnotation(UserDefined.class)==null) {
+                fieldInfo = new FieldInfo.EnumFieldInfo(f, type, this);
+            }else {
+                fieldInfo = new FieldInfo(f,type,this);
+            }
             
             if(fieldInfo.listComponentClass!=null) {
                 if(fieldInfo.localAnnotation(Length.class)==null
@@ -205,7 +208,46 @@ class ClassInfo {
             fieldInfoList.add(fieldInfo);
         }
         
+        //check whether BIT fields are grouped together
+        //make another list solely for length calculation purpose
+        List<FieldInfo> fieldInfoListForLength = new ArrayList<FieldInfo>();
+        int bitCount = 0;
+        FieldInfo lastBitFieldInfo = null;
+        for(int i=0;i<fieldInfoList.size();++i) {
+            FieldInfo fieldInfo = fieldInfoList.get(i);
+            if(fieldInfo.dataType == DataType.BIT) {
+                if(lastBitFieldInfo==null) {
+                    lastBitFieldInfo = fieldInfo;
+                    fieldInfoListForLength.add(lastBitFieldInfo);
+                }
+                bitCount += fieldInfo.bitCount;
+                if(bitCount>8) {
+                    throw FieldInfo.forContext(cls, "", 
+                            "BIT type fields should appear consecutively"
+                          + " within the same class and form"
+                          + " groups of 8 bits.")
+                    .withSiteAndOrdinal(ClassInfo.class, 12);
+                }
+                
+                if(bitCount==8) {
+                    lastBitFieldInfo = null;
+                    bitCount = 0;
+                }
+            }else {
+                fieldInfoListForLength.add(fieldInfo);
+            }
+        }
+        
+        if(lastBitFieldInfo!=null && bitCount!=8) {
+            throw FieldInfo.forContext(cls, "", 
+                    "BIT type fields should appear consecutively"
+                  + " within the same class and form"
+                  + " groups of 8 bits.")
+            .withSiteAndOrdinal(ClassInfo.class, 14);
+        }
+        
         fieldInfoList = Collections.unmodifiableList(fieldInfoList);
+        this.fieldInfoListForLength = Collections.unmodifiableList(fieldInfoListForLength);
     }
     
     @SuppressWarnings("unchecked")
@@ -258,11 +300,13 @@ class ClassInfo {
         return ci;
     }
     
-    public static void serialize(Object self,OutputStream dest)
+    public static void serialize(Object self,OutputStream _dest)
             throws ConversionException, IllegalArgumentException{
-        if(dest==null) {
+        if(_dest==null) {
             throw new NullPointerException();
         }
+        
+        OutputStream dest = new BitOutputStream(_dest);
         
         //lazy initialization
         ClassInfo ci = getClassInfo(self);
@@ -326,8 +370,9 @@ class ClassInfo {
     public static int length(Object self) throws IllegalArgumentException{
         ClassInfo ci = getClassInfo(self);
         int ret = 0;
-        for(FieldInfo ctx:ci.fieldInfoList) {
-            ret += ctx.fieldLength(self);
+        List<FieldInfo> list = ci.fieldInfoListForLength;
+        for(int k=0;k<list.size();++k) {
+            ret += list.get(k).fieldLength(self);
         }
         return ret;
     }

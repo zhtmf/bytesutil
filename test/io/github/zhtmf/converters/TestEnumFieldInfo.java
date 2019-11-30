@@ -102,49 +102,49 @@ public class TestEnumFieldInfo {
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 3);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.EnumFieldInfo.class, 3);
         }
         try {
             class Entity extends DataPacket{@Order(0)@BYTE public NEnum1 enm = NEnum1.FLAG1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 2);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.EnumFieldInfo.class, 2);
         }
         try {
             class Entity extends DataPacket{@Order(0)@BYTE public SEnum1 enm = SEnum1.FLAG1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 1);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.EnumFieldInfo.class, 1);
         }
         try {
             class Entity extends DataPacket{@Order(0)@CHAR(1) public SEnum1 enm = SEnum1.FLAG1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 5);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.EnumFieldInfo.class, 5);
         }
         try {
             class Entity extends DataPacket{@Order(0)@CHAR(1) public SEnum2 enm = SEnum2.FLAG1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 4);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.EnumFieldInfo.class, 4);
         }
         try {
             class Entity extends DataPacket{@Order(0)@CHAR(1) public SEnum3 enm = SEnum3.FLAG1;}
             new Entity().deserialize(TestUtils.newInputStream(new byte[] {'x'}));
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 6);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.EnumFieldInfo.class, 6);
         }
         try {
             class Entity extends DataPacket{@Order(0)@Unsigned@BYTE public NEnum2 enm = NEnum2.FLAG1;}
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 7);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.EnumFieldInfo.class, 7);
         }
     }
 }
