@@ -34,7 +34,7 @@ import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.BCD;
-import io.github.zhtmf.annotations.types.BIT;
+import io.github.zhtmf.annotations.types.Bit;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
@@ -138,7 +138,7 @@ class FieldInfo{
     final boolean customLengthDefined;
     
     /**
-     * value of {@link BIT} annotation
+     * value of {@link Bit} annotation
      */
     final int bitCount;
     
@@ -329,24 +329,34 @@ class FieldInfo{
             }
         }
         {
-            BIT bit = localAnnotation(BIT.class);
+            Bit bit = localAnnotation(Bit.class);
             if(bit!=null) {
-                int value = bit == null ? 0 : bit.value();
+                int value = bit.value() < 0 ? bit.value() : localAnnotation(Length.class).value();
                 if(value==8) {
                     throw FieldInfo.forContext(base.entityClass, name, "use BYTE instead of BIT if this field represents a whole byte")
                     .withSiteAndOrdinal(FieldInfo.class, 12);
                 }
                 if(value>8 || value<=0) {
-                    throw FieldInfo.forContext(base.entityClass, name, "value of BIT annotation should be between 0 and 8 exclusively")
+                    throw FieldInfo.forContext(base.entityClass, name, "value of BIT annotation should be between 1 and 7 inclusively")
                     .withSiteAndOrdinal(FieldInfo.class, 13);
                 }
                 if(localAnnotation(Conditional.class)!=null) {
                     throw FieldInfo.forContext(base.entityClass, name, "BIT fields do not support conditional processing")
                     .withSiteAndOrdinal(FieldInfo.class, 14);
                 }
-                this.bitCount = bit == null ? 0 : bit.value();
+                this.bitCount = value;
             }else {
                 this.bitCount = 0;
+            }
+            /*
+             * when used with list, the length should be static
+             */
+            if(this.listComponentClass != null) {
+                if(this.listLength < 0) {
+                    throw FieldInfo.forContext(base.entityClass, name
+                            , "length of BIT List should be static")
+                    .withSiteAndOrdinal(FieldInfo.class, 15);
+                }
             }
         }
         
@@ -392,7 +402,6 @@ class FieldInfo{
             this.innerConverter = null;
         }else {
             //a plain field
-            //in case of a BIT field, this FieldInfo is always a 
             converter = typeConverter!=null ? Converters.userDefinedTypeConverter : Converters.converters.get(getFieldType());
             this.innerConverter = null;
         }
@@ -933,6 +942,7 @@ class FieldInfo{
             case SHORT:
             case INT:
             case LONG:
+            case BIT:
                 if(StringEnum.class.isAssignableFrom(fieldClass)) {
                     throw forContext(base.entityClass, name, "numeric enum dataType should implement NumericEnum, not StringEnum")
                         .withSiteAndOrdinal(EnumFieldInfo.class, 1);
@@ -945,17 +955,31 @@ class FieldInfo{
                         val = Long.parseLong(constant.toString());
                     }
                     String error;
-                    if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
-                        throw forContext(base.entityClass, name, error)
+                    if(type == DataType.BIT) {
+                        if((error = DataTypeOperations.of(type).checkRange(val, super.bitCount))!=null) {
+                            throw forContext(base.entityClass, name, error)
+                            .withSiteAndOrdinal(EnumFieldInfo.class, 8);
+                        }
+                        Byte key = Byte.valueOf((byte) val);
+                        if(mapEnumMemberByValue.containsKey(key)) {
+                            throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
+                            .withSiteAndOrdinal(EnumFieldInfo.class, 2);
+                        }
+                        mapEnumMemberByValue.put(key, constant);
+                        mapValueByEnumMember.put(constant, key);
+                    }else {
+                        if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
+                            throw forContext(base.entityClass, name, error)
                             .withSiteAndOrdinal(EnumFieldInfo.class, 7);
+                        }
+                        Long key = Long.valueOf(val);
+                        if(mapEnumMemberByValue.containsKey(key)) {
+                            throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
+                            .withSiteAndOrdinal(EnumFieldInfo.class, 2);
+                        }
+                        mapEnumMemberByValue.put(key, constant);
+                        mapValueByEnumMember.put(constant, key);
                     }
-                    Long key = Long.valueOf(val);
-                    if(mapEnumMemberByValue.containsKey(key)) {
-                        throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
-                        .withSiteAndOrdinal(EnumFieldInfo.class, 2);
-                    }
-                    mapEnumMemberByValue.put(key, constant);
-                    mapValueByEnumMember.put(constant, key);
                 }
                 break;
             case CHAR:
@@ -1004,12 +1028,12 @@ class FieldInfo{
         
         @Override
         public void set(Object self, Object val) {
-            val = mapEnumMemberByValue.get(val);
-            if(val==null) {
+            Object mapped = mapEnumMemberByValue.get(val);
+            if(mapped==null) {
                 throw forContext(base.entityClass, name, "unmapped enum value:"+val)
                     .withSiteAndOrdinal(EnumFieldInfo.class, 6);
             }
-            super.set(self, val);
+            super.set(self, mapped);
         }
     }
 }

@@ -7,7 +7,7 @@ import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
-import io.github.zhtmf.annotations.types.BIT;
+import io.github.zhtmf.annotations.types.Bit;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.TestUtils.Provider;
@@ -33,6 +33,9 @@ public class TestBIT {
     
     /*
      * TODO: Exceptions
+     * TODO: List of Boolean/Byte
+     * TODO: BIT to Numeric Enums
+     * FIXME: map numeric enums according to their ordinal number
      */
     
     //General BIT fields conversion
@@ -42,19 +45,19 @@ public class TestBIT {
         @INT
         @Order(0)
         public int num1;
-        @BIT
+        @Bit
         @Order(1)
         public boolean b1;
-        @BIT
+        @Bit
         @Order(2)
         public boolean b2;
-        @BIT(4)
+        @Bit(4)
         @Order(3)
         public byte num2;
-        @BIT
+        @Bit
         @Order(4)
         public boolean b3;
-        @BIT
+        @Bit
         @Order(5)
         public boolean b4;
         @INT
@@ -85,25 +88,25 @@ public class TestBIT {
         
         @Signed
         class Entity2 extends DataPacket{
-            @BIT
+            @Bit
             @Order(1)
             public boolean b1 = false;
-            @BIT
+            @Bit
             @Order(2)
             public boolean b2 = true;
-            @BIT(6)
+            @Bit(6)
             @Order(3)
             public byte num2 = 7;
             @SHORT
             @Order(4)
             public short sht = 12000;
-            @BIT
+            @Bit
             @Order(5)
             public boolean b3 = true;
-            @BIT
+            @Bit
             @Order(6)
             public boolean b4 = false;
-            @BIT(6)
+            @Bit(6)
             @Order(7)
             public byte num3 = 58;
         }
@@ -124,47 +127,47 @@ public class TestBIT {
         
         @LittleEndian
         class Entity extends DataPacket{
-            @BIT
+            @Bit
             @Order(1)
             public boolean b1 = false;
-            @BIT(2)
+            @Bit(2)
             @Order(2)
             public byte num1 = 3;
-            @BIT(3)
+            @Bit(3)
             @Order(3)
             public byte num2 = 7;
-            @BIT(2)
+            @Bit(2)
             @Order(4)
             public byte num3 = 2; //01111101
             
-            @BIT(4)
+            @Bit(4)
             @Order(5)
             public byte num4 = 14;
-            @BIT(4)
+            @Bit(4)
             @Order(6)
             public byte num5 = 10;
             
-            @BIT(5)
+            @Bit(5)
             @Order(7)
             public byte num6 = 31;
-            @BIT(2)
+            @Bit(2)
             @Order(8)
             public byte num7 = 3;
-            @BIT(1)
+            @Bit(1)
             @Order(9)
             public boolean b2 = true;
             
-            @BIT(6)
+            @Bit(6)
             @Order(10)
             public byte num8 = 63;
-            @BIT(2)
+            @Bit(2)
             @Order(11)
             public byte num9 = 3;
             
-            @BIT(7)
+            @Bit(7)
             @Order(12)
             public byte num10 = 127;
-            @BIT
+            @Bit
             @Order(13)
             public boolean b3 = false;
             

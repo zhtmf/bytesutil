@@ -22,6 +22,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.BCD;
+import io.github.zhtmf.annotations.types.Bit;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
@@ -154,7 +155,8 @@ class ClassInfo {
                 }
                 if(((fieldInfo.dataType == DataType.RAW && fieldInfo.localAnnotation(RAW.class).value()<0)
                 || (fieldInfo.dataType == DataType.CHAR && fieldInfo.localAnnotation(CHAR.class).value()<0)
-                || (fieldInfo.dataType == DataType.USER_DEFINED && fieldInfo.localAnnotation(UserDefined.class).length()<0))
+                || (fieldInfo.dataType == DataType.USER_DEFINED && fieldInfo.localAnnotation(UserDefined.class).length()<0)
+                || (fieldInfo.dataType == DataType.BIT && fieldInfo.localAnnotation(Bit.class).value()<0))
                         && fieldInfo.localAnnotation(ListLength.class)==null) {
                     throw FieldInfo.forContext(cls, name, "this field is a list of type that utilizes @Length, "
                             + "to avoid ambiguity, use @ListLength but not @Length to specify the list length")
@@ -220,7 +222,12 @@ class ClassInfo {
                     lastBitFieldInfo = fieldInfo;
                     fieldInfoListForLength.add(lastBitFieldInfo);
                 }
-                bitCount += fieldInfo.bitCount;
+                if(fieldInfo.listComponentClass != null) {
+                    int length = Math.max(fieldInfo.length, fieldInfo.listLength);
+                    bitCount += fieldInfo.bitCount * length;
+                }else {
+                    bitCount += fieldInfo.bitCount;
+                }
                 if(bitCount>8) {
                     throw FieldInfo.forContext(cls, "", 
                             "BIT type fields should appear consecutively"

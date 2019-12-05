@@ -259,10 +259,10 @@ enum DataTypeOperations{
         public String checkRange(BigInteger val, boolean unsigned) {
             if(unsigned) {
                 return (val.compareTo(BigInteger.ZERO)>=0 && val.compareTo(UNSIGNED_LONG_MAX)<=0) ? null : 
-                    String.format("val [%s] cannot be stored as unsigned 8-byte integer value",val.toString());
+                    String.format("value [%s] cannot be stored as unsigned 8-byte integer value",val.toString());
             }
             return (val.compareTo(SIGNED_LONG_MIN)>=0 && val.compareTo(SIGNED_LONG_MAX)<=0) ? null : 
-                String.format("val [%s] cannot be stored as signed 8-byte integer value",val.toString());
+                String.format("value [%s] cannot be stored as signed 8-byte integer value",val.toString());
         }
         private final BigInteger SIGNED_LONG_MAX = BigInteger.valueOf(Long.MAX_VALUE);
         private final BigInteger SIGNED_LONG_MIN = BigInteger.valueOf(Long.MIN_VALUE);
@@ -286,7 +286,7 @@ enum DataTypeOperations{
 
         @Override
         Class<? extends Annotation> annotationClassOfThisType() {
-            return io.github.zhtmf.annotations.types.BIT.class;
+            return io.github.zhtmf.annotations.types.Bit.class;
         }
 
         @Override
@@ -295,9 +295,20 @@ enum DataTypeOperations{
                     || javaType == Boolean.class
                     || javaType == java.lang.Byte.class
                     || javaType == byte.class
+                    || javaType.isEnum()
                     ;
         }
         
+        @Override
+        Class<?> mappedEnumFieldClass() {
+            return Byte.class;
+        }
+        
+        @Override
+        public String checkRange(long val, int bits) {
+            return (val <= BITS_INT_MAXIMUMS[bits] && val>=0) ? null : 
+                String.format("value [%s] cannot be stored as signed %s-bit integer value",val, bits);
+        }
     }
     ;
     
@@ -310,17 +321,17 @@ enum DataTypeOperations{
         int sz = size()-1;
         if(unsigned) {
             if(val<0 || val>UNSIGNED_MAXIMUMS[sz]) {
-                return "val " + val +" cannot be stored as unsigned "+(sz+1)+"-byte integer value";
+                return "value " + val +" cannot be stored as unsigned "+(sz+1)+"-byte integer value";
             }
         }else {
             if(val<SIGNED_MINIMUMS[sz] || val>SIGNED_MAXIMUMS[sz]) {
-                return "val " + val + " cannot be stored as signed "+(sz+1)+"-byte integer value";
+                return "value " + val + " cannot be stored as signed "+(sz+1)+"-byte integer value";
             }
         }
         return null;
     }
     public String checkRange(BigInteger val, boolean unsigned) {throw new UnsupportedOperationException();}
-    
+    public String checkRange(long val, int bits) {throw new UnsupportedOperationException();}
     public static DataTypeOperations of(DataType type) {
         return DataTypeOperations.valueOf(type.name());
     }
@@ -355,8 +366,19 @@ enum DataTypeOperations{
          (long) (pow(2, 5*8)-1),
          (long) (pow(2, 6*8)-1),
          (long) (pow(2, 7*8)-1),
-       //unavailable left blank
+       //unavailable values are left blank
     };
+    private static final long[] BITS_INT_MAXIMUMS = {
+            -1,
+            pow(2,1)-1,
+            pow(2,2)-1,
+            pow(2,3)-1,
+            pow(2,4)-1,
+            pow(2,5)-1,
+            pow(2,6)-1,
+            pow(2,7)-1,
+            pow(2,8)-1,
+       };
     
     private static long pow(long base ,int power) {
         long tmp = base;
