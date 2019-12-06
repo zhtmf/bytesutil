@@ -223,8 +223,7 @@ class ClassInfo {
                     fieldInfoListForLength.add(lastBitFieldInfo);
                 }
                 if(fieldInfo.listComponentClass != null) {
-                    int length = Math.max(fieldInfo.length, fieldInfo.listLength);
-                    bitCount += fieldInfo.bitCount * length;
+                    bitCount += fieldInfo.bitCount * fieldInfo.listLength;
                 }else {
                     bitCount += fieldInfo.bitCount;
                 }

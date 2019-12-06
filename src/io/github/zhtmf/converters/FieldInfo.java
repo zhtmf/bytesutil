@@ -331,7 +331,7 @@ class FieldInfo{
         {
             Bit bit = localAnnotation(Bit.class);
             if(bit!=null) {
-                int value = bit.value() < 0 ? bit.value() : localAnnotation(Length.class).value();
+                int value = bit.value() > 0 ? bit.value() : length;
                 if(value==8) {
                     throw FieldInfo.forContext(base.entityClass, name, "use BYTE instead of BIT if this field represents a whole byte")
                     .withSiteAndOrdinal(FieldInfo.class, 12);

@@ -1,9 +1,14 @@
 package io.github.zhtmf.converters;
 
+import java.util.List;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
@@ -33,7 +38,6 @@ public class TestBIT {
     
     /*
      * TODO: Exceptions
-     * TODO: List of Boolean/Byte
      * TODO: BIT to Numeric Enums
      * FIXME: map numeric enums according to their ordinal number
      */
@@ -186,5 +190,54 @@ public class TestBIT {
         Assert.assertEquals(bytes[2], (byte)0b11111111);
         Assert.assertEquals(bytes[3], (byte)0b11111111);
         Assert.assertEquals(bytes[4], (byte)0b11111110);
+    }
+    
+    //List of Boolean/Byte
+    @Test
+    public void testBit4() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit
+            @Order(1)
+            public boolean b1;
+            @Bit
+            @Order(2)
+            @Length(1)
+            @ListLength(7)
+            public List<Boolean> flags;
+            @Bit
+            @Order(3)
+            public boolean b2;
+            @Bit
+            @Order(4)
+            @ListLength(4)
+            public List<Boolean> flags2;
+            @Bit(3)
+            @Order(5)
+            public byte byte1;
+        }
+        Entity entity = new Entity();
+        entity.deserialize(TestUtils.newInputStream(new byte[] {(byte) 0b10000111,(byte) 0b01111001}));
+        TestUtils.serializeMultipleTimesAndRestore(entity, 10, new Provider<Entity>() {
+
+            @Override
+            public Entity newInstance() {
+                return new Entity();
+            }
+        });
+        Assert.assertTrue(entity.b1);
+        Assert.assertTrue(!entity.flags.get(0));
+        Assert.assertTrue(!entity.flags.get(1));
+        Assert.assertTrue(!entity.flags.get(2));
+        Assert.assertTrue(!entity.flags.get(3));
+        Assert.assertTrue(entity.flags.get(4));
+        Assert.assertTrue(entity.flags.get(5));
+        Assert.assertTrue(entity.flags.get(6));
+        Assert.assertTrue(!entity.b2);
+        Assert.assertTrue(entity.flags2.get(0));
+        Assert.assertTrue(entity.flags2.get(1));
+        Assert.assertTrue(entity.flags2.get(2));
+        Assert.assertEquals(entity.byte1,1);
     }
 }
