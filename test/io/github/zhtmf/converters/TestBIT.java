@@ -39,7 +39,7 @@ public class TestBIT {
     
     /*
      * TODO: Exceptions
-     * FIXME: map numeric enums according to their ordinal number
+     * TODO: map numeric enums according to their ordinal number
      */
     
     //General BIT fields conversion

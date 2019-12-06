@@ -8,10 +8,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.enums.NumericEnum;
 import io.github.zhtmf.annotations.enums.StringEnum;
+import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
@@ -19,6 +18,7 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
+import io.github.zhtmf.converters.TestUtils;
 
 public class TestEnum {
     
@@ -154,7 +154,117 @@ public class TestEnum {
         }
     }
     
-    public static void main(String[] args) throws Exception {
-        new TestEnum().test();
+    public enum OrdinalEnum{
+        A,B,C,D,E,F
+    }
+    
+    @Test
+    public void test2() throws ConversionException, IOException {
+        class Test3 extends DataPacket{
+            @BYTE
+            @Order(0)
+            public OrdinalEnum e1;
+            @BYTE
+            @Order(1)
+            public OrdinalEnum e2;
+            @BYTE
+            @Order(2)
+            public OrdinalEnum e3;
+            @BYTE
+            @Order(3)
+            public OrdinalEnum e4;
+            @BYTE
+            @Order(4)
+            public OrdinalEnum e5;
+            @BYTE
+            @Order(5)
+            public OrdinalEnum e6;
+        }
+        Test3 test3 = new Test3();
+        test3.deserialize(TestUtils.newInputStream(new byte[] {5,1,2,3,4,0}));
+        Assert.assertEquals(test3.e1, OrdinalEnum.F);
+        Assert.assertEquals(test3.e2, OrdinalEnum.B);
+        Assert.assertEquals(test3.e3, OrdinalEnum.C);
+        Assert.assertEquals(test3.e4, OrdinalEnum.D);
+        Assert.assertEquals(test3.e5, OrdinalEnum.E);
+        Assert.assertEquals(test3.e6, OrdinalEnum.A);
+    }
+    
+    
+    public static enum OrdinalEnum2{
+        A{
+            @Override
+            public String toString() {
+                return "1";
+            }
+        },B{
+            @Override
+            public String toString() {
+                return "2";
+            }
+        },C
+    }
+    
+    //one of its members fail to provide a reasonable toString
+    @Test
+    public void testBit6() throws Exception {
+        @BigEndian
+        class Test4 extends DataPacket{
+            @BYTE
+            @Order(1)
+            public OrdinalEnum2 e1;
+            @BYTE
+            @Order(2)
+            public OrdinalEnum2 e2;
+            @BYTE
+            @Order(3)
+            public OrdinalEnum2 e3;
+        }
+        Test4 test4 = new Test4();
+        test4.deserialize(TestUtils.newInputStream(new byte[] {2,1,0}));
+        Assert.assertEquals(test4.e1, OrdinalEnum2.C);
+        Assert.assertEquals(test4.e2, OrdinalEnum2.B);
+        Assert.assertEquals(test4.e3, OrdinalEnum2.A);
+    }
+    
+    public static enum OrdinalEnum3{
+        A{
+            @Override
+            public String toString() {
+                return "1";
+            }
+        },B{
+            @Override
+            public String toString() {
+                return "2";
+            }
+        },C{
+            @Override
+            public String toString() {
+                return "3";
+            }
+        }
+    }
+    
+    //toString takes precedence
+    @Test
+    public void testBit7() throws Exception {
+        @BigEndian
+        class Test4 extends DataPacket{
+            @BYTE
+            @Order(1)
+            public OrdinalEnum3 e1;
+            @BYTE
+            @Order(2)
+            public OrdinalEnum3 e2;
+            @BYTE
+            @Order(3)
+            public OrdinalEnum3 e3;
+        }
+        Test4 test4 = new Test4();
+        test4.deserialize(TestUtils.newInputStream(new byte[] {3,2,1}));
+        Assert.assertEquals(test4.e1, OrdinalEnum3.C);
+        Assert.assertEquals(test4.e2, OrdinalEnum3.B);
+        Assert.assertEquals(test4.e3, OrdinalEnum3.A);
     }
 }

@@ -345,18 +345,18 @@ class FieldInfo{
                     .withSiteAndOrdinal(FieldInfo.class, 14);
                 }
                 this.bitCount = value;
+                /*
+                 * when used with list, the length should be static
+                 */
+                if(this.listComponentClass != null) {
+                    if(this.listLength < 0) {
+                        throw FieldInfo.forContext(base.entityClass, name
+                                , "length of BIT List should be defined and static")
+                        .withSiteAndOrdinal(FieldInfo.class, 15);
+                    }
+                }
             }else {
                 this.bitCount = 0;
-            }
-            /*
-             * when used with list, the length should be static
-             */
-            if(this.listComponentClass != null) {
-                if(this.listLength < 0) {
-                    throw FieldInfo.forContext(base.entityClass, name
-                            , "length of BIT List should be defined and static")
-                    .withSiteAndOrdinal(FieldInfo.class, 15);
-                }
             }
         }
         
@@ -947,45 +947,53 @@ class FieldInfo{
                     throw forContext(base.entityClass, name, "numeric enum dataType should implement NumericEnum, not StringEnum")
                         .withSiteAndOrdinal(EnumFieldInfo.class, 1);
                 }
+                boolean mappedByOrdinals = false;
                 for(int i = 0;i<constants.length;++i) {
                     Object constant = constants[i];
                     long val = 0;
                     if(NumericEnum.class.isAssignableFrom(fieldClass)) {
                         val = ((NumericEnum)constant).getValue();
                     }else {
-                        try {
-                            val = Long.parseLong(constant.toString());
-                        } catch (NumberFormatException e) {
-                            //fallback to its ordinal
+                        if(mappedByOrdinals) {
                             val = ((Enum<?>)constant).ordinal();
+                        }else {
+                            try {
+                                val = Long.parseLong(constant.toString());
+                            } catch (NumberFormatException e) {
+                                //if any member fails to provide with 
+                                //a numeric string from its toString method
+                                //clear current status and fallback to mapping them by their ordinal
+                                mappedByOrdinals = true;
+                                if(i > 0) {
+                                    mapEnumMemberByValue.clear();
+                                    mapValueByEnumMember.clear();
+                                }
+                                i = -1;
+                                continue;
+                            }
                         }
                     }
                     String error;
+                    Object key;
                     if(type == DataType.BIT) {
                         if((error = DataTypeOperations.of(type).checkRange(val, super.bitCount))!=null) {
                             throw forContext(base.entityClass, name, error)
                             .withSiteAndOrdinal(EnumFieldInfo.class, 8);
                         }
-                        Byte key = Byte.valueOf((byte) val);
-                        if(mapEnumMemberByValue.containsKey(key)) {
-                            throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
-                            .withSiteAndOrdinal(EnumFieldInfo.class, 2);
-                        }
-                        mapEnumMemberByValue.put(key, constant);
-                        mapValueByEnumMember.put(constant, key);
+                        key = Byte.valueOf((byte) val);
                     }else {
                         if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
                             throw forContext(base.entityClass, name, error)
                             .withSiteAndOrdinal(EnumFieldInfo.class, 7);
                         }
-                        Long key = Long.valueOf(val);
-                        if(mapEnumMemberByValue.containsKey(key)) {
-                            throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
-                            .withSiteAndOrdinal(EnumFieldInfo.class, 2);
-                        }
-                        mapEnumMemberByValue.put(key, constant);
-                        mapValueByEnumMember.put(constant, key);
+                        key = Long.valueOf(val);
                     }
+                    if(mapEnumMemberByValue.containsKey(key)) {
+                        throw forContext(base.entityClass, name, "multiple enum members should have distinct values")
+                        .withSiteAndOrdinal(EnumFieldInfo.class, 2);
+                    }
+                    mapEnumMemberByValue.put(key, constant);
+                    mapValueByEnumMember.put(constant, key);
                 }
                 break;
             case CHAR:

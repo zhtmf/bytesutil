@@ -9,17 +9,18 @@ package io.github.zhtmf.annotations.enums;
  * the defined range of numeric data type annotations (<code>BYTE</code>,
  * <code>SHORT</code>, etc.).
  * <p>
- * If for some reason the enum class cannot implement this interface, it should
- * return those numeric values as a string from <code>toString</code> methods of
- * each enum member.
+ * If for some reason the enum class cannot implement this interface, its
+ * members will by default be mapped by their ordinal numbers, unless <b>all</b>
+ * of them provide with reasonable <code>toString</code> method which returns a
+ * numeric string for its associated number.
  * 
  * @author dzh
  */
 public interface NumericEnum {
     /**
-     * Return the numeric value which logically an enum member is mapped to.
+     * Return the number which logically this enum member is mapped to.
      * 
-     * @return return the numeric value
+     * @return the numeric value
      */
     long getValue();
 }
