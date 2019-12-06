@@ -354,7 +354,7 @@ class FieldInfo{
             if(this.listComponentClass != null) {
                 if(this.listLength < 0) {
                     throw FieldInfo.forContext(base.entityClass, name
-                            , "length of BIT List should be static")
+                            , "length of BIT List should be defined and static")
                     .withSiteAndOrdinal(FieldInfo.class, 15);
                 }
             }
@@ -947,12 +947,18 @@ class FieldInfo{
                     throw forContext(base.entityClass, name, "numeric enum dataType should implement NumericEnum, not StringEnum")
                         .withSiteAndOrdinal(EnumFieldInfo.class, 1);
                 }
-                for(Object constant:constants) {
+                for(int i = 0;i<constants.length;++i) {
+                    Object constant = constants[i];
                     long val = 0;
                     if(NumericEnum.class.isAssignableFrom(fieldClass)) {
                         val = ((NumericEnum)constant).getValue();
                     }else {
-                        val = Long.parseLong(constant.toString());
+                        try {
+                            val = Long.parseLong(constant.toString());
+                        } catch (NumberFormatException e) {
+                            //fallback to its ordinal
+                            val = ((Enum<?>)constant).ordinal();
+                        }
                     }
                     String error;
                     if(type == DataType.BIT) {

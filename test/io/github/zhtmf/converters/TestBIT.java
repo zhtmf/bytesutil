@@ -1,5 +1,6 @@
 package io.github.zhtmf.converters;
 
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
@@ -38,7 +39,6 @@ public class TestBIT {
     
     /*
      * TODO: Exceptions
-     * TODO: BIT to Numeric Enums
      * FIXME: map numeric enums according to their ordinal number
      */
     
@@ -216,9 +216,16 @@ public class TestBIT {
             @Bit(3)
             @Order(5)
             public byte byte1;
+            @Bit(7)
+            @Order(6)
+            public byte byte2;
+            @Bit
+            @Order(7)
+            @ListLength(1)
+            public List<Boolean> flags3;
         }
         Entity entity = new Entity();
-        entity.deserialize(TestUtils.newInputStream(new byte[] {(byte) 0b10000111,(byte) 0b01111001}));
+        entity.deserialize(TestUtils.newInputStream(new byte[] {(byte) 0b10000111,(byte) 0b01111001,(byte) 0b01111001}));
         TestUtils.serializeMultipleTimesAndRestore(entity, 10, new Provider<Entity>() {
 
             @Override
@@ -239,5 +246,82 @@ public class TestBIT {
         Assert.assertTrue(entity.flags2.get(1));
         Assert.assertTrue(entity.flags2.get(2));
         Assert.assertEquals(entity.byte1,1);
+        Assert.assertEquals(entity.byte2,0b0111100);
+        Assert.assertTrue(entity.flags3.get(0));
+    }
+    
+    public static enum TestEnum1{
+        A,B,C,D,E,F,G,H
+    }
+    
+    //BIT to Numeric Enums
+    @Test
+    public void testBit5() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(3)
+            @Order(1)
+            public TestEnum1 e1;
+            @Bit(3)
+            @Order(2)
+            public TestEnum1 e2;
+            @Bit(1)
+            @Order(3)
+            @ListLength(2)
+            public List<Boolean> flags1;
+            @Bit(3)
+            @Order(4)
+            public TestEnum1 e3;
+            @Bit(3)
+            @Order(5)
+            public TestEnum1 e4;
+            @Bit(1)
+            @Order(6)
+            @ListLength(2)
+            public List<Boolean> flags2;
+            @Bit(3)
+            @Order(7)
+            public TestEnum1 e5;
+            @Bit(3)
+            @Order(8)
+            public TestEnum1 e6;
+            @Bit(1)
+            @Order(9)
+            @ListLength(2)
+            public List<Boolean> flags3;
+            @Bit(3)
+            @Order(10)
+            public TestEnum1 e7;
+            @Bit(3)
+            @Order(11)
+            public TestEnum1 e8;
+            @Bit(1)
+            @Order(12)
+            @ListLength(2)
+            public List<Boolean> flags4;
+        }
+        Entity entity = new Entity();
+        entity.deserialize(TestUtils.newInputStream(new byte[] {
+                (byte) 0b000_001_11,(byte) 0b010_011_01,(byte) 0b100_101_01,(byte)0b110_111_10}));
+        Assert.assertEquals(entity.e1, TestEnum1.A);
+        Assert.assertEquals(entity.e2, TestEnum1.B);
+        Assert.assertEquals(entity.flags1, Arrays.asList(true,true));
+        Assert.assertEquals(entity.e3, TestEnum1.C);
+        Assert.assertEquals(entity.e4, TestEnum1.D);
+        Assert.assertEquals(entity.flags2, Arrays.asList(false,true));
+        Assert.assertEquals(entity.e5, TestEnum1.E);
+        Assert.assertEquals(entity.e6, TestEnum1.F);
+        Assert.assertEquals(entity.flags3, Arrays.asList(false,true));
+        Assert.assertEquals(entity.e7, TestEnum1.G);
+        Assert.assertEquals(entity.e8, TestEnum1.H);
+        Assert.assertEquals(entity.flags4, Arrays.asList(true,false));
+        TestUtils.serializeMultipleTimesAndRestore(entity, 10, new Provider<Entity>() {
+
+            @Override
+            public Entity newInstance() {
+                return new Entity();
+            }
+        });
     }
 }
