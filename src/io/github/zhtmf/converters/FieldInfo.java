@@ -344,17 +344,12 @@ class FieldInfo{
                     throw FieldInfo.forContext(base.entityClass, name, "BIT fields do not support conditional processing")
                     .withSiteAndOrdinal(FieldInfo.class, 14);
                 }
-                this.bitCount = value;
-                /*
-                 * when used with list, the length should be static
-                 */
-                if(this.listComponentClass != null) {
-                    if(this.listLength < 0) {
-                        throw FieldInfo.forContext(base.entityClass, name
-                                , "length of BIT List should be defined and static")
-                        .withSiteAndOrdinal(FieldInfo.class, 15);
-                    }
+                if((fieldClass == Boolean.class || fieldClass == boolean.class)
+                    && value != 1){
+                    throw FieldInfo.forContext(base.entityClass, name, "boolean fields can only be mapped with 1 bit (0 or 1)")
+                    .withSiteAndOrdinal(FieldInfo.class, 14);
                 }
+                this.bitCount = value;
             }else {
                 this.bitCount = 0;
             }
@@ -419,9 +414,6 @@ class FieldInfo{
      * @return  field value
      */
     public Object get(Object self) {
-        return getFieldValue(field, self);
-    }
-    protected static Object getFieldValue(Field field,Object self) {
         try {
             return field.get(self);
         } catch (IllegalArgumentException | IllegalAccessException e) {
@@ -431,6 +423,7 @@ class FieldInfo{
                             ,field.getName()),e);
         }
     }
+    
     /**
      * Wrapper of {@link Field#set(Object, Object)}
      * @param self  this object
@@ -439,9 +432,6 @@ class FieldInfo{
     public void set(Object self, Object val) {
         if(val==null)
             return;
-        setFieldValue(field,self,val);
-    }
-    protected static void setFieldValue(Field field,Object self,Object val) {
         try {
             field.set(self, val);
         } catch (IllegalArgumentException | IllegalAccessException e) {

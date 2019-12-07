@@ -1,5 +1,7 @@
 package io.github.zhtmf.converters;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -8,15 +10,22 @@ import org.junit.Test;
 
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.modifiers.Variant;
+import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.Bit;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.SHORT;
+import io.github.zhtmf.converters.FieldInfo.EnumFieldInfo;
+import io.github.zhtmf.converters.TestBIT.Entity1.Sub1;
 import io.github.zhtmf.converters.TestUtils.Provider;
+import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class TestBIT {
 
@@ -39,7 +48,6 @@ public class TestBIT {
     
     /*
      * TODO: Exceptions
-     * TODO: map numeric enums according to their ordinal number
      */
     
     //General BIT fields conversion
@@ -54,10 +62,10 @@ public class TestBIT {
         public boolean b1;
         @Bit
         @Order(2)
-        public boolean b2;
+        public Boolean b2;
         @Bit(4)
         @Order(3)
-        public byte num2;
+        public Byte num2;
         @Bit
         @Order(4)
         public boolean b3;
@@ -78,7 +86,7 @@ public class TestBIT {
         Assert.assertEquals(entity.num1, 15);
         Assert.assertEquals(entity.b1, true);
         Assert.assertEquals(entity.b2, true);
-        Assert.assertEquals(entity.num2, 0b1110);
+        Assert.assertEquals((byte)entity.num2, 0b1110);
         Assert.assertEquals(entity.b3, false);
         Assert.assertEquals(entity.b4, true);
         Assert.assertEquals(entity.num3, 127);
@@ -276,7 +284,8 @@ public class TestBIT {
             @Bit(3)
             @Order(5)
             public TestEnum1 e4;
-            @Bit(1)
+            @Bit
+            @Length(1)
             @Order(6)
             @ListLength(2)
             public List<Boolean> flags2;
@@ -323,5 +332,297 @@ public class TestBIT {
                 return new Entity();
             }
         });
+    }
+    
+    @Test
+    public void testBit6() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(3)
+            @Order(1)
+            public int e1;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {
+                    (byte) 0b000_001_11,(byte) 0b010_011_01,(byte) 0b100_101_01,(byte)0b110_111_10}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 1);
+        }
+    }
+    
+    @Test
+    public void testBit7() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(1)
+            @Order(1)
+            public TestEnum1 e1;
+            @Bit(1)
+            @Order(2)
+            @ListLength(7)
+            public List<Boolean> flags;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 8);
+        }
+    }
+    
+    public static enum TestEnum2{
+        A{
+            @Override
+            public String toString() {
+                return "-1";
+            }
+        },B{
+            @Override
+            public String toString() {
+                return "-2";
+            }
+        }
+    }
+    
+    @Test
+    public void testBit8() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(1)
+            @Order(1)
+            public TestEnum2 e1;
+            @Bit(1)
+            @Order(2)
+            @ListLength(7)
+            public List<Boolean> flags;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, EnumFieldInfo.class, 8);
+        }
+    }
+    
+    @Test
+    public void testBit9() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(8)
+            @Order(1)
+            public TestEnum2 e1;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 12);
+        }
+    }
+    
+    @Test
+    public void testBit10() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(12)
+            @Order(1)
+            public TestEnum2 e1;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 13);
+        }
+        @BigEndian
+        class Entity2 extends DataPacket{
+            @Bit(-2)
+            @Order(1)
+            public TestEnum2 e1;
+        }
+        try {
+            Entity2 entity = new Entity2();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 13);
+        }
+    }
+    
+    @Test
+    public void testBit11() throws Exception {
+        class Condition1 extends ModifierHandler<Boolean>{
+            @Override
+            public Boolean handleDeserialize0(String fieldName, Object entity, InputStream in) throws IOException {
+                return null;
+            }
+            @Override
+            public Boolean handleSerialize0(String fieldName, Object entity) {
+                return null;
+            }
+        }
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit
+            @Order(1)
+            @Conditional(Condition1.class)
+            public TestEnum2 e1;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 14);
+        }
+    }
+    
+    @Test
+    public void testBit12() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit
+            @Length(8)
+            @Order(1)
+            public List<Boolean> flags;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, ClassInfo.class, 5);
+        }
+    }
+    
+    @Test
+    public void testBit13() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(2)
+            @Order(0)
+            public Byte flag;
+            @Bit(7)
+            @Order(1)
+            public Byte flag2;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, ClassInfo.class, 12);
+        }
+    }
+    
+    @Test
+    public void testBit14() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(2)
+            @Order(0)
+            public Byte flag;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, ClassInfo.class, 13);
+        }
+    }
+    
+    @Test
+    public void testBit15() throws Exception {
+        @SuppressWarnings("hiding")
+        @BigEndian
+        class Entity extends DataPacket{
+            @Bit(2)
+            @Order(0)
+            public Boolean flag;
+        }
+        try {
+            Entity entity = new Entity();
+            entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 14);
+        }
+    }
+    
+    public static class Entity1 extends DataPacket{
+        @Order(0)
+        @SHORT
+        public int int1;
+        @Order(1)
+        @Bit(3)
+        public byte b1;
+        @Order(2)
+        @Bit(5)
+        public byte b2;
+        @Order(3)
+        @Variant(SubHandler.class)
+        public DataPacket sub;
+        
+        public static class SubHandler extends EntityHandler{
+            @Override
+            public DataPacket handle0(String fieldName, Object entity, InputStream in) throws IOException {
+                byte mark = (byte) in.read();
+                @SuppressWarnings("unused")
+                byte next = (byte) in.read();
+                return mark == 1 ? new Sub1() : new Sub2();
+            }
+        }
+        
+        public static class Sub1 extends DataPacket{
+            @Order(0)
+            @BYTE
+            public byte mark;
+            @Order(1)
+            @Bit(2)
+            public byte b1;
+            @Order(2)
+            @Bit(6)
+            public byte b2;
+        }
+        public static class Sub2 extends DataPacket{
+            @Order(0)
+            @Bit(3)
+            public byte mark;
+            @Order(1)
+            @Bit(5)
+            public byte b1;
+        }
+    }
+    
+    @Test
+    public void testBit16() throws Exception {
+        Entity1 entity = new Entity1();
+        entity.deserialize(TestUtils.newInputStream(new byte[] {
+                0x0,0x1,0b00011111,
+                0x1, //mark
+                (byte) 0b10101010
+        }));
+        Assert.assertEquals(entity.b1, 0);
+        Assert.assertEquals(entity.b2, 0b00011111);
+        Assert.assertTrue(entity.sub instanceof Sub1);
+        Assert.assertEquals(((Entity1.Sub1)entity.sub).mark,1);
+        Assert.assertEquals(((Entity1.Sub1)entity.sub).b1,0b010);
+        Assert.assertEquals(((Entity1.Sub1)entity.sub).b2,0b0101010);
     }
 }

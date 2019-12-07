@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -17,12 +18,70 @@ import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 public class TestMakeJacocoHappy {
     @Test
+    public void testMakeJacocoHappy() throws Exception {
+        {
+            class MySub extends EntityHandler{
+                
+                @Override
+                public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+                    return null;
+                }
+            }
+            try {
+                new MySub().handleSerialize0(null,null);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+        }
+        {
+            try {
+                Method mtd = DataTypeOperations.class.getDeclaredMethod("mappedEnumFieldClass");
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+            try {
+                Method mtd = DataTypeOperations.class.getDeclaredMethod("size");
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+            try {
+                Method mtd = DataTypeOperations.class.getDeclaredMethod("checkRange",long.class,boolean.class);
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED,0L,Boolean.FALSE);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+            try {
+                Method mtd = DataTypeOperations.class.getDeclaredMethod("checkRange",BigInteger.class,boolean.class);
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED,BigInteger.ZERO,Boolean.TRUE);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+            try {
+                Method mtd = DataTypeOperations.class.getDeclaredMethod("checkRange",long.class,int.class);
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED,0L,0);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+        }
+    }
+    
+    @Test
     public void test0() throws Exception {
         {
             @SuppressWarnings("rawtypes")
             Constructor c = Converters.class.getDeclaredConstructor();
             c.setAccessible(true);
             c.newInstance();
+        }
+        {
+            new StreamUtils();
         }
     }
     
@@ -59,6 +118,31 @@ public class TestMakeJacocoHappy {
         doTest(new LongConverter(),fieldA,dummy,1L);
         doTest(new ShortConverter(),fieldA,dummy,Short.MIN_VALUE);
         doTest(new StringConverter(),fieldA,dummy,"");
+        
+        try {
+            fieldA.get(new Object());
+            Assert.fail();
+        } catch (Throwable e) {
+        }
+        
+        try {
+            fieldA.set(new Object(), 3L);
+            Assert.fail();
+        } catch (Throwable e) {
+        }
+        
+        try {
+            StreamUtils.writeIntegerOfType(TestUtils.newThrowOnlyOutputStream(), DataType.LONG, 3, false);
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertException(e, Error.class);
+        }
+        try {
+            StreamUtils.readIntegerOfType(TestUtils.newZeroLengthInputStream(), DataType.LONG, false);
+            Assert.fail();
+        } catch (Throwable e) {
+            TestUtils.assertException(e, Error.class);
+        }
     }
     
     @Test

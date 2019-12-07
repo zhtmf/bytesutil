@@ -10,9 +10,22 @@ import java.io.OutputStream;
  * @author dzh
  */
 class BitOutputStream extends OutputStream{
+    private static final byte[] masks = new byte[] {
+            0x0,
+            (byte) 0b00000001,
+            (byte) 0b00000011,
+            (byte) 0b00000111,
+            (byte) 0b00001111,
+            (byte) 0b00011111,
+            (byte) 0b00111111,
+            (byte) 0b01111111,
+            (byte) 0b11111111,
+    };
+    
     private OutputStream dest;
     private byte value;
     private int offset = -1;
+    
     public BitOutputStream(OutputStream dest) throws NullPointerException {
         if(dest==null)
             throw new NullPointerException();
@@ -54,16 +67,16 @@ class BitOutputStream extends OutputStream{
      */
     public void writeBits(byte val, int num) throws IOException, IllegalArgumentException, IllegalStateException{
         if(num<=0 || num>8) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("number of bits should be in the range 0 (exclusive) to 8 (inclusive)");
         }
         if(offset==-1) {
             offset = 8;
         }
         else if(offset < num) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("number of bits exceeds number of remaining bits in this byte");
         }
         offset -= num;
-        value |= val << offset;
+        value |= (val & masks[num]) << offset;
         if(offset==0) {
             dest.write(value);
             value = 0;
@@ -95,12 +108,8 @@ class BitOutputStream extends OutputStream{
     }
     
     private void checkStatus() throws IOException,IllegalStateException {
-        if(offset==0) {
-            dest.write(value);
-            offset = -1;
-        }
-        else if(offset>0) {
-            throw new IllegalStateException();
+        if(offset>0) {
+            throw new IllegalStateException("bits in this byte have not been fully written");
         }
     }
 }

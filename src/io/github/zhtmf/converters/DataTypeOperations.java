@@ -306,7 +306,7 @@ enum DataTypeOperations{
         
         @Override
         public String checkRange(long val, int bits) {
-            return (val <= BITS_INT_MAXIMUMS[bits] && val>=0) ? null : 
+            return (val >=0 && val <= BITS_INT_MAXIMUMS[bits]) ? null : 
                 String.format("value [%s] cannot be stored as signed %s-bit integer value",val, bits);
         }
     }

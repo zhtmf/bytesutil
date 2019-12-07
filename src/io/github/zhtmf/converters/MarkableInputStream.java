@@ -96,7 +96,7 @@ class MarkableInputStream extends InputStream implements AutoCloseable{
             offset = 8;
         }
         if(num<0 || num>8) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("invalid number of bits to read");
         }
         if(offset<num) {
             throw new IllegalArgumentException("cannot read more than 8 bits from the same byte");

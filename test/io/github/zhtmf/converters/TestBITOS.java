@@ -29,4 +29,68 @@ public class TestBITOS {
         Assert.assertEquals(array[2], (byte)0b11010100);
         Assert.assertEquals(array[3], 33);
     }
+    
+    @SuppressWarnings("resource")
+    @Test
+    public void test2() throws IllegalStateException, IOException {
+        try {
+            new BitOutputStream(null);
+            Assert.fail();
+        } catch (NullPointerException e) {
+        }
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BitOutputStream btos = new BitOutputStream(baos);
+            try {
+                btos.writeBits((byte)120, 0);
+                Assert.fail();
+            } catch (IllegalArgumentException e) {
+            }
+            try {
+                btos.writeBits((byte)120, -1);
+                Assert.fail();
+            } catch (IllegalArgumentException e) {
+            }
+            try {
+                btos.writeBits((byte)120, 9);
+                Assert.fail();
+            } catch (IllegalArgumentException e) {
+            }
+            try {
+                btos.writeBits((byte)120, 5);
+                btos.writeBits((byte)120, 5);
+                Assert.fail();
+            } catch (IllegalStateException e) {
+            }
+        }
+        {
+            byte b = 0b00010101;
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BitOutputStream btos = new BitOutputStream(baos);
+            try {
+                btos.writeBits((byte) b, 5);
+                b >>= 5;
+                btos.flush();
+                Assert.fail();
+            } catch (IllegalStateException e) {
+            }
+            btos.writeBits((byte) b, 3);
+            btos.flush();
+            Assert.assertEquals((byte)baos.toByteArray()[0],(byte)0b10101000);
+        }
+        //test mask
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            BitOutputStream btos = new BitOutputStream(baos);
+            try {
+                btos.writeBits((byte)0b01011111, 5);
+                btos.flush();
+                Assert.fail();
+            } catch (IllegalStateException e) {
+            }
+            btos.writeBits((byte) 0b11111001, 3);
+            btos.flush();
+            Assert.assertEquals((byte)baos.toByteArray()[0],(byte)0b11111001);
+        }
+    }
 }

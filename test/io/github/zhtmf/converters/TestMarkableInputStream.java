@@ -540,4 +540,30 @@ public class TestMarkableInputStream {
             return;
         }
     }
+    
+    @Test
+    public void testReadBIT4() throws IOException{
+        MarkableInputStream stream = MarkableInputStream.wrap(
+                TestUtils.newInputStream(new byte[] {120,110,111,113}));
+        Assert.assertEquals(stream.readBits(8),120);
+        Assert.assertEquals(stream.readBits(8),110);
+        Assert.assertEquals(stream.readBits(8),111);
+        Assert.assertEquals(stream.read(),113);
+    }
+    
+    @Test
+    public void testReadBIT5() throws IOException{
+        MarkableInputStream stream = MarkableInputStream.wrap(
+                TestUtils.newInputStream(new byte[] {120,110,111,113}));
+        try {
+            stream.readBits(-3);
+            Assert.fail();
+        } catch (IllegalArgumentException e) {
+        }
+        try {
+            stream.readBits(9);
+            Assert.fail();
+        } catch (IllegalArgumentException e) {
+        }
+    }
 }

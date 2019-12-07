@@ -22,7 +22,6 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.BCD;
-import io.github.zhtmf.annotations.types.Bit;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
@@ -156,7 +155,7 @@ class ClassInfo {
                 if(((fieldInfo.dataType == DataType.RAW && fieldInfo.localAnnotation(RAW.class).value()<0)
                 || (fieldInfo.dataType == DataType.CHAR && fieldInfo.localAnnotation(CHAR.class).value()<0)
                 || (fieldInfo.dataType == DataType.USER_DEFINED && fieldInfo.localAnnotation(UserDefined.class).length()<0)
-                || (fieldInfo.dataType == DataType.BIT && fieldInfo.localAnnotation(Bit.class).value()<0))
+                || (fieldInfo.dataType == DataType.BIT /* default value of bit is 1 */))
                         && fieldInfo.localAnnotation(ListLength.class)==null) {
                     throw FieldInfo.forContext(cls, name, "this field is a list of type that utilizes @Length, "
                             + "to avoid ambiguity, use @ListLength but not @Length to specify the list length")
@@ -211,7 +210,7 @@ class ClassInfo {
         }
         
         //check whether BIT fields are grouped together
-        //make another list solely for length calculation purpose
+        //make another list solely for length calculation
         List<FieldInfo> fieldInfoListForLength = new ArrayList<FieldInfo>();
         int bitCount = 0;
         FieldInfo lastBitFieldInfo = null;
@@ -244,12 +243,12 @@ class ClassInfo {
             }
         }
         
-        if(lastBitFieldInfo!=null && bitCount!=8) {
+        if(lastBitFieldInfo!=null) {
             throw FieldInfo.forContext(cls, "", 
                     "BIT type fields should appear consecutively"
                   + " within the same class and form"
                   + " groups of 8 bits.")
-            .withSiteAndOrdinal(ClassInfo.class, 14);
+            .withSiteAndOrdinal(ClassInfo.class, 13);
         }
         
         fieldInfoList = Collections.unmodifiableList(fieldInfoList);
