@@ -24,26 +24,26 @@ import io.github.zhtmf.annotations.modifiers.LittleEndian;
  * </ul>
  * <p>
  * <p>
- * When mapped to boolean flags, the {@link #value()} must be 1. For enums, the
- * values which Enum members mapped to must be in the range of 0 to maximum
- * number representable by this many bits inclusively. For example if one field
- * is marked with <tt>@Bit(3)</tt> and is an enum, then mapped values of all
- * enum members should be in the range of 0 to 7 (2^3-1).
+ * When mapped to boolean flags, the {@link #value()} must be 1. For
+ * enumerations, the values enum members mapped to must be in the range of 0 to
+ * maximum number representable by this many bits inclusively. For example if
+ * one field is marked with <tt>@Bit(3)</tt> and is an enum, then mapped values
+ * of all enum members should be in the range of 0 to 7 (2^3-1).
  * <p>
  * As byte is the smallest unit in a stream, fields of this type must appear
  * consecutively in the same class and in groups of 8-bits, thus form bytes in
  * whole.
  * <p>
  * This data type does not support dynamic length or conditional processing.
- * Number of bits is solely determined by {@link #value()} or seperate
- * {@link Length#value()} and should in the range from 1 to 7 inclusively. As
+ * Number of bits is solely determined by {@link #value()} or separate
+ * {@link Length#value()} and should be in the range from 1 to 7 inclusively. As
  * 8-bit is same as a byte and you should use {@linkplain BYTE} instead.
  * <p>
  * If a field of this type is a <tt>List</tt> itself, length of the List must
  * also be static and specified by {@link ListLength#value()}. In this case the
  * {@link #value()} is number of bits for each list component but not number of
  * bits in whole. For example if a field is declared as
- * <tt>List&lt;Boolean&gt;</tt> to represent sequence of bit flags and its
+ * <tt>List&lt;Boolean&gt;</tt> to represent a sequence of bit flags and its
  * length is 3, then the correct annotation is <tt>@Bit(1)</tt> but not
  * <tt>@Bit(3)</tt>.
  * <p>

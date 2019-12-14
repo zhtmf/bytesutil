@@ -5,7 +5,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
 /**
  * Abstract data types that can be handled by this library.
  * <p>
- * This enum is used by property of some modifier annotations, like
+ * This enum is used by other modifier annotations, like
  * {@link Length#type()}
  * <p>
  * For concrete definitions of these types please refer to corresponding

@@ -624,5 +624,6 @@ public class TestBIT {
         Assert.assertEquals(((Entity1.Sub1)entity.sub).mark,1);
         Assert.assertEquals(((Entity1.Sub1)entity.sub).b1,0b010);
         Assert.assertEquals(((Entity1.Sub1)entity.sub).b2,0b0101010);
+        TestUtils.serializeMultipleTimesAndRestore(entity);
     }
 }

@@ -251,7 +251,7 @@ class ClassInfo {
             .withSiteAndOrdinal(ClassInfo.class, 13);
         }
         
-        fieldInfoList = Collections.unmodifiableList(fieldInfoList);
+        this.fieldInfoList = Collections.unmodifiableList(fieldInfoList);
         this.fieldInfoListForLength = Collections.unmodifiableList(fieldInfoListForLength);
     }
     
@@ -316,7 +316,9 @@ class ClassInfo {
         //lazy initialization
         ClassInfo ci = getClassInfo(self);
         
-        for(FieldInfo ctx:ci.fieldInfoList) {
+        List<FieldInfo> list = ci.fieldInfoList;
+        for(int i = 0, l = list.size();i < l; ++i) {
+            FieldInfo ctx = list.get(i);
             
             // it is necessary to do it here instead of in ConditionalConverter 
             // to prevent null check for fields that are
@@ -356,7 +358,11 @@ class ClassInfo {
         }
         InputStream _src = MarkableInputStream.wrap(in);
         ClassInfo ci = getClassInfo(self);
-        for(FieldInfo ctx:ci.fieldInfoList) {
+        
+        List<FieldInfo> list = ci.fieldInfoList;
+        for(int i = 0, l = list.size();i < l; ++i) {
+            FieldInfo ctx = list.get(i);
+            
             Object value = null;
             @SuppressWarnings("unchecked")
             Converter<Object> cv = (Converter<Object>)ctx.converter;
@@ -376,7 +382,7 @@ class ClassInfo {
         ClassInfo ci = getClassInfo(self);
         int ret = 0;
         List<FieldInfo> list = ci.fieldInfoListForLength;
-        for(int k=0;k<list.size();++k) {
+        for(int k=0, l = list.size();k<l;++k) {
             ret += list.get(k).fieldLength(self);
         }
         return ret;

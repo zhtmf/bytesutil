@@ -10,7 +10,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.converters.TestUtils;
 
 public class TestCase1 {
