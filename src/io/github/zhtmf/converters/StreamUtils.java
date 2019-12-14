@@ -172,15 +172,65 @@ class StreamUtils {
         os.writeBits(value);
     }
     
+    private static final BigInteger BIT7 = BigInteger.valueOf(0b01111111);
+    private static final BigInteger SET_FIRST = BigInteger.valueOf(0b10000000);
+    
+    public static void writeVarint(OutputStream os, long value, boolean bigEndian) throws IOException {
+        writeVarint(os, BigInteger.valueOf(value), bigEndian);
+    }
+    
+    public static void writeVarint(OutputStream os, BigInteger value, boolean bigEndian) throws IOException {
+        int result = value.compareTo(BigInteger.ZERO);
+        if(result == 0) {
+            //0b000_000_00
+            writeBYTE(os, (byte)0);
+            return;
+        }
+        
+        // >0 unsigned
+        if(result > 0) {
+            int bitLength = value.bitLength();
+            byte[] array = new byte[bitLength / 7 + Integer.signum(bitLength % 7)];
+            int length = array.length;
+            int ptr = length - 1;
+            while(value.compareTo(BigInteger.ZERO) > 0) {
+                array[ptr--] = (byte) value.and(BIT7).or(SET_FIRST).shortValue();
+                value = value.shiftRight(7);
+            }
+            if(!bigEndian) {
+                reverse(array);
+            }
+            
+            array[length-1] &= 0b01111111;
+            writeBytes(os, array);
+        }
+        
+        if(result<0) {
+            throw new UnsupportedOperationException();
+        }
+        
+        //negative - signed
+        // -Sign bit
+        // -Zigzag encoding
+        // -Two's complement
+    }
+    
+    private static void reverse(byte[] array) {
+        for(int k = 0, l = array.length, h = l/2; k <= h; ++k) {
+            byte temp = array[k];
+            array[k] = array[l - k - 1];
+            array[l - k - 1] = temp;
+        }
+    }
+    
+    //---------------------------------
+    
     public static byte readBit(MarkableInputStream in, int num, boolean bigEndian) throws IOException {
         byte ret = in.readBits(num);
         if(!bigEndian)
             ret = reverseNBits(ret, num);
         return ret;
     }
-    
-    
-    //---------------------------------
     
     public static int readByte(InputStream in,boolean signed) throws IOException{
         return signed ? (byte)read(in) : read(in);

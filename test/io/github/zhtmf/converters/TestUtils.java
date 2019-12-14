@@ -290,4 +290,38 @@ public class TestUtils {
         }
         return base;
     }
+    
+    public static void compareByteArrayReversed(byte[] left, byte[] right) {
+        StringBuilder error = new StringBuilder();
+        if(left.length!=right.length) {
+            error.append(String.format("left length is %d while right legth is %d", left.length, right.length));
+        }else {
+            for(int k=0;k<left.length;++k) {
+                if((byte)left[k]!=(byte)right[right.length-k-1]) {
+                    error.append(String.format("at %d value %d != %d\n", k,left[k], right[right.length-k-1]));
+                }else {
+                }
+            }
+        }
+        if(error.length()>0) {
+            Assert.fail(error.toString());
+        }
+    }
+    
+    public static void compareByteArray(byte[] left, byte[] right) {
+        StringBuilder error = new StringBuilder();
+        if(left.length!=right.length) {
+            error.append(String.format("left length is %d while right legth is %d", left.length, right.length));
+        }else {
+            for(int k=0;k<left.length;++k) {
+                if((byte)left[k]!=(byte)right[k]) {
+                    error.append(String.format("at %d value %d != %d\n", k,left[k], right[k]));
+                }else {
+                }
+            }
+        }
+        if(error.length()>0) {
+            Assert.fail(error.toString());
+        }
+    }
 }
