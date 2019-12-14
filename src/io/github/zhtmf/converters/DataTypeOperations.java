@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.math.BigInteger;
 
 import io.github.zhtmf.annotations.types.UserDefined;
+import io.github.zhtmf.annotations.types.Varint;
 import io.github.zhtmf.converters.auxiliary.DataType;
 
 enum DataTypeOperations{
@@ -308,6 +309,29 @@ enum DataTypeOperations{
         public String checkRange(long val, int bits) {
             return (val >=0 && val <= BITS_INT_MAXIMUMS[bits]) ? null : 
                 String.format("value [%s] cannot be stored as signed %s-bit integer value",val, bits);
+        }
+    }
+    ,VARINT{
+
+        @Override
+        Class<? extends Annotation> annotationClassOfThisType() {
+            return Varint.class;
+        }
+
+        @Override
+        boolean supports(Class<?> javaType) {
+            return javaType == byte.class
+                    || javaType == short.class
+                    || javaType == int.class
+                    || javaType == long.class
+                    || javaType == BigInteger.class
+                    || javaType.isEnum()
+                    ;
+        }
+        
+        @Override
+        public String checkRange(long val, boolean unsigned) {
+            return null;
         }
     }
     ;

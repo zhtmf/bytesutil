@@ -27,4 +27,5 @@ public enum DataType{
     ,LONG
     ,USER_DEFINED
     ,BIT
+    ,VARINT
 }
