@@ -175,55 +175,78 @@ class StreamUtils {
     private static final BigInteger BIT7 = BigInteger.valueOf(0b01111111);
     private static final BigInteger SET_FIRST = BigInteger.valueOf(0b10000000);
     
-    public static void writeVarint(OutputStream os, long value, boolean bigEndian) throws IOException {
-        writeVarint(os, BigInteger.valueOf(value), bigEndian);
+    public static void writeUnsignedVarint(
+            OutputStream os
+            , long value
+            , boolean bigEndian) throws IOException {
+        writeUnsignedVarint(os, BigInteger.valueOf(value), bigEndian);
     }
     
-    public static void writeVarint(OutputStream os, BigInteger value, boolean bigEndian) throws IOException {
+    public static void writeUnsignedVarint(
+            OutputStream os
+            , BigInteger value
+            , boolean bigEndian) throws IOException {
+        
         int result = value.compareTo(BigInteger.ZERO);
+        
         if(result == 0) {
             //0b000_000_00
             writeBYTE(os, (byte)0);
             return;
         }
-        
-        // >0 unsigned
-        if(result > 0) {
-            int bitLength = value.bitLength();
-            byte[] array = new byte[bitLength / 7 + Integer.signum(bitLength % 7)];
-            int length = array.length;
-            int ptr = length - 1;
-            while(value.compareTo(BigInteger.ZERO) > 0) {
-                array[ptr--] = (byte) value.and(BIT7).or(SET_FIRST).shortValue();
-                value = value.shiftRight(7);
-            }
-            if(!bigEndian) {
-                reverse(array);
-            }
             
-            array[length-1] &= 0b01111111;
-            writeBytes(os, array);
+        int bitLength = value.bitLength();
+        byte[] array = new byte[bitLength / 7 + Integer.signum(bitLength % 7)];
+        int length = array.length;
+        int ptr = length - 1;
+        while(value.compareTo(BigInteger.ZERO) > 0) {
+            array[ptr--] = (byte) value.and(BIT7).or(SET_FIRST).shortValue();
+            value = value.shiftRight(7);
+        }
+        if(!bigEndian) {
+            reverse(array);
         }
         
-        if(result<0) {
-            throw new UnsupportedOperationException();
-        }
-        
-        //negative - signed
-        // -Sign bit
-        // -Zigzag encoding
-        // -Two's complement
+        array[length-1] &= 0b01111111;
+        writeBytes(os, array);
     }
     
-    private static void reverse(byte[] array) {
+    private static byte[] reverse(byte[] array) {
         for(int k = 0, l = array.length, h = l/2; k <= h; ++k) {
             byte temp = array[k];
             array[k] = array[l - k - 1];
             array[l - k - 1] = temp;
         }
+        return array;
     }
     
     //---------------------------------
+    
+    public static BigInteger readVarint(
+            MarkableInputStream os
+            , boolean bigEndian) throws IOException {
+        BigInteger ret = BigInteger.ZERO;
+        if(bigEndian) {
+            for(;;) {
+                byte flag = os.readBits(1);
+                ret = ret.shiftLeft(7).or(BigInteger.valueOf(os.readBits(7)));
+                if(flag == 0) {
+                    break;
+                }
+            }
+        }else {
+            int count = 0;
+            for(;;) {
+                byte flag = os.readBits(1);
+                ret = ret.or(BigInteger.valueOf(os.readBits(7)).shiftLeft(count));
+                if(flag == 0) {
+                    break;
+                }
+                count += 7;
+            }
+        }
+        return ret;
+    }
     
     public static byte readBit(MarkableInputStream in, int num, boolean bigEndian) throws IOException {
         byte ret = in.readBits(num);

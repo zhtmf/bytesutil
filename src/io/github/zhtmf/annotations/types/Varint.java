@@ -10,4 +10,10 @@ import java.lang.annotation.Target;
 @Target(FIELD)
 public @interface Varint {
 
+    SignedEncoding signedEncoding() default SignedEncoding.TWOS_COMPLEMENT;
+    
+    public static enum SignedEncoding{
+        TWOS_COMPLEMENT,
+        ZIGZAG
+    }
 }
