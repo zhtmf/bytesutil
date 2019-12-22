@@ -23,6 +23,7 @@ import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.NUMBER;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.auxiliary.DataType;
@@ -186,6 +187,15 @@ class ClassInfo {
                                     + " one of value property, Length annotation or EndsWith")
                         .withSiteAndOrdinal(ClassInfo.class, 11);
                     }
+                }
+            }
+            {
+                NUMBER number = fieldInfo.localAnnotation(NUMBER.class);
+                if(number!=null && number.value()<0) {
+                    if( ! fieldInfo.lengthDefined)
+                        throw FieldInfo.forContext(cls, name, "this field is defined as NUMBER, but its value property is negative"
+                                + " and a Length annotation is not present on it")
+                            .withSiteAndOrdinal(ClassInfo.class, 15);
                 }
             }
             

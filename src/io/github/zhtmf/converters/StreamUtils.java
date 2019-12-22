@@ -139,7 +139,11 @@ class StreamUtils {
     }
     
     public static void writeBytes(OutputStream os, byte[] raw) throws IOException{
-        os.write(raw);
+        writeBytes(os, raw, 0);
+    }
+    
+    public static void writeBytes(OutputStream os, byte[] raw, int from) throws IOException{
+        os.write(raw, from, raw.length - from);
     }
     
     public static void writeIntegerOfType(OutputStream os, DataType type, int val, boolean bigEndian) throws IOException{
@@ -215,11 +219,17 @@ class StreamUtils {
         writeBytes(os, array);
     }
     
-    private static byte[] reverse(byte[] array) {
-        for(int k = 0, l = array.length, h = l/2; k <= h; ++k) {
+    static byte[] reverse(byte[] array) {
+        reverse(array, 0, array.length);
+        return array;
+    }
+    
+    static byte[] reverse(byte[] array, int from, int to) {
+        for(int k = from, l = to - from, h = l/2 + from; k < h; ++k) {
+            int r = from + to - k - 1;
             byte temp = array[k];
-            array[k] = array[l - k - 1];
-            array[l - k - 1] = temp;
+            array[k] = array[r];
+            array[r] = temp;
         }
         return array;
     }

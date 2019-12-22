@@ -197,6 +197,19 @@ enum DataTypeOperations{
                 ;
         }
     },
+    NUMBER{
+
+        @Override
+        Class<? extends Annotation> annotationClassOfThisType() {
+            return io.github.zhtmf.annotations.types.NUMBER.class;
+        }
+
+        @Override
+        boolean supports(Class<?> javaType) {
+            return javaType == BigInteger.class;
+        }
+        
+    },
     CHAR{
 
         @Override
