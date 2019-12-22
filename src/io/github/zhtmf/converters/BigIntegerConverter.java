@@ -26,6 +26,9 @@ class BigIntegerConverter implements Converter<BigInteger>{
         case CHAR:
             serializeAsCHAR(value, dest, ctx, self);
             return;
+        case VARINT:
+            StreamUtils.writeUnsignedVarint(dest, value, ctx.bigEndian);
+            return;
         default: throw new Error("should not reach here");
         }
     }
@@ -49,6 +52,8 @@ class BigIntegerConverter implements Converter<BigInteger>{
             return ret;
         case CHAR:
             return deserializeAsBigCHAR(in, ctx, self, ctx.dataType);
+        case VARINT:
+            return readVarint((MarkableInputStream)in, ctx.bigEndian);
         default: throw new Error("should not reach here");
         }
     }

@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -352,6 +353,14 @@ class FieldInfo{
                 this.bitCount = value;
             }else {
                 this.bitCount = 0;
+            }
+        }
+        {
+            if(this.dataType == DataType.VARINT) {
+                if( ! this.signed) {
+                    throw FieldInfo.forContext(base.entityClass, name, "only unsigned varint is supported")
+                        .withSiteAndOrdinal(FieldInfo.class, 15);
+                }
             }
         }
         
@@ -711,6 +720,9 @@ class FieldInfo{
         case INT6:
         case INT7:
             ret += DataTypeOperations.of(type).size() * length;
+            break;
+        case VARINT:
+            ret += StreamUtils.getUnsignedVarintLength((BigInteger) value);
             break;
         case CHAR:{
             int size = this.lengthForSerializingCHAR(self);

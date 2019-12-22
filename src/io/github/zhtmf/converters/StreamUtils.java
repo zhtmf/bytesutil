@@ -175,11 +175,16 @@ class StreamUtils {
     private static final BigInteger BIT7 = BigInteger.valueOf(0b01111111);
     private static final BigInteger SET_FIRST = BigInteger.valueOf(0b10000000);
     
-    public static void writeUnsignedVarint(
+    static void writeUnsignedVarint(
             OutputStream os
             , long value
             , boolean bigEndian) throws IOException {
         writeUnsignedVarint(os, BigInteger.valueOf(value), bigEndian);
+    }
+    
+    public static int getUnsignedVarintLength(BigInteger value) {
+        int bitLength = value.bitLength();
+        return bitLength / 7 + Integer.signum(bitLength % 7);
     }
     
     public static void writeUnsignedVarint(
@@ -195,8 +200,7 @@ class StreamUtils {
             return;
         }
             
-        int bitLength = value.bitLength();
-        byte[] array = new byte[bitLength / 7 + Integer.signum(bitLength % 7)];
+        byte[] array = new byte[getUnsignedVarintLength(value)];
         int length = array.length;
         int ptr = length - 1;
         while(value.compareTo(BigInteger.ZERO) > 0) {

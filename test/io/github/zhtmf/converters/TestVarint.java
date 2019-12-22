@@ -9,7 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class TestVarint {
-
+    
     @Test
     public void big1() throws Exception{
         {
