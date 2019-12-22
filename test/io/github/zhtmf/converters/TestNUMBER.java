@@ -1,5 +1,7 @@
 package io.github.zhtmf.converters;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -30,7 +32,7 @@ public class TestNUMBER {
     }
     
     @Test
-    public void test1() throws Exception{
+    public void test() throws Exception{
         byte[] arr = {0,1,2,3,4,5,6};
         Assert.assertArrayEquals(new byte[]{1,0,2,3,4,5,6}, StreamUtils.reverse(Arrays.copyOf(arr, arr.length),0,2));
         Assert.assertArrayEquals(new byte[]{6,5,4,3,2,1,0}, StreamUtils.reverse(Arrays.copyOf(arr, arr.length)));
@@ -39,7 +41,7 @@ public class TestNUMBER {
         Assert.assertArrayEquals(new byte[]{0,4,3,2,1,5,6}, StreamUtils.reverse(Arrays.copyOf(arr, arr.length),1,5));
         Assert.assertArrayEquals(new byte[]{0,1,2,3,4,5,6}, StreamUtils.reverse(Arrays.copyOf(arr, arr.length),3,3));
     }
-
+    
     @Test
     public void test0() throws Exception {
         ByteArrayOutputStream total = new ByteArrayOutputStream();
@@ -61,5 +63,31 @@ public class TestNUMBER {
             Assert.assertEquals("at "+i, i, entity.integer1.intValue());
             Assert.assertEquals("at "+i, i+1, entity.integer2.intValue());
         }
+    }
+    
+    @Unsigned
+    public static class ExampleEntity2 extends DataPacket{
+        @Order(0)
+        @NUMBER(0)
+        @BigEndian
+        public BigInteger integer1;
+        @Order(1)
+        @NUMBER(0)
+        @LittleEndian
+        public BigInteger integer2;
+        @Order(2)
+        @NUMBER(4)
+        @LittleEndian
+        public BigInteger integer3;
+    }
+    
+    @Test
+    public void test1() throws Exception {
+        ExampleEntity2 example2 = new ExampleEntity2();
+        example2.integer1 = BigInteger.valueOf(333);
+        example2.integer2 = BigInteger.valueOf(444);
+        example2.integer3 = BigInteger.valueOf(44456);
+        byte[] array = TestUtils.serializeAndGetBytes(example2);
+        assertEquals(array.length, 4);
     }
 }

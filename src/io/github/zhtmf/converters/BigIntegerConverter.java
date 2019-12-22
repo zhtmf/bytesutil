@@ -34,6 +34,10 @@ class BigIntegerConverter implements Converter<BigInteger>{
                 throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, "NUMBER type can only encode unsigned values")
                     .withSiteAndOrdinal(BigIntegerConverter.class, 3);
             }
+            int length = ctx.lengthForSerializingNUMBER(self);
+            if(length == 0) {
+                return;
+            }
             byte[] raw = value.toByteArray();
             int from = 0;
             if(raw.length > 1) {
@@ -44,7 +48,6 @@ class BigIntegerConverter implements Converter<BigInteger>{
             }
             //in such encoding, the sender can use more bytes than minimum necessary to represent a number,
             //so the defined length value should be respected and the actual byte sequence be padded if needed.
-            int length = ctx.lengthForSerializingNUMBER(self);
             int gap = length - raw.length + from;
             if(ctx.bigEndian) {
                 for(int i=0;i<gap;++i) {
@@ -85,6 +88,9 @@ class BigIntegerConverter implements Converter<BigInteger>{
             return readVarint((MarkableInputStream)in, ctx.bigEndian);
         case NUMBER:
             byte[] raw = StreamUtils.readBytes(in, ctx.lengthForDeserializingNUMBER(self, in));
+            if(raw.length == 0) {
+                return null;
+            }
             if(ctx.littleEndian) {
                 StreamUtils.reverse(raw);
             }
