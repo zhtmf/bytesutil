@@ -1,7 +1,5 @@
-package io.github.zhtmf;
+package io.github.zhtmf.converters;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -9,17 +7,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.converters.TestUtils;
+import io.github.zhtmf.MyEntity;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
-public class TestCase1 {
+public class TestX {
     
-    private MyEntity entity = new MyEntity();
+private MyEntity entity = new MyEntity();
     
     @Before
     public void setValues() {
@@ -75,63 +71,40 @@ public class TestCase1 {
         entity.we = we;
     }
     
-    @Test
-    public void testPerformance() throws ConversionException {
-        
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        {
-            long st = System.currentTimeMillis();
-            for(int i=0;i<100;++i) {
-                baos.reset();
-                entity.serialize(baos);
-            }
-            long elapsed = System.currentTimeMillis() - st;
-            System.out.println("time elapsed:"+elapsed);
-            Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
-        }
-        
-        {
-            long st = System.currentTimeMillis();
-            byte[] bts = baos.toByteArray();
-            ByteArrayInputStream bais = new ByteArrayInputStream(bts);
-            bais.mark(Integer.MAX_VALUE);
-            MyEntity entity2 = null;
-            for(int i=0;i<100000;++i) {
-                bais.reset();
-                entity2 = new MyEntity();
-                entity2.deserialize(bais);
-            }
-            long elapsed = System.currentTimeMillis() - st;
-            System.out.println("time elapsed:"+elapsed);
-            Assert.assertTrue(TestUtils.equalsOrderFields(entity, entity2));
-            Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
-        }
-        
-        {
-            baos = new ByteArrayOutputStream();
-            for(int i=0;i<1500;++i) {
-                entity.serialize(baos);
-            }
-            byte[] bts = baos.toByteArray();
-            ByteArrayInputStream bais = new ByteArrayInputStream(bts);
-            for(int i=0;i<1500;++i) {
-                MyEntity entity2 = new MyEntity();
-                entity2.deserialize(bais);
-                Assert.assertTrue(TestUtils.equalsOrderFields(entity, entity2));
-            }
-        }
-    }
+    public static class Handler extends ModifierHandler<Charset>{
 
+        @Override
+        public Charset handleDeserialize0(String fieldName, Object entity, InputStream in) throws IOException {
+            MyEntity entity1 = (MyEntity)entity;
+            return entity1.a>0 ? Charset.forName("UTF-8") : Charset.forName("GBK");
+        }
+
+        @Override
+        public Charset handleSerialize0(String fieldName, Object entity) {
+            MyEntity entity1 = (MyEntity)entity;
+            return entity1.a>0 ? Charset.forName("UTF-8") : Charset.forName("GBK");
+        }
+        
+    }
+    
     @Test
-    public void testEntity1() throws ConversionException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        entity.serialize(baos);
-        MyEntity entity2 = new MyEntity();
-        //for testing of a rare case
-        entity2.sub = new MyEntity.SubEntity(3,4.0f);
-        final byte[] bts = baos.toByteArray();
-        entity2.deserialize(new ByteArrayInputStream(bts));
-        Assert.assertTrue(TestUtils.equalsOrderFields(entity,entity2));
-        Assert.assertEquals(entity2.subEntityList.get(0).carryOver, entity2.a);
+    public void test3() throws Exception{
+        {
+            ModifierHandler<Charset> mod = new ScriptModifierHandler<Charset>("entity.a>0 ? 'UTF-8' : 'GBK'","entity.a>0 ? 'UTF-8' : 'GBK'",Charset.class) {
+            };
+            long st = System.currentTimeMillis();
+            for(int i=0;i<10000;++i) {
+                mod.handleSerialize0("abc", entity);
+            }
+            System.out.println(System.currentTimeMillis() - st);
+        }
+        {
+            ModifierHandler<Charset> mod = new Handler();
+            long st = System.currentTimeMillis();
+            for(int i=0;i<10000;++i) {
+                mod.handleSerialize0("abc", entity);
+            }
+            System.out.println(System.currentTimeMillis() - st);
+        }
     }
 }

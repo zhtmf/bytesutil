@@ -25,6 +25,7 @@ class Identifier {
     private static final ConcurrentHashMap<String, Field> fields = new ConcurrentHashMap<String, Field>();
     private static final ConcurrentHashMap<String, Method> setters = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentHashMap<String, Method> getters = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentHashMap<String, Class<?>> classCache = new ConcurrentHashMap<String, Class<?>>();
     private static final ThreadLocal<Integer> NEXT_HASH_CODE = new ThreadLocal<Integer>() {
         protected Integer initialValue() {return 0;};
     };
@@ -104,28 +105,41 @@ class Identifier {
             if(cachedValue !=null ) 
                 return cachedValue;
         }
+        Object result = dereference0(root, list);
+        if(result != null)
+            return result;
         String fastName = this.fastName;
         List<String> list = this.list;
         if( ! fastName.isEmpty()) {
-            // $ is occupied by this feature for inner class reference
-            try {
-                root = Class.forName(fastName);
-                list = Collections.singletonList(list.get(list.size() - 1));
-            } catch (ClassNotFoundException e) {
-                if(root instanceof Context) {
-                    List<String> names = ((Context) root).getImplicitPackageNames();
-                    for (int i = 0, len = names.size(); i < len; ++i) {
-                        String packageName = names.get(i);
-                        try {
-                            root = Class.forName(packageName + "." + fastName);
-                            list = Collections.singletonList(list.get(list.size() - 1));
-                        } catch (ClassNotFoundException e1) {
+            Class<?> found = classCache.get(fastName);
+            if(found == null) {
+                try {
+                    found = Class.forName(fastName);
+                } catch (ClassNotFoundException e) {
+                    if(root instanceof Context) {
+                        List<String> names = ((Context) root).getImplicitPackageNames();
+                        for (int i = 0, len = names.size(); i < len; ++i) {
+                            String packageName = names.get(i);
+                            try {
+                                found = Class.forName(packageName + "." + fastName);
+                                break;
+                            } catch (ClassNotFoundException e1) {
+                            }
                         }
                     }
                 }
             }
+            // $ is occupied by this feature for inner class reference
+            if(found != null && found != Identifier.class) {
+                classCache.put(fastName, found);
+                root = found;
+                list = Collections.singletonList(list.get(list.size() - 1));
+                return dereference0(root, list);
+            }else {
+                classCache.put(fastName, Identifier.class);
+            }
         }
-        return dereference0(root, list);
+        return null;
     }
     
     /**
