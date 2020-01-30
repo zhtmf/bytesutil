@@ -324,18 +324,6 @@ public class Script {
     }
 
     /**
-     * Same as calling {@link #evaluate(Map, boolean) evaluate(global, false)}
-     * 
-     * @param global initial global mappings
-     * @return final result of this script.
-     * @throws IllegalStateException if this script has not been compiled in
-     *                               advance.
-     */
-    public Object evaluate(Map<String, Object> global) throws IllegalStateException{
-        return evaluate(global, false);
-    }
-    
-    /**
      * Evaluate this script using specified initial global mappings and optional
      * protected mode.
      * <p>
@@ -343,18 +331,14 @@ public class Script {
      * copied internally it can be reused across different calls.
      * 
      * @param global  initial global mappings
-     * @param protect if true, this script is run in so-called protected mode.
-     *                Modifications and replacements to properties specified by
-     *                <tt>global</tt> will be silently ignored while newly added
-     *                properties are not affected.
      * @throws IllegalStateException if this script has not been compiled in
      *                               advance.
      */
-    public Object evaluate(Map<String, Object> global, boolean protect) throws IllegalStateException {
+    public Object evaluate(Map<String, Object> global) throws IllegalStateException {
         if(!compiled) {
             throw new IllegalStateException("not compiled");
         }
-        Context ctx = new Context(global, protect);
+        Context ctx = new Context(global);
         try {
             List<Statement> statements = this.statements;
             for(int i=0, len = statements.size(); i < len; ++i) {

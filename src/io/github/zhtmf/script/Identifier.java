@@ -220,9 +220,6 @@ class Identifier {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void set(Object root, Object value) {
         List<String> list = this.list;
-        if(root instanceof Context && ((Context)root).isProtected(list.get(0))) {
-            return;
-        }
         String name = list.get(list.size()-1);
         Object parent = list.size() == 1 ? root : dereference0(root, list.subList(0, list.size()-1));
         if(parent == null)

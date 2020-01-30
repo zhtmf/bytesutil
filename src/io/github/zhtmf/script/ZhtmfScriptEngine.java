@@ -21,15 +21,8 @@ class ZhtmfScriptEngine extends AbstractScriptEngine implements Compilable{
     
     private final ScriptEngineFactory factory;
     
-    final boolean protect;
-    
     public ZhtmfScriptEngine(ScriptEngineFactory factory) {
-        this(factory, false);
-    }
-    
-    public ZhtmfScriptEngine(ScriptEngineFactory factory, boolean protect) {
         this.factory = factory;
-        this.protect = protect;
     }
 
     @Override

@@ -13,13 +13,11 @@ import javax.script.ScriptException;
 class ZhtmfCompiledScript extends CompiledScript{
     
     private final ScriptEngine engine;
-    private final boolean protect;
     private final Script compiledScript;
     
     public ZhtmfCompiledScript(ScriptEngine engine, Script compiledScript) {
         this.engine = engine;
         this.compiledScript = compiledScript;
-        this.protect = ((ZhtmfScriptEngine)engine).protect;
     }
 
     @Override
@@ -32,12 +30,12 @@ class ZhtmfCompiledScript extends CompiledScript{
                 global.putAll(bindings);
             }
         }
-        return compiledScript.evaluate(global, protect);
+        return compiledScript.evaluate(global);
     }
     
     @Override
     public Object eval(Bindings bindings) throws ScriptException {
-        return compiledScript.evaluate(bindings, protect);
+        return compiledScript.evaluate(bindings);
     }
     
     @Override

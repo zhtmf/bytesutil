@@ -5,9 +5,11 @@ import static io.github.zhtmf.script.TokenType.ID;
 import static io.github.zhtmf.script.TokenType.NUM;
 import static io.github.zhtmf.script.TokenType.OP;
 import static io.github.zhtmf.script.TokenType.STR;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -29,15 +31,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-import javax.script.Bindings;
-import javax.script.Compilable;
 import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleBindings;
-
-import static org.junit.Assert.*;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -3695,30 +3692,30 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("(0XAbCdEF.CCC + 0B1__1__0+7777.5);"), AffixBinaryOperator.class, 1);
     }
     
-    @Test
-    public void testBP() throws Exception{
-        //restrict modification to initial global properties
-        ScriptEngineFactory factory = new ScriptEngineManager().getEngineByName("__zhtmf-script").getFactory();
-        ScriptEngine protectedEngine = ((ZhtmfScriptEngineFactory)factory).getProtectedScriptEngine();
-        Compilable compilable = (Compilable) protectedEngine;
-        {
-            Bindings nn = protectedEngine.createBindings();
-            nn.putAll(asMap("a",3,"b",4,"c",5,"vvvv",new TestObject()));
-            Object obj = compilable
-                .compile("c=400;a++;b++;vvvv.str1 = 'abcdef';vvvv.object2.flt = 3.456;a+b+c+vvvv.str1+vvvv.object2.flt;")
-                .eval(nn);
-            Assert.assertEquals(obj, "12abc1234565");
-        }
-        {
-            Bindings nn = protectedEngine.createBindings();
-            nn.putAll(asMap("a",3,"b",4,"c",5,"vvvv",new TestObject()));
-            Object obj = 
-                    protectedEngine.eval(new StringReader(
-                            "d=400+3;d=1;d--;a--;b--;vvvv.str1 = 'abcdef';vvvv.object2.flt++;a+b+c+d+vvvv.str1+vvvv.object2.flt;")
-                    , nn);
-            Assert.assertEquals(obj, "12abc1234565");
-        }
-    }
+//    @Test
+//    public void testBP() throws Exception{
+//        //restrict modification to initial global properties
+//        ScriptEngineFactory factory = new ScriptEngineManager().getEngineByName("__zhtmf-script").getFactory();
+//        ScriptEngine protectedEngine = ((ZhtmfScriptEngineFactory)factory).getProtectedScriptEngine();
+//        Compilable compilable = (Compilable) protectedEngine;
+//        {
+//            Bindings nn = protectedEngine.createBindings();
+//            nn.putAll(asMap("a",3,"b",4,"c",5,"vvvv",new TestObject()));
+//            Object obj = compilable
+//                .compile("c=400;a++;b++;vvvv.str1 = 'abcdef';vvvv.object2.flt = 3.456;a+b+c+vvvv.str1+vvvv.object2.flt;")
+//                .eval(nn);
+//            Assert.assertEquals(obj, "12abc1234565");
+//        }
+//        {
+//            Bindings nn = protectedEngine.createBindings();
+//            nn.putAll(asMap("a",3,"b",4,"c",5,"vvvv",new TestObject()));
+//            Object obj = 
+//                    protectedEngine.eval(new StringReader(
+//                            "d=400+3;d=1;d--;a--;b--;vvvv.str1 = 'abcdef';vvvv.object2.flt++;a+b+c+d+vvvv.str1+vvvv.object2.flt;")
+//                    , nn);
+//            Assert.assertEquals(obj, "12abc1234565");
+//        }
+//    }
     
     @Test
     public void testBQ() throws Exception{
@@ -3917,13 +3914,13 @@ public class ScriptTest {
         }
         
         {
-            Context ctx = new Context(asMap("a",3,"b",4), false);
+            Context ctx = new Context(asMap("a",3,"b",4));
             Set<Map.Entry<String,Object>> str = ctx.entrySet();
             Assert.assertTrue(str.size() == 2);
         }
         {
             Context ctx = new Context(asMap("a",new TestObject(),"b",new Date(),"c",null,"d"
-                    ,Class.forName("TestDefaultObject").newInstance()), false);
+                    ,Class.forName("TestDefaultObject").newInstance()));
             List<String> names = ctx.getImplicitPackageNames();
             Assert.assertTrue(names == ctx.getImplicitPackageNames());
             //io.github.zhtmf.script.ScriptTest.

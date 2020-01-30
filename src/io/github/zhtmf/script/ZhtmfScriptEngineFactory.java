@@ -84,8 +84,4 @@ public class ZhtmfScriptEngineFactory implements ScriptEngineFactory{
     public ScriptEngine getScriptEngine() {
         return new ZhtmfScriptEngine(this);
     }
-
-    public ScriptEngine getProtectedScriptEngine() {
-        return new ZhtmfScriptEngine(this, true);
-    }
 }

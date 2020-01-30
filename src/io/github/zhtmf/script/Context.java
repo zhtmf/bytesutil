@@ -4,7 +4,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,15 +30,8 @@ class Context extends AbstractMap<String, Object> {
     /**
      * Actual map holding mappings of values
      */
-    private Map<String,Object> values;
+    private Map<String,Object> values = new HashMap<String, Object>();
     
-    
-    /**
-     * If the context is created using protected mode, this set holds names of
-     * properties that are protected from modifying.
-     */
-    private final Set<String> protectedNames;
-
     /**
      * package names derived from classes in values which are used in implicit class
      * member access. This one is lazily initialized.
@@ -47,28 +39,15 @@ class Context extends AbstractMap<String, Object> {
     private boolean implicitPakageNamesFilled = false;
     private List<String> implicitPackageNames;
     
-    private final boolean protectedMode;
-    
-    private final Map<Integer,Object> cachedIdentifierValues = new HashMap<Integer, Object>();
+    private Map<Integer,Object> cachedIdentifierValues = new HashMap<Integer, Object>();
     
     /**
-     * Create a new context with initial values from a map and optionally specifying
-     * the protected mode flag.
+     * Initialize this context with values from a map
      * 
      * @param initialMap initial mappings in this context.
-     * @param protect    if true, this context is created in so-called protected
-     *                   mode. Modifications and replacements to properties
-     *                   contained within <tt>initialMap</tt> will be silently
-     *                   ignored while newly added properties are not affected.
      */
-    public Context(Map<String,Object> initialMap, boolean protect) {
-        this.values = new HashMap<String, Object>(initialMap);
-        this.protectedMode = protect;
-        if(protect) {
-            this.protectedNames = new HashSet<String>(this.values.keySet());
-        }else {
-            this.protectedNames = null;
-        }
+    public Context(Map<String,Object> initialMap) {
+        this.values.putAll(initialMap);
     }
     
     /**
@@ -95,17 +74,6 @@ class Context extends AbstractMap<String, Object> {
     
     Object getCachedValue(Identifier id) {
         return cachedIdentifierValues.get(id.hashCode());
-    }
-
-    /**
-     * Check whether a name is protected considered by this context and all its
-     * parents.
-     * 
-     * @param name property name
-     * @return whether a name is protected considered by this context
-     */
-    boolean isProtected(String name) {
-        return protectedMode && protectedNames.contains(name);
     }
     
     /**

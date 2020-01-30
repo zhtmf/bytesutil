@@ -19,10 +19,11 @@ abstract class ScriptModifierHandler<E> extends ModifierHandler<E>{
     private final CompiledScript scriptDeserialize;
     private final Class<?> handlerClass;
     private static final ScriptEngine engine = new ScriptEngineManager().getEngineByName("__zhtmf-script");
-    private static final ThreadLocal<Bindings> THREADLOCALBINDINGS = new ThreadLocal<Bindings>();
-    static {
-        THREADLOCALBINDINGS.set(engine.createBindings());
-    }
+    private static final ThreadLocal<Bindings> THREADLOCALBINDINGS = new ThreadLocal<Bindings>() {
+        protected Bindings initialValue() {
+            return engine.createBindings();
+        };
+    };
     
     public ScriptModifierHandler(String scriptSerialize, String scriptDeserialize, Class<E> handlerClass) throws ScriptException {
         Compilable compilable = (Compilable)engine;
