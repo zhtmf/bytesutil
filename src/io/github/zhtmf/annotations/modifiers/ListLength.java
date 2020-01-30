@@ -48,4 +48,6 @@ public @interface ListLength {
      * @return  handler class
      */
     Class<? extends ModifierHandler<Integer>> handler() default PlaceHolderHandler.DefaultLengthHandler.class;
+    
+    Script[] scripts() default {};
 }

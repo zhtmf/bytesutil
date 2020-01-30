@@ -2,17 +2,16 @@ package io.github.zhtmf;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.List;
 
-import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.DatePattern;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
@@ -97,7 +96,7 @@ public class MyEntity extends DataPacket{
     @Order(14)
     @CHAR(4)
     @Length
-    @CHARSET(handler=PropertyHandler2.class)
+    @CHARSET(scripts = @Script("entity.a>0 ? 'UTF-8' : 'GBK'"))
     public List<String> strList;
     
     @Order(15)
@@ -119,7 +118,7 @@ public class MyEntity extends DataPacket{
     @Order(16)
     @CHAR(4)
     @Length(5)
-    @CHARSET(handler=PropertyHandler2.class)
+    @CHARSET(scripts = @Script("entity.a>0 ? 'UTF-8' : 'GBK'"))
     public List<String> list3;
     
     @Order(17)
@@ -209,38 +208,6 @@ public class MyEntity extends DataPacket{
 
     }
     
-    public static class PropertyHandler1 extends ModifierHandler<Charset> {
-
-        @Override
-        public Charset handleDeserialize0(String fieldName,Object entity, InputStream is){
-            Sub2 sb = (Sub2)entity;
-            return sb.type2==0 ? Charset.forName("UTF-8") : Charset.forName("GBK");
-        }
-
-        @Override
-        public Charset handleSerialize0(String fieldName,Object entity){
-            Sub2 sb = (Sub2)entity;
-            return sb.type2==0 ? Charset.forName("UTF-8") : Charset.forName("GBK");
-        }
-
-    }
-    
-    public static class PropertyHandler2 extends ModifierHandler<Charset> {
-
-        @Override
-        public Charset handleDeserialize0(String fieldName,Object entity, InputStream is){
-            MyEntity sb = (MyEntity)entity;
-            return sb.a>0 ? Charset.forName("UTF-8") : Charset.forName("GBK");
-        }
-
-        @Override
-        public Charset handleSerialize0(String fieldName,Object entity){
-            MyEntity sb = (MyEntity)entity;
-            return sb.a>0 ? Charset.forName("UTF-8") : Charset.forName("GBK");
-        }
-
-    }
-    
     public static class Base extends DataPacket{
         @Order(0)
         @BYTE
@@ -326,7 +293,7 @@ public class MyEntity extends DataPacket{
         public int type2;
         @Order(4)
         @CHAR(10)
-        @CHARSET(handler=PropertyHandler1.class)
+        @CHARSET(scripts = @Script("entity.type2==0 ? 'UTF-8' : 'GBK'"))
         public String str4;
         
         @Override

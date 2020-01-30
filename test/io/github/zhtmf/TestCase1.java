@@ -77,7 +77,7 @@ public class TestCase1 {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         {
             long st = System.currentTimeMillis();
-            for(int i=0;i<100000;++i) {
+            for(int i=0;i<100;++i) {
                 baos.reset();
                 entity.serialize(baos);
             }
@@ -129,11 +129,5 @@ public class TestCase1 {
         entity2.deserialize(new ByteArrayInputStream(bts));
         Assert.assertTrue(TestUtils.equalsOrderFields(entity,entity2));
         Assert.assertEquals(entity2.subEntityList.get(0).carryOver, entity2.a);
-    }
-    
-    public static void main(String[] args) throws ConversionException {
-        TestCase1 tc1 = new TestCase1();
-        tc1.setValues();
-        tc1.testEntity1();
     }
 }

@@ -1,24 +1,21 @@
 package io.github.zhtmf;
 
 import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class TestCaseR2 {
     
@@ -37,7 +34,7 @@ public class TestCaseR2 {
         public List<String> str2;
         //list with handler
         @Order(4)
-        @Length(handler=Handler1.class)
+        @Length(scripts = @Script("2"))
         @CHAR(1)
         public List<String> str3;
         
@@ -55,21 +52,9 @@ public class TestCaseR2 {
         public List<Integer> integer2;
         //list with handler
         @Order(8)
-        @ListLength(handler=Handler1.class)
+        @ListLength(scripts = @Script("2"))
         @INT
         public List<Integer> integer3;
-        
-        public static final class Handler1 extends ModifierHandler<Integer>{
-            @Override
-            public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
-                return 2;
-            }
-
-            @Override
-            public Integer handleSerialize0(String fieldName, Object entity) {
-                return 2;
-            }
-        }
     }
     
     @Test

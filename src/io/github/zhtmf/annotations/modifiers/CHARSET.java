@@ -41,5 +41,7 @@ public @interface CHARSET {
      */
     Class<? extends ModifierHandler<Charset>> handler() default PlaceHolderHandler.DefaultCharsetHandler.class;
     
+    Script[] scripts() default {};
+    
     public static final String DEFAULT_CHARSET = "UTF-8";
 }

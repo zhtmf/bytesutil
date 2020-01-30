@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.script.ScriptException;
+
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.TypeConverter;
@@ -28,6 +30,7 @@ import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
@@ -207,8 +210,8 @@ class FieldInfo{
                 charset = Charset.forName(CHARSET.DEFAULT_CHARSET);
                 charsetHandler = null;
             }else {
+                ModifierHandler<Charset> tmp = null;
                 if( ! isDummy(cs.handler())) {
-                    ModifierHandler<Charset> tmp;
                     try {
                         tmp = cs.handler().newInstance();
                     } catch (Exception e) {
@@ -217,6 +220,10 @@ class FieldInfo{
                                 ,e)
                         .withSiteAndOrdinal(FieldInfo.class, 6);
                     }
+                }else {
+                    tmp = this.<Charset>createScriptModifierHandler(cs.scripts(), Charset.class);
+                }
+                if(tmp != null) {
                     charset = null;
                     charsetHandler = new DelegateModifierHandler<>(tmp);
                 }else {
@@ -240,14 +247,19 @@ class FieldInfo{
                 customLengthDefined = false;
             }else {
                 this.length = len.value();
+                ModifierHandler<Integer> tmp = null;
                 if( ! isDummy(len.handler())) {
-                    ModifierHandler<Integer> tmp;
                     try {
                         tmp = len.handler().newInstance();
                     } catch (Exception e) {
-                        throw forContext(base.entityClass, name, "Length ModifierHandler cannot be initialized by no-arg contructor")
+                        throw forContext(base.entityClass, name
+                                , "Length ModifierHandler cannot be initialized by no-arg contructor")
                         .withSiteAndOrdinal(FieldInfo.class, 9);
                     }
+                }else {
+                    tmp = this.<Integer>createScriptModifierHandler(len.scripts(), Integer.class);
+                }
+                if(tmp != null) {
                     DelegateModifierHandler<Integer> _tmp = new DelegateModifierHandler<>(tmp);
                     _tmp.checkLength = true;
                     lengthHandler = _tmp;
@@ -290,21 +302,25 @@ class FieldInfo{
                 listLengthType = null;
             }else {
                 this.listLength = len.value();
+                ModifierHandler<Integer> tmp = null;
                 if( ! isDummy(len.handler())) {
-                    ModifierHandler<Integer> tmp;
                     try {
                         tmp = len.handler().newInstance();
                     } catch (Exception e) {
                         throw forContext(base.entityClass, name, "ListLength ModifierHandler cannot be initialized by no-arg contructor")
                         .withSiteAndOrdinal(FieldInfo.class, 11);
                     }
+                }else {
+                    tmp = this.<Integer>createScriptModifierHandler(len.scripts(), Integer.class);
+                }
+                
+                if(tmp != null) {
                     DelegateModifierHandler<Integer> _tmp = new DelegateModifierHandler<>(tmp);
                     _tmp.checkLength = true;
                     listLengthHandler = _tmp;
                 }else {
                     listLengthHandler = null;
                 }
-                
                 listLengthType = len.type();
             }
         }
@@ -841,6 +857,25 @@ class FieldInfo{
             return wrappedConverter.deserialize(in, ctx, self);
         }
 
+    }
+    
+    private <E> ScriptModifierHandler<E> createScriptModifierHandler(Script[] annotations, Class<E> clazz){
+        if(annotations.length > 0) {
+            Script first = annotations[0];
+            if(first != null) {
+                String serialize = first.value();
+                String deserialize = first.deserialize().isEmpty() ? serialize : first.deserialize();
+                if( ! serialize.isEmpty() &&  ! deserialize.isEmpty())
+                    try {
+                        return new ScriptModifierHandler<E>(serialize,deserialize,clazz) {};
+                    } catch (ScriptException e) {
+                        throw forContext(base.entityClass, name
+                                , "ScriptModifierHandler cannot be initialized due to syntax error")
+                        .withSiteAndOrdinal(FieldInfo.class, 12);
+                    }
+            }
+        }
+        return null;
     }
     
     static UnsatisfiedConstraintException forContext(Class<?> entity, String field, String error, Exception cause) {
