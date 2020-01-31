@@ -115,7 +115,7 @@ class Identifier {
             if(found == null) {
                 try {
                     found = Class.forName(fastName);
-                } catch (ClassNotFoundException e) {
+                } catch (ClassNotFoundException | LinkageError e) {
                     if(root instanceof Context) {
                         List<String> names = ((Context) root).getImplicitPackageNames();
                         for (int i = 0, len = names.size(); i < len; ++i) {
@@ -123,7 +123,7 @@ class Identifier {
                             try {
                                 found = Class.forName(packageName + "." + fastName);
                                 break;
-                            } catch (ClassNotFoundException e1) {
+                            } catch (ClassNotFoundException | LinkageError e1) {
                             }
                         }
                     }
