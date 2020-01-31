@@ -1782,7 +1782,6 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("--false"), PrefixOperator.class, 1);
         assertScriptException(new ScriptAssertion("--null"), PrefixOperator.class, 1);
         assertScriptException(new ScriptAssertion("--'asdfsafd_sdf'"), PrefixOperator.class, 1);
-        
     }
     
     // unary plus +, additive +
@@ -3544,6 +3543,12 @@ public class ScriptTest {
                 ,asMap("vvvv", new TestObject()),asMap("vvvv", new TestObject()));
     }
     
+    @Test
+    public void testBH1() throws Exception{
+        //parentheses surrounded property reference expression
+        testEvaluation("a=(test.test3).bb+(test.test3).bb++ + (test.test3).bb-- + 3", asMap("test",new Test2()));
+    }
+    
     //prefix --
     @Test
     public void testBI() throws Exception{
@@ -3959,7 +3964,6 @@ public class ScriptTest {
                 + "test.b+test.s+test.i+test.l+test.f+test.d", asMap("test",new Test2()));
         testEvaluation("test.b1=1;test.s1=1;test.i1=1;test.l1=1;test.f1=1;test.d1=1;"
                 + "test.b1+test.s1+test.i1+test.l1+test.f1+test.d1", asMap("test",new Test2()));
-        
         assertEquals(evaluateMine("test.bi=333", asMap("test",new Test2()))+"", "333");
     }
     

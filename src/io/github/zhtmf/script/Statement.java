@@ -39,9 +39,6 @@ class Statement {
                     ((Statement)token).evaluate(ctx);
                 }
             }else {
-                if(token instanceof Identifier) {
-                    ctx.cacheValue((Identifier) token);
-                }
                 ctx.push(token);
             }
         }

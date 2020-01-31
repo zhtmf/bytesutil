@@ -16,4 +16,8 @@ public class Test2{
     public Long l1;
     public Float f1;
     public Double d1;
+    public Test3 test3 = new Test3();
+    public static class Test3{
+        public byte bb;
+    }
 }

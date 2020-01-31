@@ -412,9 +412,7 @@ class Operators {
             
             if(left instanceof Identifier) {
                 //str or num
-                Identifier concatenated = ((Identifier)left).concat(right.toString());
-                ctx.cacheValue(concatenated);
-                ctx.push(concatenated);
+                ctx.push(((Identifier)left).concat(right.toString()));
                 return;
             }
             

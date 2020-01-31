@@ -50,28 +50,6 @@ class Context extends AbstractMap<String, Object> {
         this.values.putAll(initialMap);
     }
     
-    /**
-     * Cache its value on first encounter to deal with operators which modifies
-     * value of identifiers in place.
-     * <p>
-     * Without calling this method, b + b++ will be 11 not 10 and likely b + b++ + b
-     * + b++ + b++ will be 24 instead of 23. Although 11 and 24 are exactly what
-     * returns by C compiler we must be compatible with Java compilers.
-     * 
-     * @param ctx context object
-     */
-    void cacheValue(Identifier id) {
-        /*
-         * do not distinguish between absence of value and null,
-         * null value from dereference may not be final result,
-         * as the identifier itself may represent a non-exist value in the context 
-         * but it can be used to dereference another value (for example a string)
-         */
-        if(!cachedIdentifierValues.containsKey(id.hashCode())) {
-            cachedIdentifierValues.put(id.hashCode(), id.dereference(this));
-        }
-    }
-    
     Object getCachedValue(Identifier id) {
         return cachedIdentifierValues.get(id.hashCode());
     }
@@ -99,6 +77,19 @@ class Context extends AbstractMap<String, Object> {
      * @param operand
      */
     void push(Object operand) {
+        if(TokenType.ID.is(operand)) {
+            /*
+             * Cache its value on first encounter to deal with operators which modifies
+             * value of identifiers in place.
+             * Without this, b + b++ will be 11 not 10 and likely b + b++ + b
+             * + b++ + b++ will be 24 instead of 23. Although 11 and 24 are exactly what
+             * returns by C compiler we must be compatible with Java compilers.
+             */
+            Identifier id = (Identifier)operand;
+            if(!cachedIdentifierValues.containsKey(id.hashCode())) {
+                cachedIdentifierValues.put(id.hashCode(), id.dereference(this));
+            }
+        }
         operandStack.push(operand);
     }
 
