@@ -3889,7 +3889,7 @@ public class ScriptTest {
             evaluateMine("a>3", asMap("a",null));
             Assert.fail();
         } catch (Exception e) {
-            testException(e, RelationalOperator.class, 0);
+            testException(e, RelationalOperator.class, 1);
         }
         
         try {

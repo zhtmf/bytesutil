@@ -489,13 +489,7 @@ abstract class RelationalOperator extends MutualExclusivityOperator {
     void eval(Context ctx, Object left, Object right) {
         left = convertValue(ctx, left);
         right = convertValue(ctx, right);
-        if(!typeof(left).equals(typeof(right))) {
-            throw new ParsingException(
-                    "invalid operands for relational operator of type "
-                        +typeof(left)+" and "+typeof(right))
-                .withSiteAndOrdinal(RelationalOperator.class, 0);
-        }
-        if(!(left instanceof Comparable)) {
+        if(!(left instanceof Comparable) || !(right instanceof Comparable)) {
             throw new ParsingException(
                     "incomparable operands for relational operator of type "
                             +typeof(left)+" and "+typeof(right))

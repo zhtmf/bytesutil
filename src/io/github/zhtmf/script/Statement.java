@@ -14,12 +14,17 @@ class Statement {
      * not be unwrapped.
      */
     public boolean deferred = false;
+    
+    Object[] tokens;
+    
     public Statement() {
         this.tokenList = new LinkedList<Object>();
     }
     
+    
     public void evaluate(Context ctx) {
-        for(Object token : this.tokenList){
+        Object[] tokens = this.tokens;
+        for(Object token : tokens){
             if(token instanceof Operator) {
                 ((Operator)token).eval(ctx);
             }else if(token instanceof Statement){

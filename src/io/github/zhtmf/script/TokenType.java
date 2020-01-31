@@ -33,7 +33,8 @@ enum TokenType {
     boolean is(Object obj) {
         if(obj == null)
             return false;
-        return this.actualType.isAssignableFrom(obj.getClass());
+        Class<?> clazz = obj.getClass();
+        return this.actualType == clazz || this.actualType.isAssignableFrom(clazz);
     }
     
     static boolean isTypes(Object token,TokenType[] operandTypes) {

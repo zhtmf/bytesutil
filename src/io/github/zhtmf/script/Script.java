@@ -254,6 +254,7 @@ public class Script {
         }
         tokenList.clear();
         tokenList.addAll(flattenedTokenList);
+        statement.tokens = statement.tokenList.toArray();
     }
     
     private void inspect(Statement statement) {
@@ -342,8 +343,7 @@ public class Script {
         try {
             List<Statement> statements = this.statements;
             for(int i=0, len = statements.size(); i < len; ++i) {
-                Statement topStatement = statements.get(i);
-                topStatement.evaluate(ctx);
+                statements.get(i).evaluate(ctx);
             }
         } catch (ParsingTerminationException e) {
         }
