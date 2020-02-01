@@ -309,6 +309,11 @@ class Identifier {
     }
     
     private static int tryParseIndex(String name) {
+        for(int i=0,len=name.length();i<len;++i) {
+            char ch = name.charAt(i);
+            if(!(ch>='0' && ch<='9'))
+                return -1;
+        }
         try {
             return Integer.parseInt(name);
         } catch (NumberFormatException e) {

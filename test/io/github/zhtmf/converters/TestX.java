@@ -14,14 +14,13 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
 import org.junit.Before;
-import org.junit.Test;
 
 import io.github.zhtmf.MyEntity;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class TestX {
     
-private MyEntity entity = new MyEntity();
+    static private MyEntity entity = new MyEntity();
     
     @Before
     public void setValues() {
@@ -93,8 +92,8 @@ private MyEntity entity = new MyEntity();
         
     }
     
-    @Test
-    public void test3() throws Exception{
+    public static void main(String[] args) throws Exception {
+        final int times = 100000;
         {
             ModifierHandler<Charset> mod = new ScriptModifierHandler<Charset>("entity.a>0 ? 'UTF-8' : 'GBK'","entity.a>0 ? 'UTF-8' : 'GBK'",Charset.class) {
             };
@@ -102,7 +101,7 @@ private MyEntity entity = new MyEntity();
                 mod.handleSerialize0("abc", entity);
             }
             long st = System.currentTimeMillis();
-            for(int i=0;i<10000;++i) {
+            for(int i=0;i<times;++i) {
                 mod.handleSerialize0("abc", entity);
             }
             System.out.println(System.currentTimeMillis() - st);
@@ -117,7 +116,7 @@ private MyEntity entity = new MyEntity();
                 cs.eval(sc);
             }
             long st = System.currentTimeMillis();
-            for(int i=0;i<10000;++i) {
+            for(int i=0;i<times;++i) {
                 sc.setAttribute("fieldName", "abc", ScriptContext.ENGINE_SCOPE);
                 sc.setAttribute("entity", entity, ScriptContext.ENGINE_SCOPE);
                 Charset.forName((String)cs.eval(sc));
@@ -127,7 +126,7 @@ private MyEntity entity = new MyEntity();
         {
             ModifierHandler<Charset> mod = new Handler();
             long st = System.currentTimeMillis();
-            for(int i=0;i<10000;++i) {
+            for(int i=0;i<times;++i) {
                 mod.handleSerialize0("abc", entity);
             }
             System.out.println(System.currentTimeMillis() - st);

@@ -2,9 +2,6 @@ package io.github.zhtmf;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -13,9 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.converters.TestUtils;
-import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 public class TestCase1 {
     
