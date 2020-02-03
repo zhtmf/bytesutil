@@ -3239,6 +3239,8 @@ public class ScriptTest {
         //assign values to property represented by interspersed [] and . expressions
         testEvaluation("ghi['ghi'].list[2][1] = '12345';ghi['ghi'].list[2][1]"
                 ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
+        testEvaluation("a='ghi';ghi[a].list[2][1] = '12345';ghi[a].list[2][1]"
+                ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
         
         //assign values of local reference to a global variable
         Assert.assertEquals(evaluateMine("a=3.0;obj.abc=a;obj.abc", asMap("obj",new TestObject()))+"", "3.0");
@@ -3459,7 +3461,6 @@ public class ScriptTest {
         
         testEvaluation("(a++ > 13) && (a++ > 5)",asMap("a",3,"b",4,"c",5));
         
-        testEvaluation("d=b + ++b + ++b + b; d + b;",asMap("b", 5),asMap("b", 5));
         testEvaluation("++b>5;",asMap("b", 5),asMap("b", 5));
         testEvaluation("++b<=5;",asMap("b", 5),asMap("b", 5));
     }
@@ -3541,6 +3542,7 @@ public class ScriptTest {
                 ,asMap("vvvv", new TestObject()),asMap("vvvv", new TestObject()));
         testEvaluation("d=vvvv.list3[2] + ++vvvv.list3[2];vvvv.list3[2]+d;"
                 ,asMap("vvvv", new TestObject()),asMap("vvvv", new TestObject()));
+        testEvaluation("d=b + ++b + ++b + b; d + b;",asMap("b", 5),asMap("b", 5));
     }
     
     @Test
@@ -3548,7 +3550,7 @@ public class ScriptTest {
         //parentheses surrounded property reference expression
         testEvaluation("a=(test.test3).bb+(test.test3).bb++ + (test.test3).bb-- + 3", asMap("test",new Test2()));
     }
-    
+
     //prefix --
     @Test
     public void testBI() throws Exception{
