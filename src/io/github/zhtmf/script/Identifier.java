@@ -7,36 +7,45 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Reference to an object or a property of an object in the context, as well as
- * codes for getting/setting its value by reflection.
- * 
- * @author dzh
- */
-class Identifier {
+abstract class Identifier {
     
-    private static final Field DUMMY_FIELD;
-    private static final Method DUMMY_METHOD;
-    private static final ConcurrentHashMap<String, Field> fields = new ConcurrentHashMap<String, Field>();
-    private static final ConcurrentHashMap<String, Method> setters = new ConcurrentHashMap<String, Method>();
-    private static final ConcurrentHashMap<String, Method> getters = new ConcurrentHashMap<String, Method>();
+    abstract Object dereference(Object root);
+    abstract void set(Object root, Object value);
+    abstract Identifier add(Identifier next);
+    abstract int getId();
+    abstract String getName();
+    
+    @Override
+    public String toString() {
+        return "ID["+getName()+"]";
+    }
+    
+    static Identifier of(String name) {
+        return new SingleIdentifier(name);
+    }
+    
+    @FunctionalInterface
+    private interface Getter{
+        Object get(Object obj, SingleIdentifier propertyName) throws Exception;
+    }
+    
+    @FunctionalInterface
+    private interface Setter{
+        void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception;
+    }
+    
+    private static final ConcurrentHashMap<String, Getter> GETTERS = new ConcurrentHashMap<String, Getter>();
+    private static final Getter DUMMY = (obj,p)->null;
+    private static final ConcurrentHashMap<String, Setter> SETTERS = new ConcurrentHashMap<String, Setter>();
+    private static final Setter DUMMY2 = (o,p,v)->{};
     private static final ConcurrentHashMap<String, Class<?>> classCache = new ConcurrentHashMap<String, Class<?>>();
     private static final ThreadLocal<Integer> NEXT_HASH_CODE = new ThreadLocal<Integer>() {
         protected Integer initialValue() {return 0;};
     };
-    static {
-        try {
-            DUMMY_FIELD = Identifier.class.getDeclaredField("unused");
-            DUMMY_METHOD = Identifier.class.getDeclaredMethod("unused");
-        } catch (Exception e) {
-            throw new InternalError(e);
-        }
-    }
     private static int nextHashCode() {
         Integer current = NEXT_HASH_CODE.get();
         int ret = current + 1;
@@ -44,243 +53,157 @@ class Identifier {
         return ret;
     }
     
-    
-    @SuppressWarnings("unused")
-    private String unused;
-    @SuppressWarnings("unused")
-    private void unused() {throw new UnsupportedOperationException();};
-    
-    final List<String> list;
-    /**
-     * A string constructed by joining all but the last identifier string with dot
-     * for checking whether it is a class through <tt>Class.forName</tt>
-     */
-    private String fastName;
-    
-    /**
-     * the only string in this identifier parsed as a numeric index, used in
-     * {@link #set(Object, Object) set}.<br/>
-     * -1 if it is not a numeric string.
-     */
-    private int fastIndex;
-    
-    private final int hashCode = nextHashCode();
-    
-    private Identifier() {
-        this.list = new ArrayList<String>();
+    private static Getter getGetter(Object root, SingleIdentifier property) {
+        Class<?> clazz = getClassOf(root);
+        String key = createKey(root, clazz, property);
+        Getter getter = GETTERS.get(key);
+        if(getter == DUMMY)
+            return null;
+        if(getter != null)
+            return getter;
+        getter = getGetter0(root, clazz, property);
+        GETTERS.put(key, getter == null ? DUMMY : getter);
+        return getter;
     }
     
-    public Identifier(String name) {
-        this.list = Collections.singletonList(name);
-        init();
+    private static Setter getSetter(Object root, SingleIdentifier property) {
+        Class<?> clazz = getClassOf(root);
+        String key = createKey(root, clazz, property);
+        Setter setter = SETTERS.get(key);
+        if(setter == DUMMY2)
+            return null;
+        if(setter != null)
+            return setter;
+        setter = getSetter0(root, clazz, property);
+        SETTERS.put(key, setter == null ? DUMMY2 : setter);
+        return setter;
     }
     
-    public Identifier concat(String next) {
-        Identifier ret = new Identifier();
-        List<String> list = ret.list;
-        list.addAll(this.list);
-        list.add(next);
-        ret.init();
-        return ret;
+    private static String createKey(Object root, Class<?> clazz, SingleIdentifier property) {
+        if(root instanceof List && property.index >= 0)
+            return "java.util.List.Index";
+        if(root instanceof Map && !property.lengthOrSize)
+            return "java.util.Map";
+        return clazz.getName().concat(" ").concat(property.name);
     }
     
-    public Identifier concat(Identifier next) {
-        Identifier ret = new Identifier();
-        List<String> list = ret.list;
-        list.addAll(this.list);
-        list.addAll(next.list);
-        ret.init();
-        return ret;
-    }
-    
-    private void init() {
-        List<String> list = this.list;
-        this.fastName = getFastName(list);
-        this.fastIndex = tryParseIndex(list.get(list.size()-1));
-    }
-    
-    public Object dereference(Object root) {
-        if(root instanceof Context) {
-            Object cachedValue = ((Context) root).getCachedValue(this);
-            if(cachedValue !=null ) 
-                return cachedValue;
-        }
-        Object result = dereference0(root, list);
-        if(result != null)
-            return result;
-        String fastName = this.fastName;
-        List<String> list = this.list;
-        if( ! fastName.isEmpty()) {
-            Class<?> found = classCache.get(fastName);
-            if(found == null) {
-                try {
-                    found = Class.forName(fastName);
-                } catch (ClassNotFoundException | LinkageError e) {
-                    if(root instanceof Context) {
-                        List<String> names = ((Context) root).getImplicitPackageNames();
-                        for (int i = 0, len = names.size(); i < len; ++i) {
-                            String packageName = names.get(i);
-                            try {
-                                found = Class.forName(packageName + "." + fastName);
-                                break;
-                            } catch (ClassNotFoundException | LinkageError e1) {
-                            }
-                        }
-                    }
-                }
-            }
-            // $ is occupied by this feature for inner class reference
-            if(found != null && found != Identifier.class) {
-                classCache.put(fastName, found);
-                root = found;
-                list = Collections.singletonList(list.get(list.size() - 1));
-                return dereference0(root, list);
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static Getter getGetter0(Object root, Class<?> clazz, SingleIdentifier property) {
+        int index = property.index;
+        if(index>=0) {
+            if(clazz.isArray()) {
+                return (obj,s)->Array.get(obj, s.index);
+            }else if(!(root instanceof List)){
+                throw new ParsingException("indexing "+index+" on non-list object "+root)
+                    .withSiteAndOrdinal(Identifier.class, 1);
             }else {
-                classCache.put(fastName, Identifier.class);
+                return (obj,s)->((List<Map<String,Object>>)obj).get(s.index);
+            }
+        }else if(root instanceof Map){
+            if(property.lengthOrSize)
+                return (obj,s)->new BigDecimal(((Map)obj).size());
+            else
+                return (obj,s)->((Map<String,Object>)obj).get(s.name);
+        }else {
+            //special treatment for length and size
+            if(property.lengthOrSize)
+                if(root instanceof String)
+                    return (obj,s)->new BigDecimal(((String)obj).length());
+                else if(root instanceof Collection) 
+                    return (obj,s)->new BigDecimal(((Collection)obj).size());
+                else if(getClassOf(root).isArray()) 
+                    return (obj,s)->new BigDecimal(Array.getLength(obj));
+                    
+            Method getter = getGetterMethod(clazz, property);
+            if(getter != null) {
+                return (obj,s)->getter.invoke(obj);
+            }
+            
+            Field field = null;
+            try {
+                field = clazz.getDeclaredField(property.name);
+                field.setAccessible(true);
+                final Field tmp = field;
+                return (obj,s)->tmp.get(obj);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+    }
+    
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static Setter getSetter0(Object root, Class<?> clazz, SingleIdentifier property) {
+        int index = property.index;
+        if(index>=0) {
+            if(clazz.isArray()) {
+                Class<?> componentType = clazz.getComponentType();
+                return (obj,p,value)->Array.set(obj, p.index, convertValueIfNeeded(componentType, value));
+            }else if(root instanceof List){
+                return (obj,p,value)->((List)obj).set(p.index, value);
+            }
+        }
+        
+        if(root instanceof Map){
+            return (obj,p,value)->((Map<String,Object>)obj).put(p.name, value);
+        }
+        
+        if(index >=0 ) {
+            throw new ParsingException("indexing"+index+" on object "+root)
+                .withSiteAndOrdinal(Identifier.class, 4);
+        }
+        Method setter = getSetterMethod(clazz, property);
+        if(setter != null) {
+            Class<?> type = setter.getParameterTypes()[0];
+            return (obj,p,value)->setter.invoke(obj, convertValueIfNeeded(type, value));
+        }
+        
+        Field field = null;
+        try {
+            field = clazz.getDeclaredField(property.name);
+            field.setAccessible(true);
+            final Field tmp = field;
+            final Class<?> type = tmp.getType();
+            return (obj,p,value)->tmp.set(obj, convertValueIfNeeded(type, value));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    private static Method getGetterMethod(Class<?> cls, SingleIdentifier property) {
+        try {
+            return cls.getMethod(property.getterName);
+        } catch (Exception e) {
+            try {
+                return cls.getMethod(property.isName);
+            } catch (Exception e1) {
+                //try to find method with exactly that name 
+                //and have no parameters
+                try {
+                    return cls.getMethod(property.name);
+                } catch (Exception e2) {
+                }
             }
         }
         return null;
     }
     
-    /**
-     * More generic method for getting a value from context. Mainly used by []
-     * operator
-     * 
-     * @param root  context object
-     * @param list  identifier string list
-     * @return
-     */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public static Object dereference0(Object root, List<String> list) {
-        for(int i = 0, len = list.size(); i < len; ++i) {
-            String name = list.get(i);
-            if(root == null) {
-                return null;
-            }
-            int index = tryParseIndex(name);
-            if(index>=0) {
-                if(getClassOf(root).isArray()) {
-                    root = Array.get(root, index);
-                }else if(!(root instanceof List)){
-                    throw new ParsingException("indexing "+index+" on non-list object "+root)
-                        .withSiteAndOrdinal(Identifier.class, 1);
-                }else {
-                    root = ((List<Map<String,Object>>)root).get(index);
-                }
-            }else if(root instanceof Map){
-                if("length".equals(name) || "size".equals(name)) {
-                    root = new BigDecimal(((Map)root).size());
-                    continue;
-                }
-                root = ((Map<String,Object>)root).get(name);
-            }else {
-                //special treatment for length and size
-                if("length".equals(name) || "size".equals(name)) { 
-                    if(root instanceof String) {
-                        root = new BigDecimal(((String)root).length());
-                        continue;
-                    }
-                    else if(root instanceof Collection) {
-                        root = new BigDecimal(((Collection)root).size());
-                        continue;
-                    }
-                    else if(getClassOf(root).isArray()) {
-                        root = new BigDecimal(Array.getLength(root));
-                        continue;
-                    }
-                }
-                
-                Method getter = getGetter(root,name);
-                if(getter != null) {
-                    try {
-                        root = getter.invoke(root);
-                    } catch (Exception e) {
-                        throw new ParsingException("exception in calling getter for property "+name+" on object "+root, e)
-                            .withSiteAndOrdinal(Identifier.class, 2);
-                    }
-                }else {
-                    Field field = getField(root, name);
-                    if(field != null) {
-                        try {
-                            root = field.get(root);
-                            continue;
-                        } catch (IllegalArgumentException | IllegalAccessException e) {
-                            throw new ParsingException("exception in accessing property "+name+" on object "+root, e)
-                            .withSiteAndOrdinal(Identifier.class, 3);
-                        }
-                    }
-                    
-                    root = null;
-                }
+    private static Method getSetterMethod(Class<?> cls, SingleIdentifier property) {
+        String methodName = property.setterName;
+        for(Method method:cls.getMethods()) {
+            if(method.getName().matches(methodName)
+            && method.getParameterCount() == 1 
+            && method.getReturnType() == void.class) {
+                return method;
             }
         }
-        return root;
+        return null;
     }
     
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void set(Object root, Object value) {
-        List<String> list = this.list;
-        String name = list.get(list.size()-1);
-        Object parent = list.size() == 1 ? root : dereference0(root, list.subList(0, list.size()-1));
-        if(parent == null)
-            throw new ParsingException("setting property on null object")
-                .withSiteAndOrdinal(Identifier.class, 8);
-        int index = this.fastIndex;
-        if(index>=0) {
-            Class<?> parentClass = getClassOf(parent);
-            if(parentClass.isArray()) {
-                Array.set(parent, index, convertValueIfNeeded(parentClass.getComponentType(), value));
-                return;
-            } else if(parent instanceof List){
-                ((List)parent).set(index, value);
-                return;
-            }
-        }
-        if(parent instanceof Map){
-            ((Map<String,Object>)parent).put(name, value);
-        }else {
-            if(index >=0 ) {
-                throw new ParsingException("indexing"+index+" on object "+root)
-                    .withSiteAndOrdinal(Identifier.class, 4);
-            }
-            Method setter = getSetter(parent, name);
-            if(setter != null) {
-                try {
-                    setter.invoke(parent, convertValueIfNeeded(setter.getParameterTypes()[0], value));
-                    return;
-                } catch (Exception e) {
-                    throw new ParsingException("exception in calling setter for property "+name+" on object "+root, e)
-                        .withSiteAndOrdinal(Identifier.class, 5);
-                }
-            }else {
-                Field field = getField(parent, name);
-                if(field != null) {
-                    try {
-                        field.set(parent, convertValueIfNeeded(field.getType(), value));
-                        return;
-                    } catch (IllegalArgumentException | IllegalAccessException e) {
-                        throw new ParsingException("exception in accessing property "+name+" on object "+root, e)
-                        .withSiteAndOrdinal(Identifier.class, 6);
-                    }
-                }
-                
-                throw new ParsingException("no property named "+name+" found on object "+root)
-                .withSiteAndOrdinal(Identifier.class, 7);
-            }
-        }
+    private static Class<?> getClassOf(Object root){
+        return root instanceof Class ? (Class<?>) root : root.getClass();
     }
     
-    @Override
-    public String toString() {
-        return "ID["+list+"]";
-    }
-    
-    @Override
-    public int hashCode() {
-        return hashCode;
-    }
-    
-    private Object convertValueIfNeeded(Class<?> fieldClass, Object scriptValue) {
+    private static Object convertValueIfNeeded(Class<?> fieldClass, Object scriptValue) {
         if(!(scriptValue instanceof BigDecimal)) {
             return scriptValue;
         }
@@ -308,106 +231,208 @@ class Identifier {
         return scriptValue;
     }
     
-    private static int tryParseIndex(String name) {
-        for(int i=0,len=name.length();i<len;++i) {
-            char ch = name.charAt(i);
-            if(!(ch>='0' && ch<='9'))
-                return -1;
+    private static final class SingleIdentifier extends Identifier{
+
+        private final String name;
+        private final String getterName;
+        private final String isName;
+        private final String setterName;
+        private final boolean lengthOrSize;
+        private final int index;
+        private final int id;
+        public SingleIdentifier(String name) {
+            this.name = name;
+            this.lengthOrSize = "length".equals(name) || "size".equals(name);
+            this.index = tryParseIndex(name);
+            this.id = nextHashCode();
+            String initialUppercased = Character.toUpperCase(name.charAt(0))+name.substring(1);
+            this.getterName = "get" + initialUppercased;
+            this.setterName = "set" + initialUppercased;
+            this.isName = "is" + initialUppercased;
         }
-        try {
-            return Integer.parseInt(name);
-        } catch (NumberFormatException e) {
-            return -1;
+
+        @Override
+        Object dereference(Object root) {
+            if(root instanceof Context) {
+                Object cachedValue = ((Context) root).getCachedValue(this);
+                if(cachedValue !=null ) 
+                    return cachedValue;
+            }
+            Getter accessor = getGetter(root, this);
+            try {
+                return accessor == null ? null : accessor.get(root, this);
+            } catch (Exception e) {
+                throw new ParsingException("exception in retrieving value of property " + name + " of object " + root, e)
+                    .withSiteAndOrdinal(Identifier.class, 3);
+            }
+        }
+
+        @Override
+        void set(Object root, Object value) {
+            Setter accessor = getSetter(root, this);
+            if(accessor != null) {
+                try {
+                    accessor.set(root, this, value);
+                    return;
+                } catch (Exception e) {
+                    throw new ParsingException("exception in setting value of property " + name + " on object " + root, e)
+                    .withSiteAndOrdinal(Identifier.class, 5);
+                }
+            }
+            
+            throw new ParsingException("no property named " + name + " found on object "+root)
+                .withSiteAndOrdinal(Identifier.class, 6);
+        }
+
+        @Override
+        Identifier add(Identifier next) {
+            return new IdentifierList(this).add(next);
+        }
+
+        @Override
+        int getId() {
+            return id;
+        }
+        
+        private static int tryParseIndex(String name) {
+            for(int i=0,len=name.length();i<len;++i) {
+                char ch = name.charAt(i);
+                if(!(ch>='0' && ch<='9'))
+                    return -1;
+            }
+            try {
+                return Integer.parseInt(name);
+            } catch (NumberFormatException e) {
+                return -1;
+            }
+        }
+
+        @Override
+        String getName() {
+            return name;
         }
     }
-    
-    private static Method getGetter(Object root, String property) {
-        Class<?> cls = getClassOf(root);
-        String key = cls.getSimpleName()+" "+property;
-        Method getter = getters.get(key);
-        if(getter == DUMMY_METHOD) {
-            return null;
+
+    private static final class IdentifierList extends Identifier{
+        
+        private String name;
+        private final List<Identifier> list = new ArrayList<Identifier>();
+        private final int id;
+        
+        IdentifierList(Identifier initial){
+            /*
+             * initial cannot be another IdentifierList
+             * as the only syntax which will result in such concatenation is (a.b).(c.d)
+             * and its illegal in any sense
+             */
+            this.list.add(initial);
+            this.id = nextHashCode();
+            this.name = combineName();
         }
-        if(getter == null) {
-            String initialUppercased = Character.toUpperCase(property.charAt(0))+property.substring(1);
-            try {
-                getter = cls.getMethod("get"+initialUppercased);
-                getters.put(key, getter);
-            } catch (Exception e) {
-                try {
-                    getter = cls.getMethod("is"+initialUppercased);
-                    getters.put(key, getter);
-                } catch (Exception e1) {
-                    //try to find method with exactly that name 
-                    //and have no parameters
-                    try {
-                        getter = cls.getMethod(property);
-                        getters.put(key, getter);
-                    } catch (Exception e2) {
-                        getters.put(key, DUMMY_METHOD);
+        IdentifierList(IdentifierList copy){
+            this.list.addAll(copy.list);
+            this.id = nextHashCode();
+            this.name = copy.name;
+        }
+
+        @Override
+        Object dereference(Object root) {
+            
+            if(root instanceof Context) {
+                Object cachedValue = ((Context) root).getCachedValue(this);
+                if(cachedValue !=null ) 
+                    return cachedValue;
+            }
+            
+            Object result = root;
+            List<Identifier> list = this.list;
+            final int len = list.size();
+            for(int k=0;k<len;++k) {
+                Identifier id = list.get(k);
+                result = id.dereference(result);
+                if(result == null)
+                    break;
+            }
+            
+            if(result == null) {
+                //class member reference
+                String fastName = this.name;
+                if( ! fastName.isEmpty()) {
+                    Class<?> found = classCache.get(fastName);
+                    if(found == null) {
+                        try {
+                            found = Class.forName(fastName);
+                        } catch (ClassNotFoundException e) {
+                            if(root instanceof Context) {
+                                List<String> names = ((Context) root).getImplicitPackageNames();
+                                for (int i = 0, len2 = names.size(); i < len2; ++i) {
+                                    String packageName = names.get(i);
+                                    try {
+                                        found = Class.forName(packageName.concat(".").concat(fastName));
+                                        break;
+                                    } catch (ClassNotFoundException e1) {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // $ is occupied by this feature for inner class reference
+                    if(found != null && found != Identifier.class) {
+                        classCache.put(fastName, found);
+                        result = list.get(len-1).dereference(found);
+                    }else {
+                        classCache.put(fastName, Identifier.class);
                     }
                 }
             }
+            
+            return result;
         }
-        return getter;
-    }
-    
-    private static Method getSetter(Object root, String property) {
-        Class<?> cls = getClassOf(root);
-        String key = cls.getSimpleName()+" "+property;
-        Method setter = setters.get(key);
-        if(setter == DUMMY_METHOD) {
-            return null;
-        }
-        if(setter == null) {
-            String methodName = "set"+Character.toUpperCase(property.charAt(0))+property.substring(1);
-            for(Method method:cls.getMethods()) {
-                if(method.getName().matches(methodName)
-                && method.getParameterCount() == 1 
-                && method.getReturnType() == void.class) {
-                    setter = method;
+
+        @Override
+        void set(Object root, Object value) {
+            
+            int k = 0;
+            List<Identifier> list = this.list;
+            for(int len = list.size() - 1;k<len;++k) {
+                Identifier id = list.get(k);
+                root = id.dereference(root);
+                if(root == null)
                     break;
-                }
             }
-            if(setter == null) {
-                setters.put(key, DUMMY_METHOD);
-            }else {
-                setters.put(key, setter);
+            if(root == null)
+                throw new ParsingException("setting property on null object")
+                    .withSiteAndOrdinal(Identifier.class, 8);
+            list.get(k).set(root, value);
+        }
+
+        @Override
+        Identifier add(Identifier next) {
+            IdentifierList ret = new IdentifierList(this);
+            ret.list.add(next);
+            ret.name = ret.combineName();
+            return ret;
+        }
+
+        @Override
+        int getId() {
+            return id;
+        }
+        
+        @Override
+        String getName() {
+            return name;
+        }
+        
+        private String combineName() {
+            StringBuilder name1 = new StringBuilder();
+            List<Identifier> list = this.list;
+            for(int i=0; i<list.size()-1;++i) {
+                name1.append('.').append(list.get(i).getName());
             }
+            if(name1.length() == 0)
+                return "";
+            return name1.substring(1);
         }
-        return setter;
-    }
-    
-    private static Field getField(Object root, String property) {
-        Class<?> cls = getClassOf(root);
-        String key = cls.getSimpleName()+" "+property;
-        Field field = fields.get(key);
-        if(field == DUMMY_FIELD) {
-            return null;
-        }
-        if(field == null) {
-            try {
-                field = cls.getDeclaredField(property);
-                field.setAccessible(true);
-                fields.put(key, field);
-            } catch (Exception e) {
-                fields.put(key, DUMMY_FIELD);
-            }
-        }
-        return field;
-    }
-    
-    private static Class<?> getClassOf(Object root){
-        return root instanceof Class ? (Class<?>) root : root.getClass();
-    }
-    
-    private static String getFastName(List<String> list) {
-        StringBuilder name1 = new StringBuilder();
-        for(int i=0; i<list.size()-1;++i) {
-            name1.append('.').append(list.get(i));
-        }
-        if(name1.length() == 0)
-            return "";
-        return name1.substring(1);
     }
 }

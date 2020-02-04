@@ -130,7 +130,7 @@ final class ScriptAssertion{
                 objName = obj.toString();
                 break;
             case ID:
-                objName = ((Identifier)obj).list.get(0);
+                objName = ((Identifier)obj).getName();
                 break;
             case NULL:
                 objName = "null";

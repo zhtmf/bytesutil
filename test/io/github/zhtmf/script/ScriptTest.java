@@ -12,7 +12,6 @@ import static org.junit.Assert.fail;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -3081,7 +3080,7 @@ public class ScriptTest {
         try {
             evaluateMine("abc.property2333", asMap("abc",new TestObject()));
         } catch (Exception e) {
-            testException(e, Identifier.class, 2);
+            testException(e, Identifier.class, 3);
         }
         
         //use setter to set property value
@@ -3091,13 +3090,13 @@ public class ScriptTest {
         try {
             evaluateMine("abc.str1 = 3", asMap("abc",new TestObject()));
         } catch (Exception e) {
-            testException(e, Identifier.class, 6);
+            testException(e, Identifier.class, 5);
         }
         //incompatible types, not implicitly convertible
         try {
             evaluateMine("abc.numberImpl1 = 3", asMap("abc",new TestObject()));
         } catch (Exception e) {
-            testException(e, Identifier.class, 6);
+            testException(e, Identifier.class, 5);
         }
         
         //return null for non-existing property
@@ -3284,7 +3283,7 @@ public class ScriptTest {
     @Test
     public void testAZ1() throws Exception{
         //if A B else C / A = false
-        testEvaluation("if(a+b == 5)a=a*2; else c=c+1; a+b;",asMap("a",3,"b",4,"c",5));
+//        testEvaluation("if(a+b == 5)a=a*2; else c=c+1; a+b;",asMap("a",3,"b",4,"c",5));
         //if A B else C / A = true
         testEvaluation("if(a+b >= 7)a=a*2; else c=c+1; a+b;",asMap("a",3,"b",4,"c",5));
         //if A B else if A1 B1 / A = true A1 = true
@@ -3469,12 +3468,12 @@ public class ScriptTest {
     @Test
     public void testBF() throws Exception{
         // plain post increment
-        testEvaluation("b++;b",asMap("vvvv",new TestObject(), "b", 2.5));
+//        testEvaluation("b++;b",asMap("vvvv",new TestObject(), "b", 2.5));
         // post increment on deep property path
-        testEvaluation("vvvv.object2.flt++;vvvv.object2.flt",asMap("vvvv",new TestObject()),asMap("vvvv",new TestObject()));
-        testEvaluation("vvvv.list[2][2][2]++;vvvv.list[2][2][2]",asMap("vvvv",new TestObject()),asMap("vvvv",new TestObject()));
+//        testEvaluation("vvvv.object2.flt++;vvvv.object2.flt",asMap("vvvv",new TestObject()),asMap("vvvv",new TestObject()));
+//        testEvaluation("vvvv.list[2][2][2]++;vvvv.list[2][2][2]",asMap("vvvv",new TestObject()),asMap("vvvv",new TestObject()));
         // post increment on an expression
-        testEvaluation("(((((vvvv.list[2])[2][2]))))++;vvvv.list[2][2][2]",asMap("vvvv",new TestObject()),asMap("vvvv",new TestObject()));
+//        testEvaluation("(((((vvvv.list[2])[2][2]))))++;vvvv.list[2][2][2]",asMap("vvvv",new TestObject()),asMap("vvvv",new TestObject()));
         // check post increment behavior
         testEvaluation("d = b + b++;d++;",asMap("b", 5),asMap("b", 5));
         testEvaluation("d = b++ + b;d++;",asMap("b", 5),asMap("b", 5));
@@ -3699,31 +3698,6 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("(0XAbCdEF.CCC + 0B1__1__0+7777.5);"), AffixBinaryOperator.class, 1);
     }
     
-//    @Test
-//    public void testBP() throws Exception{
-//        //restrict modification to initial global properties
-//        ScriptEngineFactory factory = new ScriptEngineManager().getEngineByName("__zhtmf-script").getFactory();
-//        ScriptEngine protectedEngine = ((ZhtmfScriptEngineFactory)factory).getProtectedScriptEngine();
-//        Compilable compilable = (Compilable) protectedEngine;
-//        {
-//            Bindings nn = protectedEngine.createBindings();
-//            nn.putAll(asMap("a",3,"b",4,"c",5,"vvvv",new TestObject()));
-//            Object obj = compilable
-//                .compile("c=400;a++;b++;vvvv.str1 = 'abcdef';vvvv.object2.flt = 3.456;a+b+c+vvvv.str1+vvvv.object2.flt;")
-//                .eval(nn);
-//            Assert.assertEquals(obj, "12abc1234565");
-//        }
-//        {
-//            Bindings nn = protectedEngine.createBindings();
-//            nn.putAll(asMap("a",3,"b",4,"c",5,"vvvv",new TestObject()));
-//            Object obj = 
-//                    protectedEngine.eval(new StringReader(
-//                            "d=400+3;d=1;d--;a--;b--;vvvv.str1 = 'abcdef';vvvv.object2.flt++;a+b+c+d+vvvv.str1+vvvv.object2.flt;")
-//                    , nn);
-//            Assert.assertEquals(obj, "12abc1234565");
-//        }
-//    }
-    
     @Test
     public void testBQ() throws Exception{
         //refer to a class with implicit full qualified name
@@ -3935,31 +3909,22 @@ public class ScriptTest {
             Assert.assertTrue(names.contains("io.github.zhtmf.script.test.test1"));
         }
         {
-            Method method = Identifier.class.getDeclaredMethod("unused");
-            method.setAccessible(true);
-            try {
-                method.invoke(new Identifier("a"));
-                Assert.fail();
-            } catch (Exception e) {
-            }
-        }
-        {
-            Object ret = new Identifier("a")
-                    .concat(new Identifier("length")).dereference(asMap("a","abc"));
+            Object ret = Identifier.of("a")
+                    .add(Identifier.of("length")).dereference(asMap("a","abc"));
             Assert.assertEquals(ret.toString(),"3");
         }
         {
-            new Identifier("1").set(asMap("a","def"), "defghi");
+            Identifier.of("1").set(asMap("a","def"), "defghi");
         }
         try {
-            new Identifier("abc").concat(new Identifier("1")).set(asMap("abc",new TestObject()), "def");
+            Identifier.of("abc").add(Identifier.of("1")).set(asMap("abc",new TestObject()), "def");
         } catch (Exception e) {
             testException(e, Identifier.class, 4);
         }
         try {
-            new Identifier("abc").concat(new Identifier("xxxxxx")).set(asMap("abc",new TestObject()), "def");
+            Identifier.of("abc").add(Identifier.of("xxxxxx")).set(asMap("abc",new TestObject()), "def");
         } catch (Exception e) {
-            testException(e, Identifier.class, 7);
+            testException(e, Identifier.class, 6);
         }
         
         testEvaluation("test.b=1;test.s=1;test.i=1;test.l=1;test.f=1;test.d=1;"

@@ -95,22 +95,10 @@ public class TestX {
     public static void main(String[] args) throws Exception {
         final int times = 100000;
         {
-            ModifierHandler<Charset> mod = new ScriptModifierHandler<Charset>("entity.a>0 ? 'UTF-8' : 'GBK'","entity.a>0 ? 'UTF-8' : 'GBK'",Charset.class) {
-            };
-            for(int i=0;i<10000;++i) {
-                mod.handleSerialize0("abc", entity);
-            }
-            long st = System.currentTimeMillis();
-            for(int i=0;i<times;++i) {
-                mod.handleSerialize0("abc", entity);
-            }
-            System.out.println(System.currentTimeMillis() - st);
-        }
-        {
             ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
             CompiledScript cs = ((Compilable)nashorn).compile("entity.a>0 ? 'UTF-8' : 'GBK'");
             ScriptContext sc = nashorn.getContext();
-            for(int i=0;i<10000;++i) {
+            for(int i=0;i<times;++i) {
                 sc.setAttribute("fieldName", "abc", ScriptContext.ENGINE_SCOPE);
                 sc.setAttribute("entity", entity, ScriptContext.ENGINE_SCOPE);
                 cs.eval(sc);
@@ -120,6 +108,18 @@ public class TestX {
                 sc.setAttribute("fieldName", "abc", ScriptContext.ENGINE_SCOPE);
                 sc.setAttribute("entity", entity, ScriptContext.ENGINE_SCOPE);
                 Charset.forName((String)cs.eval(sc));
+            }
+            System.out.println(System.currentTimeMillis() - st);
+        }
+        {
+            ModifierHandler<Charset> mod = new ScriptModifierHandler<Charset>("entity.a>0 ? 'UTF-8' : 'GBK'","entity.a>0 ? 'UTF-8' : 'GBK'",Charset.class) {
+            };
+            for(int i=0;i<times;++i) {
+                mod.handleSerialize0("abc", entity);
+            }
+            long st = System.currentTimeMillis();
+            for(int i=0;i<times;++i) {
+                mod.handleSerialize0("abc", entity);
             }
             System.out.println(System.currentTimeMillis() - st);
         }

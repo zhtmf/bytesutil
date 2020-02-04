@@ -51,7 +51,7 @@ class Context extends AbstractMap<String, Object> {
     }
     
     Object getCachedValue(Identifier id) {
-        return cachedIdentifierValues.get(id.hashCode());
+        return cachedIdentifierValues.get(id.getId());
     }
     
     /**
@@ -77,7 +77,7 @@ class Context extends AbstractMap<String, Object> {
      * @param operand
      */
     void push(Object operand) {
-        if(TokenType.ID.is(operand)) {
+        if(operand instanceof Identifier) {
             /*
              * Cache its value on first encounter to deal with operators which modifies
              * value of identifiers in place.
@@ -85,9 +85,10 @@ class Context extends AbstractMap<String, Object> {
              * + b++ + b++ will be 24 instead of 23. Although 11 and 24 are exactly what
              * returns by C compiler we must be compatible with Java compilers.
              */
-            Identifier id = (Identifier)operand;
-            if(!cachedIdentifierValues.containsKey(id.hashCode())) {
-                cachedIdentifierValues.put(id.hashCode(), id.dereference(this));
+            Identifier identifier = (Identifier)operand;
+            int id = identifier.getId();
+            if(!cachedIdentifierValues.containsKey(id)) {
+                cachedIdentifierValues.put(id, identifier.dereference(this));
             }
         }
         operandStack.push(operand);

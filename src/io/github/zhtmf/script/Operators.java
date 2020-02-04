@@ -1,13 +1,17 @@
 package io.github.zhtmf.script;
 
-import static io.github.zhtmf.script.TokenType.*;
+import static io.github.zhtmf.script.TokenType.BOOL;
+import static io.github.zhtmf.script.TokenType.ID;
+import static io.github.zhtmf.script.TokenType.NULL;
+import static io.github.zhtmf.script.TokenType.NUM;
+import static io.github.zhtmf.script.TokenType.STMT;
+import static io.github.zhtmf.script.TokenType.STR;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -412,13 +416,15 @@ class Operators {
             
             if(left instanceof Identifier) {
                 //str or num
-                ctx.push(((Identifier)left).concat(right.toString()));
+                //TODO:
+                ctx.push(((Identifier)left).add(
+                        Identifier.of(right.toString())));
                 return;
             }
             
             //dereference string literals
-            ctx.push(Identifier.dereference0(
-                    left, Arrays.asList(right.toString())));
+            //TODO:
+            ctx.push(Identifier.of(right.toString()).dereference(left));
         }
     }
     
@@ -439,7 +445,7 @@ class Operators {
                 //but still falls short to deal with expressions like ((a.b).c).d
                 //as parentheses create statements
                 Identifier leftIdentifier = (Identifier)left;
-                Identifier concatenated = leftIdentifier.concat((Identifier)right);
+                Identifier concatenated = leftIdentifier.add((Identifier)right);
                 tokenList.set(index - 1, concatenated);
                 tokenList.remove(index);
                 tokenList.remove(index);
@@ -451,7 +457,7 @@ class Operators {
         void eval(Context ctx, Object left, Object right) {
             if(left instanceof Identifier) {
                 Identifier leftIdentifier = (Identifier)left;
-                Identifier concatenated = leftIdentifier.concat((Identifier)right);
+                Identifier concatenated = leftIdentifier.add((Identifier)right);
                 ctx.push(concatenated);
             }else {
                 ctx.push(((Identifier)right).dereference(left));

@@ -653,7 +653,7 @@ public class Script {
             if (Operators.getOperator(identifier) != null || keywords.contains(identifier))
                 return null;
             idx.index = i - 1;
-            return new Identifier(identifier);
+            return Identifier.of(identifier);
         }
     };
     
