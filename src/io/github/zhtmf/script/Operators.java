@@ -451,6 +451,18 @@ class Operators {
                 tokenList.remove(index);
                 return index - 1;
             }
+            //deal with nested round statements like (a.b).c, concatenate them at compile time
+            else if(left instanceof Statement) {
+                Statement leftStatement = (Statement)left;
+                Identifier wrappedSingleIdentifier = unwrapIdentifier(leftStatement);
+                if(wrappedSingleIdentifier != null) {
+                    Identifier concatenated = wrappedSingleIdentifier.add((Identifier) right);
+                    tokenList.set(index - 1, concatenated);
+                    tokenList.remove(index);
+                    tokenList.remove(index);
+                    return index - 1;
+                }
+            }
             return super.reorder0(tokenList, index);
         }
         @Override
@@ -462,6 +474,17 @@ class Operators {
             }else {
                 ctx.push(((Identifier)right).dereference(left));
             }
+        }
+        
+        private Identifier unwrapIdentifier(Statement statement) {
+            if(statement.tokenList.size() != 1)
+                return null;
+            Object token = statement.tokenList.get(0);
+            if(token instanceof Identifier)
+                return (Identifier) token;
+            if(token instanceof Statement)
+                return unwrapIdentifier((Statement) token);
+            return null;
         }
     }
     

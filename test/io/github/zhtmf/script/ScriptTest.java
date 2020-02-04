@@ -1425,6 +1425,43 @@ public class ScriptTest {
             ;
     }
     
+    //Dot operator with nested empty round statements
+    @Test
+    public void testW8() {
+        new ScriptAssertion("((((a.b.c)))).d.c")
+            .compile()
+            .hasChild(1)
+            .child(0)
+                .hasChild(1)
+                .token(ID, "a.b.c.d.c")
+                .and()
+             ;
+        new ScriptAssertion("((((a)))).d.c")
+        .compile()
+        .hasChild(1)
+        .child(0)
+            .hasChild(1)
+            .token(ID, "a.d.c")
+            .and()
+         ;
+        new ScriptAssertion("((((a.b)))).c")
+        .compile()
+        .hasChild(1)
+        .child(0)
+            .hasChild(1)
+            .token(ID, "a.b.c")
+            .and()
+         ;
+        new ScriptAssertion("((((a.b).d))).c")
+        .compile()
+        .hasChild(1)
+        .child(0)
+            .hasChild(1)
+            .token(ID, "a.b.d.c")
+            .and()
+         ;
+    }
+    
     // ---------------------- Exceptions ----------------------
     
     // parentheses statement exceptions

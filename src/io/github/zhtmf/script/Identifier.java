@@ -421,7 +421,7 @@ abstract class Identifier {
         
         @Override
         String getName() {
-            return name;
+            return name + "." + list.get(list.size() - 1).getName();
         }
         
         private String combineName() {
