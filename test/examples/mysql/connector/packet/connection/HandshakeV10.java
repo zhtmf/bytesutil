@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
-import examples.mysql.connector.packet.ClientCapabilities;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
@@ -76,12 +76,12 @@ public class HandshakeV10 extends DataPacket{
     public int authPluginDataLen;
 
     @Order(10)
-    @RAW(10)
+    @RAW(10) 
     public byte[] reserved;
     
     @Order(11)
     @RAW
-    @Length(handler=RestPluginLength.class)
+    @Length(scripts = @Script("a=entity.authPluginDataLen-8;a<13 ? 13 : a;"))
     public byte[] restPluginProvidedData;
     
     @Order(12)
@@ -89,20 +89,6 @@ public class HandshakeV10 extends DataPacket{
     @EndsWith({'\0'})
     @Conditional(PluginName.class)
     public String authPluginName;
-    
-    public static class RestPluginLength extends ModifierHandler<Integer>{
-        @Override
-        public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            HandshakeV10 v10 = (HandshakeV10)entity;
-            return Math.max(13, v10.authPluginDataLen-8);
-        }
-
-        @Override
-        public Integer handleSerialize0(String fieldName, Object entity) {
-            HandshakeV10 v10 = (HandshakeV10)entity;
-            return Math.max(13, v10.authPluginDataLen-8);
-        }
-    }
     
     public static class PluginName extends ModifierHandler<Boolean>{
         @Override

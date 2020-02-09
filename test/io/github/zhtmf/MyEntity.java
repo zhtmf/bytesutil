@@ -22,7 +22,6 @@ import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
-import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @LittleEndian
 @Unsigned
@@ -127,7 +126,7 @@ public class MyEntity extends DataPacket{
     public int unusedLength;
     
     @Order(18)
-    @Length(handler=LengthHandler.class)
+    @Length(scripts = @Script("entity.unusedLength"))
     public List<SubEntity> entityList2;
     
     @Order(19)
@@ -147,7 +146,7 @@ public class MyEntity extends DataPacket{
     
     @Order(22)
     @RAW
-    @Length(handler=LengthHandler.class)
+    @Length(scripts = @Script("entity.bytes2Len"))
     public byte[] anotherBytes;
     
     @Order(23)
@@ -180,32 +179,6 @@ public class MyEntity extends DataPacket{
             }
             throw new Error("unknown b value:"+b);
         }
-    }
-    
-    public static class LengthHandler extends ModifierHandler<Integer> {
-
-        @Override
-        public Integer handleDeserialize0(String fieldName,Object entity, InputStream is){
-            MyEntity sb = (MyEntity)entity;
-            if(fieldName.equals("entityList2")) {
-                return sb.unusedLength;
-            }else if(fieldName.equals("anotherBytes")) {
-                return sb.bytes2Len;
-            }
-            return null;
-        }
-
-        @Override
-        public Integer handleSerialize0(String fieldName,Object entity){
-            MyEntity sb = (MyEntity)entity;
-            if(fieldName.equals("entityList2")) {
-                return sb.unusedLength;
-            }else if(fieldName.equals("anotherBytes")) {
-                return sb.bytes2Len;
-            }
-            return null;
-        }
-
     }
     
     public static class Base extends DataPacket{
@@ -409,7 +382,7 @@ public class MyEntity extends DataPacket{
         
         @Order(2)
         @CHAR
-        @Length(handler=Handler.class)
+        @Length(scripts = @Script("entity.char1.length"))
         public String char3;
         
         @Order(3)
@@ -428,39 +401,7 @@ public class MyEntity extends DataPacket{
         
         @Order(6)
         @RAW
-        @Length(handler=Handler2.class)
+        @Length(scripts = @Script("entity.bytearray1.length"))
         public byte[] bytearray4;
-        
-        public static class Handler extends ModifierHandler<Integer>{
-
-            @Override
-            public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
-                WeirdEntity ae = (WeirdEntity)entity;
-                return ae.char1.length();
-            }
-
-            @Override
-            public Integer handleSerialize0(String fieldName, Object entity) {
-                WeirdEntity ae = (WeirdEntity)entity;
-                return ae.char1.length();
-            }
-            
-        }
-        
-        public static class Handler2 extends ModifierHandler<Integer>{
-
-            @Override
-            public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
-                WeirdEntity ae = (WeirdEntity)entity;
-                return ae.bytearray1.length;
-            }
-
-            @Override
-            public Integer handleSerialize0(String fieldName, Object entity) {
-                WeirdEntity ae = (WeirdEntity)entity;
-                return ae.bytearray1.length;
-            }
-            
-        }
     }
 }

@@ -21,7 +21,6 @@ class Statement {
         this.tokenList = new LinkedList<Object>();
     }
     
-    
     public void evaluate(Context ctx) {
         Object[] tokens = this.tokens;
         for(Object token : tokens){

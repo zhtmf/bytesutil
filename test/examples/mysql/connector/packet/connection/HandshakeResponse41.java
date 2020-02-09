@@ -6,7 +6,6 @@ import java.util.List;
 
 import examples.mysql.connector.datatypes.le.LEInteger;
 import examples.mysql.connector.datatypes.string.LengthEncodedString;
-import examples.mysql.connector.packet.ClientCapabilities;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.EndsWith;

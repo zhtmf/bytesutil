@@ -5,8 +5,8 @@ import java.io.InputStream;
 
 import examples.mysql.connector.datatypes.le.LEIntHandler;
 import examples.mysql.connector.datatypes.le.LEInteger;
-import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.ClientCapabilityAware;
+import examples.mysql.connector.packet.connection.ClientCapabilities;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;

@@ -12,14 +12,13 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
-import io.github.zhtmf.script.ZhtmfScriptEngineFactory;
 
 abstract class ScriptModifierHandler<E> extends ModifierHandler<E>{
     
     private final CompiledScript scriptSerialize;
     private final CompiledScript scriptDeserialize;
     private final Class<?> handlerClass;
-    private static final ScriptEngine engine = new ZhtmfScriptEngineFactory().getScriptEngine();
+    private static final ScriptEngine engine = new ScriptEngineManager().getEngineByName("__zhtmf-script");
     private static final ThreadLocal<Bindings> THREADLOCALBINDINGS = new ThreadLocal<Bindings>() {
         protected Bindings initialValue() {
             return engine.createBindings();

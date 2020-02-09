@@ -416,14 +416,11 @@ class Operators {
             
             if(left instanceof Identifier) {
                 //str or num
-                //TODO:
-                ctx.push(((Identifier)left).add(
-                        Identifier.of(right.toString())));
+                ctx.push(((Identifier)left).add(Identifier.of(right.toString())));
                 return;
             }
             
             //dereference string literals
-            //TODO:
             ctx.push(Identifier.of(right.toString()).dereference(left));
         }
     }

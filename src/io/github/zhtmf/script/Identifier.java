@@ -11,28 +11,102 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Base class that represents an identifier and provides associated operations
+ * 
+ * @author dzh
+ */
 abstract class Identifier {
     
-    abstract Object dereference(Object root);
-    abstract void set(Object root, Object value);
-    abstract Identifier add(Identifier next);
-    abstract int getId();
+    /**
+     * The string representation mainly for debug purposes. Which can be same or
+     * different from <tt>name</tt> property.
+     * 
+     * @return the string representation.
+     */
     abstract String getName();
+
+    /**
+     * Retrieves the associated property value of this identifier in the specified
+     * root object. Typically the instance field value of this object or entry value
+     * in this map.
+     * 
+     * @param root the object to refer to.
+     * @return the associated property value.
+     */
+    abstract Object dereference(Object root);
+
+    /**
+     * Set the value of associated property in the specified root object. Typically
+     * set the instance field value in an object or entry value in a map.
+     * 
+     * @param root the object to refer to.
+     * @param value the value to set.
+     */
+    abstract void set(Object root, Object value);
+
+    /**
+     * Concatenates this identifier and <tt>next</tt> to form a new identifier which
+     * represents a property path in an object.
+     * <p>
+     * This method returns a sub class of {@link Identifier}. It is defined here for
+     * providing a unified interface.
+     * 
+     * @param next the next identifier in the property path, which is concatenated
+     *        to this one.
+     * @return a concatenated identifier.
+     */
+    abstract Identifier add(Identifier next);
+    
+    /**
+     * The id of this identifier which distinguishes an identifier from another one
+     * in the same {@link Context}.
+     * <p>
+     * Because of the stack-based evaluation of this script, two identifier must be
+     * treated as different ones even they have the same name or prefix/suffix
+     * increment/decrement operators will produces different results with Java
+     * compilers. So every identifier must have a unique id.
+     * <p>
+     * It is used by {@link Context#push(String, Object)} for an internal "cache".
+     * 
+     * @return the unique id, always allocated during construction.
+     */
+    abstract int getId();
     
     @Override
     public String toString() {
         return "ID["+getName()+"]";
     }
-    
+
+    /**
+     * Static factory method for hiding concrete implementation class.
+     * 
+     * @param name the property name.
+     * @return an implementation.
+     */
     static Identifier of(String name) {
         return new SingleIdentifier(name);
     }
-    
+
+    /**
+     * Common interface for retrieving value of a property, by utilizing
+     * {@link Field} or {@link Method} or by any other means.
+     */
     @FunctionalInterface
     private interface Getter{
+        /*
+         * The second parameter is useless in most cases as it is implied in a Field or
+         * Method. But when indexing a list or an array, the actual index may be
+         * different for each call so we cannot simply use the one captured in the
+         * closure.
+         */
         Object get(Object obj, SingleIdentifier propertyName) throws Exception;
     }
     
+    /**
+     * Common interface for setting value of a property, by utilizing
+     * {@link Field} or {@link Method} or by any other means.
+     */
     @FunctionalInterface
     private interface Setter{
         void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception;
@@ -43,13 +117,13 @@ abstract class Identifier {
     private static final ConcurrentHashMap<String, Setter> SETTERS = new ConcurrentHashMap<String, Setter>();
     private static final Setter DUMMY2 = (o,p,v)->{};
     private static final ConcurrentHashMap<String, Class<?>> classCache = new ConcurrentHashMap<String, Class<?>>();
-    private static final ThreadLocal<Integer> NEXT_HASH_CODE = new ThreadLocal<Integer>() {
+    private static final ThreadLocal<Integer> NEXT_ID = new ThreadLocal<Integer>() {
         protected Integer initialValue() {return 0;};
     };
-    private static int nextHashCode() {
-        Integer current = NEXT_HASH_CODE.get();
+    private static int nextId() {
+        Integer current = NEXT_ID.get();
         int ret = current + 1;
-        NEXT_HASH_CODE.set(ret);
+        NEXT_ID.set(ret);
         return ret;
     }
     
@@ -81,7 +155,7 @@ abstract class Identifier {
     
     private static String createKey(Object root, Class<?> clazz, SingleIdentifier property) {
         if(root instanceof List && property.index >= 0)
-            return "java.util.List.Index";
+            return "java.util.List.indexing";
         if(root instanceof Map && !property.lengthOrSize)
             return "java.util.Map";
         return clazz.getName().concat(" ").concat(property.name);
@@ -105,7 +179,7 @@ abstract class Identifier {
             else
                 return (obj,s)->((Map<String,Object>)obj).get(s.name);
         }else {
-            //special treatment for length and size
+            //dedicated code path for length and size
             if(property.lengthOrSize)
                 if(root instanceof String)
                     return (obj,s)->new BigDecimal(((String)obj).length());
@@ -177,7 +251,7 @@ abstract class Identifier {
                 return cls.getMethod(property.isName);
             } catch (Exception e1) {
                 //try to find method with exactly that name 
-                //and have no parameters
+                //and no parameters
                 try {
                     return cls.getMethod(property.name);
                 } catch (Exception e2) {
@@ -200,6 +274,7 @@ abstract class Identifier {
     }
     
     private static Class<?> getClassOf(Object root){
+        //supports static fields
         return root instanceof Class ? (Class<?>) root : root.getClass();
     }
     
@@ -211,22 +286,20 @@ abstract class Identifier {
             return scriptValue;
         }
         BigDecimal numValue = (BigDecimal) scriptValue;
-        if(fieldClass.isPrimitive() || Number.class.isAssignableFrom(fieldClass)) {
-            if(fieldClass == byte.class || fieldClass == Byte.class) {
-                return numValue.byteValue();
-            }else if(fieldClass == short.class || fieldClass == Short.class) {
-                return numValue.shortValue();
-            }else if(fieldClass == int.class || fieldClass == Integer.class) {
-                return numValue.intValue();
-            }else if(fieldClass == long.class || fieldClass == Long.class) {
-                return numValue.longValue();
-            }else if(fieldClass == float.class || fieldClass == Float.class) {
-                return numValue.floatValue();
-            }else if(fieldClass == double.class || fieldClass == Double.class) {
-                return numValue.doubleValue();
-            }else if(fieldClass == BigInteger.class) {
-                return numValue.toBigInteger();
-            }
+        if(fieldClass == byte.class || fieldClass == Byte.class) {
+            return numValue.byteValue();
+        }else if(fieldClass == short.class || fieldClass == Short.class) {
+            return numValue.shortValue();
+        }else if(fieldClass == int.class || fieldClass == Integer.class) {
+            return numValue.intValue();
+        }else if(fieldClass == long.class || fieldClass == Long.class) {
+            return numValue.longValue();
+        }else if(fieldClass == float.class || fieldClass == Float.class) {
+            return numValue.floatValue();
+        }else if(fieldClass == double.class || fieldClass == Double.class) {
+            return numValue.doubleValue();
+        }else if(fieldClass == BigInteger.class) {
+            return numValue.toBigInteger();
         }
         return scriptValue;
     }
@@ -244,7 +317,7 @@ abstract class Identifier {
             this.name = name;
             this.lengthOrSize = "length".equals(name) || "size".equals(name);
             this.index = tryParseIndex(name);
-            this.id = nextHashCode();
+            this.id = nextId();
             String initialUppercased = Character.toUpperCase(name.charAt(0))+name.substring(1);
             this.getterName = "get" + initialUppercased;
             this.setterName = "set" + initialUppercased;
@@ -326,12 +399,12 @@ abstract class Identifier {
              * and its illegal in any sense
              */
             this.list.add(initial);
-            this.id = nextHashCode();
+            this.id = nextId();
             this.name = combineName();
         }
         IdentifierList(IdentifierList copy){
             this.list.addAll(copy.list);
-            this.id = nextHashCode();
+            this.id = nextId();
             this.name = copy.name;
         }
 

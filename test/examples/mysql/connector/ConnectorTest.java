@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 import examples.mysql.connector.datatypes.string.LengthEncodedString;
-import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.MySQLPacket;
 import examples.mysql.connector.packet.command.COMInitDB;
 import examples.mysql.connector.packet.command.COMQuery;
@@ -23,6 +22,7 @@ import examples.mysql.connector.packet.common.EOFPacket;
 import examples.mysql.connector.packet.common.ERRPacket;
 import examples.mysql.connector.packet.common.OKPacket;
 import examples.mysql.connector.packet.connection.AuthSwitchRequest;
+import examples.mysql.connector.packet.connection.ClientCapabilities;
 import examples.mysql.connector.packet.connection.HandshakeResponse41;
 import examples.mysql.connector.packet.connection.HandshakeV10;
 import examples.mysql.connector.packet.connection.PasswordResponsePacket;

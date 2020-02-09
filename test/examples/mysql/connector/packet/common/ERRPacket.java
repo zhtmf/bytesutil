@@ -3,9 +3,9 @@ package examples.mysql.connector.packet.common;
 import java.io.IOException;
 import java.io.InputStream;
 
-import examples.mysql.connector.packet.ClientCapabilities;
 import examples.mysql.connector.packet.ClientCapabilityAware;
 import examples.mysql.connector.packet.PayLoadLengthAware;
+import examples.mysql.connector.packet.connection.ClientCapabilities;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Length;
