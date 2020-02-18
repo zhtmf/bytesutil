@@ -15,13 +15,13 @@ import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
-import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 @CHARSET("UTF-8")
@@ -41,7 +41,7 @@ public class JavaClass extends DataPacket{
     public int constantPoolCount;
     //The constant_pool table is indexed from 1 to constant_pool_count-1.
     @Order(3)
-    @Length(handler=ConstantPoolHandler.class)
+    @Length(scripts = @Script("entity.constantPoolCount-1"))
     public List<CpInfo> constantPool;
     @Order(4)
     @SHORT
@@ -72,20 +72,6 @@ public class JavaClass extends DataPacket{
     @Length(type=DataType.SHORT)
     @Variant(AttributeInfoHandler3.class)
     public List<AttributeInfo> attributes;
-    
-    public static class ConstantPoolHandler extends ModifierHandler<Integer>{
-
-        @Override
-        public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) {
-            return ((JavaClass)entity).constantPoolCount -1;
-        }
-
-        @Override
-        public Integer handleSerialize0(String fieldName, Object entity) {
-            return ((JavaClass)entity).constantPoolCount -1;
-        }
-        
-    }
     
     public static class FieldHandler extends EntityHandler{
         @Override

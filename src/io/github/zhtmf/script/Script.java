@@ -350,6 +350,11 @@ public class Script {
         return ctx.peek();
     }
     
+    @Override
+    public String toString() {
+        return "Script["+program+"]";
+    }
+    
     //------- state based parsing -------
     
     /**

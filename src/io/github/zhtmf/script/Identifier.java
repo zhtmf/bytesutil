@@ -3,6 +3,7 @@ package io.github.zhtmf.script;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -255,6 +256,20 @@ abstract class Identifier {
                 try {
                     return cls.getMethod(property.name);
                 } catch (Exception e2) {
+                    //try to find inherited, non-private methods
+                    Class<?> current = cls.getSuperclass();
+                    while(current!= null && current != Object.class) {
+                        try {
+                            Method method = current.getDeclaredMethod(property.name);
+                            int mod = method.getModifiers();
+                            if(Modifier.isProtected(mod) || Modifier.isPublic(mod)) {
+                                method.setAccessible(true);
+                                return method;
+                            }
+                        } catch (NoSuchMethodException | SecurityException e3) {
+                        }
+                        current = current.getSuperclass();
+                    }
                 }
             }
         }

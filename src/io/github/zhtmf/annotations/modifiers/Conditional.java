@@ -6,6 +6,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import io.github.zhtmf.annotations.modifiers.PlaceHolderHandler.DefaultConditionalHandler;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 /**
@@ -32,7 +33,8 @@ public @interface Conditional {
      * 
      * @return whether this field should be omitted
      */
-    Class<? extends ModifierHandler<Boolean>> value();
+    //TODO: incompatible with previous versions
+    Class<? extends ModifierHandler<Boolean>> value() default DefaultConditionalHandler.class;
 
     /**
      * Whether result of calling the handler specified by {@link #value()} should be
@@ -41,4 +43,6 @@ public @interface Conditional {
      * @return whether result of calling the handler should be reversed.
      */
     boolean negative() default false;
+    
+    Script[] scripts() default {};
 }

@@ -1,7 +1,5 @@
 package examples.mysql.connector.packet.connection;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import examples.mysql.connector.datatypes.le.LEInteger;
@@ -13,6 +11,7 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
@@ -20,7 +19,6 @@ import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 @LittleEndian
@@ -56,49 +54,41 @@ public class HandshakeResponse41 extends DataPacket{
      * Authentication Method indicated by the plugin name field.
      */
     @Order(5)
-    @Conditional(Conditionals.class)
+    @Conditional(scripts = @Script("(entity.clientCapabilities & " 
+    +ClientCapabilities.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA +") != 0"))
     public LengthEncodedString authResponse;
     @Order(6)
     @CHAR
     @Length(type=DataType.BYTE)
-    @Conditional(value=Conditionals.class,negative=true)
+    @Conditional(negative=true, scripts = @Script("(entity.clientCapabilities & " 
+            +ClientCapabilities.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA +") != 0"))
     public String authResponseWithLength;
     
     @Order(7)
     @CHAR
     @EndsWith({'\0'})
-    @Conditional(Conditionals.class)
+    @Conditional(scripts = @Script("(entity.clientCapabilities & " 
+            +ClientCapabilities.CLIENT_CONNECT_WITH_DB +") != 0"))
     public String database;
     
     @Order(8)
     @CHAR
     @EndsWith({'\0'})
-    @Conditional(Conditionals.class)
+    @Conditional(scripts = @Script("(entity.clientCapabilities & " 
+            +ClientCapabilities.CLIENT_PLUGIN_AUTH +") != 0"))
     public String clientPluginName;
     
     @Order(9)
-    @Conditional(Conditionals.class)
+    @Conditional(scripts = @Script("(entity.clientCapabilities & " 
+            +ClientCapabilities.CLIENT_CONNECT_ATTRS +") != 0"))
     public ClientConnectAttrs attrs;
     
     public static class ClientConnectAttrs extends DataPacket{
         @Order(0)
         public LEInteger lengthAllkeyValues;
         @Order(1)
-        @ListLength(handler=LengthHandler.class)
+        @ListLength(scripts = @Script("entity.lengthAllkeyValues.numericValue"))
         public List<KeyValue> keyValue;
-        
-        public static class LengthHandler extends ModifierHandler<Integer>{
-
-            @Override
-            public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-                return ((ClientConnectAttrs)entity).lengthAllkeyValues.getNumericValue().intValue();
-            }
-
-            @Override
-            public Integer handleSerialize0(String fieldName, Object entity) {
-                return ((ClientConnectAttrs)entity).lengthAllkeyValues.getNumericValue().intValue();
-            }
-        }
     }
     
     public static class KeyValue extends DataPacket{
@@ -112,41 +102,6 @@ public class HandshakeResponse41 extends DataPacket{
         public KeyValue(String k, String v) {
             this.key = new LengthEncodedString(k);
             this.value = new LengthEncodedString(v);
-        }
-    }
-    
-    public static class Conditionals extends ModifierHandler<Boolean>{
-        @Override
-        public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            HandshakeResponse41 resp = (HandshakeResponse41)entity;
-            switch(fieldName) {
-            case "authResponse":
-            case "authResponseWithLength":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
-            case "database":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_WITH_DB) != 0;
-            case "clientPluginName":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH) != 0;
-            case "attrs":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_ATTRS) != 0;
-            }
-            throw new IllegalArgumentException(fieldName);
-        }
-        @Override
-        public Boolean handleSerialize0(String fieldName, Object entity) {
-            HandshakeResponse41 resp = (HandshakeResponse41)entity;
-            switch(fieldName) {
-            case "authResponse":
-            case "authResponseWithLength":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH_LENENC_CLIENT_DATA) != 0;
-            case "database":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_WITH_DB) != 0;
-            case "clientPluginName":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_PLUGIN_AUTH) != 0;
-            case "attrs":
-                return (resp.clientCapabilities & ClientCapabilities.CLIENT_CONNECT_ATTRS) != 0;
-            }
-            throw new IllegalArgumentException(fieldName);
         }
     }
 }

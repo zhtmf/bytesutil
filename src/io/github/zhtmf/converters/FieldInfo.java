@@ -356,13 +356,29 @@ class FieldInfo{
         this.userDefinedConverter = typeConverter;
         
         Conditional conditional = localAnnotation(Conditional.class);
-        try {
-            this.conditionalHandler = conditional!=null ?
-                    new DelegateModifierHandler<Boolean>(conditional.value().newInstance()) : null;
-        } catch (Exception e) {
-            throw forContext(base.entityClass, name, "ModiferHandler of Conditional cannot be instantiated by no-arg contructor")
-            .withSiteAndOrdinal(FieldInfo.class, 25);
-        }
+        
+            if(conditional != null) {
+                Script[] scripts = conditional.scripts();
+                if(scripts.length > 0) {
+                    this.conditionalHandler = 
+                            new DelegateModifierHandler<>(this.<Boolean>createScriptModifierHandler(scripts, Boolean.class));
+                }else {
+                    Class<? extends ModifierHandler<Boolean>> handlerclaClass = conditional.value();
+                    if(isDummy(handlerclaClass)) {
+                        throw forContext(base.entityClass, name,
+                                "custom implementation of Conditional handler must be provided")
+                        .withSiteAndOrdinal(FieldInfo.class, 26);
+                    }
+                    try {
+                        this.conditionalHandler = new DelegateModifierHandler<Boolean>(handlerclaClass.newInstance());
+                    } catch (Exception e) {
+                        throw forContext(base.entityClass, name, "ModiferHandler of Conditional cannot be instantiated by no-arg contructor")
+                        .withSiteAndOrdinal(FieldInfo.class, 25);
+                    }
+                }
+            }else {
+                this.conditionalHandler = null;
+            }
         
         Converter<?> converter = null;
         if(isEntityList) {
@@ -865,12 +881,12 @@ class FieldInfo{
             if(first != null) {
                 String serialize = first.value();
                 String deserialize = first.deserialize().isEmpty() ? serialize : first.deserialize();
-                if( ! serialize.isEmpty() &&  ! deserialize.isEmpty())
+                if( ! serialize.isEmpty() || ! deserialize.isEmpty())
                     try {
-                        return new ScriptModifierHandler<E>(serialize,deserialize,clazz) {};
+                        return new ScriptModifierHandler<E>(serialize,deserialize,clazz);
                     } catch (ScriptException e) {
                         throw forContext(base.entityClass, name
-                                , "ScriptModifierHandler cannot be initialized due to syntax error")
+                                , "ScriptModifierHandler cannot be initialized due to syntax error:" + e.getMessage())
                         .withSiteAndOrdinal(FieldInfo.class, 12);
                     }
             }

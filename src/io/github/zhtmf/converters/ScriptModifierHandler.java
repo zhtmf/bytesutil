@@ -13,7 +13,7 @@ import javax.script.ScriptException;
 
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
-abstract class ScriptModifierHandler<E> extends ModifierHandler<E>{
+class ScriptModifierHandler<E> extends ModifierHandler<E>{
     
     private final CompiledScript scriptSerialize;
     private final CompiledScript scriptDeserialize;
@@ -27,19 +27,24 @@ abstract class ScriptModifierHandler<E> extends ModifierHandler<E>{
     
     public ScriptModifierHandler(String scriptSerialize, String scriptDeserialize, Class<E> handlerClass) throws ScriptException {
         Compilable compilable = (Compilable)engine;
-        this.scriptSerialize = compilable.compile(scriptSerialize);
-        this.scriptDeserialize = compilable.compile(scriptDeserialize);
+        this.scriptSerialize = scriptSerialize.isEmpty() ? null : compilable.compile(scriptSerialize);
+        this.scriptDeserialize = scriptDeserialize.isEmpty() ? null : compilable.compile(scriptDeserialize);
         this.handlerClass = handlerClass;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public E handleDeserialize0(String fieldName, Object entity, InputStream in) throws IOException {
+        if(scriptDeserialize == null)
+            throw new UnsatisfiedIOException(
+                    "script is absent, which may means this script should not be called during deserialization")
+                        .withSiteAndOrdinal(ScriptModifierHandler.class, 3);
         Bindings bindings = THREADLOCALBINDINGS.get();
         bindings.put("fieldName", fieldName);
         bindings.put("entity", entity);
+        bindings.put("handler", this);
         try {
-            return (E) convertIfNeeded(scriptSerialize.eval(bindings));
+            return (E) convertIfNeeded(scriptDeserialize.eval(bindings));
         } catch (ScriptException e) {
             throw new UnsatisfiedConstraintException("", e)
                 .withSiteAndOrdinal(ScriptModifierHandler.class, 0);
@@ -49,11 +54,16 @@ abstract class ScriptModifierHandler<E> extends ModifierHandler<E>{
     @SuppressWarnings("unchecked")
     @Override
     public E handleSerialize0(String fieldName, Object entity) {
+        if(scriptSerialize == null)
+            throw new UnsatisfiedConstraintException(
+                    "script is absent, which may means this script should not be called during serialization")
+                        .withSiteAndOrdinal(ScriptModifierHandler.class, 4);
         Bindings bindings = THREADLOCALBINDINGS.get();
         bindings.put("fieldName", fieldName);
         bindings.put("entity", entity);
+        bindings.put("handler", this);
         try {
-            return (E) convertIfNeeded(scriptDeserialize.eval(bindings));
+            return (E) convertIfNeeded(scriptSerialize.eval(bindings));
         } catch (ScriptException e) {
             throw new UnsatisfiedConstraintException("", e)
                 .withSiteAndOrdinal(ScriptModifierHandler.class, 1);

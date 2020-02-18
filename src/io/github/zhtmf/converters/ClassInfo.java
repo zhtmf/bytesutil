@@ -292,7 +292,8 @@ class ClassInfo {
                 @SuppressWarnings("unchecked")
                 Converter<Object> cv = (Converter<Object>)ctx.converter;
                 cv.serialize(value, dest, ctx, self);
-            } catch(ConversionException e) {
+            } catch(ConversionException | UnsatisfiedConstraintException e) {
+                //drop unnecessary stack frames
                 throw e;
             } catch (Exception e) {
                 throw new ExtendedConversionException(self.getClass(),ctx.name,e)
@@ -313,7 +314,8 @@ class ClassInfo {
             Converter<Object> cv = (Converter<Object>)ctx.converter;
             try {
                 value = cv.deserialize(_src, ctx, self);
-            } catch(ConversionException e) {
+            } catch(ConversionException | UnsatisfiedConstraintException e) {
+                //drop unnecessary stack frames
                 throw e;
             } catch (Exception e) {
                 throw new ExtendedConversionException(self.getClass(),ctx.name,e)

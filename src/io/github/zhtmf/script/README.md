@@ -98,7 +98,7 @@ Following operators are defined in this script language, which are not necessary
 * If the property name is ````length```` or ````size```` **and** the object is of type ````java.util.Collection```` , ````array```` , ````java.util.Map```` or ````java.util.String```` then its size or length is retrieved instead of actual property lookup.
 * Otherwise, lookup correspondent ````getter```` or ````setter```` methods. Examples for such methods are ````getName````, ````setName```` or ````isEmpty````. 
 * If the previous step fails, lookup the instance field or class field with exactly that name.
-* If the previous step fails, lookup a method with exactly that name and has no parameter and, if success, use that method as the "getter". This is to support getter-like methods like ````java.time.LocalDate.toEpochDay````.
+* If the previous step fails, lookup a method with exactly that name and has no parameter and, if success, use that method as the "getter". This is to support getter-like methods like ````java.time.LocalDate.toEpochDay````. This step will lookup public methods of this class and inherited methods from super classes.
 * If all the steps above fail, ````null```` is returned.
 
 Both instance methods/fields and class (static) methods/fields will be looked up if necessary. The lookup will be done on first encounter of a property and the result (including failure) will be cached in thread-safe way so if the class is modified at runtime result of the same script may not subject to change. 
