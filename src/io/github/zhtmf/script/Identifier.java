@@ -75,28 +75,6 @@ abstract class Identifier {
      */
     abstract int getId();
     
-    /*
-     * String <> String
-     * Boolean <> boolean/Boolean
-     * BigDecimal <> BigInteger Integer Long Double Float Short Byte int long double float short byte Character char
-     * 
-     * 选择最合适的方法：
-     * 方法的参数列表长度 = 脚本里的参数列表长度
-     * 对于每个参数：
-     * 类型一致：记20分
-     * 类型不一致：
-     * 不能转换：方法整体记-1分
-     * 能转换：
-     * 基本类型 > 引用类型
-     * double > Double > float > Float > long > Long > BigInteger > int > Integer > char > Character > short > Short > byte > Byte 
-     * 如果最后算出来有多个方法得分相同，且都>0，随机选择一个方法
-     * 是否可以转换：
-     * 同类型可以转换
-     * Boolean <> boolean
-     * BigDecimal <> BigInteger Integer Long Double Float Short Byte int long double float short byte
-     * NULL <> Double Float BigInteger Integer Integer Short Short
-     * NULL和基本类型直接算不能转换（调用也会报错），和引用类型按照优先级匹配 
-     */
     abstract Object call(Object root, Object[] parameters, TokenType[] parameterTypes);
     
     @Override
@@ -144,10 +122,29 @@ abstract class Identifier {
         void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception;
     }
     
+    private static final class MethodObject{
+        private Method method;
+        final String name;
+        final Class<?>[] parameterTypes;
+        public MethodObject(Method method) {
+            this.method = method;
+            this.name = method.getName();
+            this.parameterTypes = method.getParameterTypes();
+        }
+        public Object invoke(Object obj, Object... args) {
+            try {
+                return method.invoke(obj, args);
+            } catch (Exception e) {
+                throw new ParsingException("exception when calling method " + name + "from script")
+                    .withSiteAndOrdinal(Identifier.class, 10);
+            }
+        }
+    }
+    
     @SuppressWarnings("unused")
     private void __dummyMethod() {}
     
-    private static final ConcurrentHashMap<String, Method> METHOD_CALLS = new ConcurrentHashMap<String, Method>();
+    private static final ConcurrentHashMap<String, MethodObject> METHOD_CALLS = new ConcurrentHashMap<String, MethodObject>();
     private static final ConcurrentHashMap<String, Getter> GETTERS = new ConcurrentHashMap<String, Getter>();
     private static final Getter DUMMY = (obj,p)->null;
     private static final ConcurrentHashMap<String, Setter> SETTERS = new ConcurrentHashMap<String, Setter>();
@@ -323,7 +320,7 @@ abstract class Identifier {
         return null;
     }
     
-    private static Method getMostSpecificMethod(
+    private static MethodObject getMostSpecificMethod(
             Object[] parameters, TokenType[] parameterTypes, Object root, String name) {
         Class<?> clazz = getClassOf(root);
         StringBuilder key = new StringBuilder();
@@ -332,11 +329,13 @@ abstract class Identifier {
             key.append(parameterTypes[k].name());
         }
         String keyStr = key.toString();
-        Method method = METHOD_CALLS.get(keyStr);
+        MethodObject method = METHOD_CALLS.get(keyStr);
         if(method != null)
             return method;
         //cannot return null
-        method = getMostSpecificMethod0(parameters, parameterTypes, clazz, name);
+        method = new MethodObject(
+                getMostSpecificMethod0(
+                        parameters, parameterTypes, clazz, name));
         METHOD_CALLS.put(keyStr, method);
         return method;
     }
@@ -770,18 +769,12 @@ abstract class Identifier {
                 throw new ParsingException("calling method on null object")
                     .withSiteAndOrdinal(Identifier.class, 9);
             String name = list.get(k).getName();
-            Method method = getMostSpecificMethod(parameters, parameterTypes, root, name);
-            //TODO: optimize getParameterTypes
-            Class<?>[] types = method.getParameterTypes();
+            MethodObject method = getMostSpecificMethod(parameters, parameterTypes, root, name);
+            Class<?>[] types = method.parameterTypes;
             for(int n = 0, l = parameters.length;n<l;++n) {
                 parameters[n] = convertValueIfNeeded(types[n], parameters[n]);
             }
-            try {
-                return method.invoke(root, parameters);
-            } catch (Exception e) {
-                throw new ParsingException("exception when calling method " + name + "from script")
-                    .withSiteAndOrdinal(Identifier.class, 10);
-            }
+            return method.invoke(root, parameters);
         }
     }
 }
