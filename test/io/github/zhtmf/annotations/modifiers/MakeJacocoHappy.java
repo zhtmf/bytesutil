@@ -13,6 +13,7 @@ import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 public class MakeJacocoHappy {
+    //TODO: make this a test
     @SuppressWarnings("rawtypes")
     @Test
     public void testMakeJacocoHappy() throws Exception {

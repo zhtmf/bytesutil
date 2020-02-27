@@ -1,6 +1,22 @@
 package io.github.zhtmf.script;
 
-import static io.github.zhtmf.script.TokenType.*;
+import static io.github.zhtmf.script.TokenType.BOOL;
+import static io.github.zhtmf.script.TokenType.Else;
+import static io.github.zhtmf.script.TokenType.ID;
+import static io.github.zhtmf.script.TokenType.IF;
+import static io.github.zhtmf.script.TokenType.LBraces;
+import static io.github.zhtmf.script.TokenType.LBracket;
+import static io.github.zhtmf.script.TokenType.LParentheses;
+import static io.github.zhtmf.script.TokenType.NULL;
+import static io.github.zhtmf.script.TokenType.NUM;
+import static io.github.zhtmf.script.TokenType.OP;
+import static io.github.zhtmf.script.TokenType.RBraces;
+import static io.github.zhtmf.script.TokenType.RBracket;
+import static io.github.zhtmf.script.TokenType.RParentheses;
+import static io.github.zhtmf.script.TokenType.STMT;
+import static io.github.zhtmf.script.TokenType.STR;
+import static io.github.zhtmf.script.TokenType.Semicolon;
+import static io.github.zhtmf.script.TokenType.isTypes;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -12,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.github.zhtmf.script.Operators.BracketOperator;
 import io.github.zhtmf.script.Operators.OperatorIterator;
 import io.github.zhtmf.script.ParsingException.ParsingTerminationException;
 import io.github.zhtmf.script.TokenType.Temporary;
@@ -264,7 +281,7 @@ public class Script {
                 inspect((Statement)token);
             }
         }
-        if(! (statement instanceof BlockStatement)) {
+        if(! (statement instanceof BlockStatement) && !(statement instanceof PListStatement)) {
             int counter = 0;
             for(int p = 0;p < tokenList.size(); ++p) {
                 Object token = tokenList.get(p);
@@ -296,6 +313,8 @@ public class Script {
     private static boolean isEmptyStatement(Statement stmt) {
         if(stmt instanceof EmptyStatement)
             return true;
+        if(stmt instanceof PListStatement)
+            return false;
         for(Object token:stmt.tokenList) {
             if(!(token instanceof Statement) 
             || !isEmptyStatement((Statement) token)) {
@@ -411,7 +430,10 @@ public class Script {
             } else if(isTypes(token,TOKENS)) {
                 tokenList.add(token);
             } else if(LParentheses.is(token)) {
-                tokenList.add(roundStatement(token, program));
+                boolean plist = precedesMethodCall(tokenList);
+                tokenList.add(roundStatement(token, program ,plist));
+                if(plist)
+                    tokenList.add(Operators.getOperator("()"));
             } else if(LBracket.is(token)) {
                 tokenList.addAll(bracketStatement(token, program));
             } else {
@@ -427,7 +449,7 @@ public class Script {
         return stmt;
     }
     
-    private static Statement roundStatement(Object leading, State program){
+    private static Statement roundStatement(Object leading, State program, boolean plist){
         List<Object> tokenList = new ArrayList<Object>();
         for(;;) {
             Object token = readToken(program);
@@ -436,17 +458,25 @@ public class Script {
             } else if(isTypes(token,TOKENS)) {
                 tokenList.add(token);
             } else if(LParentheses.is(token)) {
-                tokenList.add(roundStatement(token, program));
+                boolean plist2 = precedesMethodCall(tokenList);
+                tokenList.add(roundStatement(token, program ,plist2));
+                if(plist2)
+                    tokenList.add(Operators.getOperator("()"));
             } else if(LBracket.is(token)) {
                 tokenList.addAll(bracketStatement(token, program));
             } else {
                 throw unexpectedTokenException(token, program).withSiteAndOrdinal(Script.class, 24);
             }
         }
-        if(tokenList.isEmpty())
+        if(!plist && tokenList.isEmpty())
             throw new ParsingException("expression expected after (")
                 .withSiteAndOrdinal(Script.class, 28);
-        Statement stmt = new Statement();
+        if(plist && tokenList.size() > 1) {
+            //the last comma operator before the ) is omitted in the syntax
+            //but necessary for further processing
+            tokenList.add(Operators.getOperator(","));
+        }
+        Statement stmt = plist ? new PListStatement() : new Statement();
         stmt.tokenList.addAll(tokenList);
         return stmt;
     }
@@ -481,7 +511,10 @@ public class Script {
             } else if(LBracket.is(token)){
                 between.addAll(bracketStatement(token, program));
             } else if(LParentheses.is(token)){
-                between.add(roundStatement(token, program));
+                boolean plist = precedesMethodCall(between);
+                between.add(roundStatement(token, program ,plist));
+                if(plist)
+                    between.add(Operators.getOperator("()"));
             } else if(isTypes(token,TOKENS)){
                 between.add(token);
             } else {
@@ -506,7 +539,8 @@ public class Script {
         tokenList.add(Operators.getOperator("if"));
         Object token = readToken(program);
         if(LParentheses.is(token)) {
-            tokenList.add(roundStatement(token, program));
+            //a method call cannot succeeds an if
+            tokenList.add(roundStatement(token, program, false));
         } else {
             throw unexpectedTokenException(token, program).withSiteAndOrdinal(Script.class, 27);
         }
@@ -530,6 +564,12 @@ public class Script {
         tokenList.add(Operators.getOperator("else"));
         tokenList.addAll(initial(program));
         return tokenList;
+    }
+    
+    private static boolean precedesMethodCall(List<Object> tokenList) {
+        Object token;
+        return !tokenList.isEmpty() && 
+                (ID.is((token = tokenList.get(tokenList.size()-1))) || (token instanceof BracketOperator));
     }
     
     private static Object peekToken(State program) {

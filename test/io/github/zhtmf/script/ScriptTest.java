@@ -44,6 +44,7 @@ import io.github.zhtmf.script.Operators.LogicalNotOperator;
 import io.github.zhtmf.script.Operators.QuestionOperator;
 import io.github.zhtmf.script.Operators.ReturnOperator;
 import io.github.zhtmf.script.test.test1.Test2;
+import io.github.zhtmf.script.test.test1.TestMethodCall;
 import io.github.zhtmf.script.test.test1.TestObject;
 import io.github.zhtmf.script.test.test1.TestObjectV;
 
@@ -53,7 +54,6 @@ public class ScriptTest {
     private static final ScriptEngine mine = new ScriptEngineManager().getEngineByName("__zhtmf-script"); 
     
     public static void main(String[] args) throws Exception {
-        new BigDecimal("12345").pow(new BigDecimal("1999999999").intValue());
     }
     
   //exception for plain statement not ending with semicolon
@@ -3154,9 +3154,9 @@ public class ScriptTest {
     public void testAW() throws Exception {
         //access object property by .
         //access property of result of an expression by .
+        testEvaluation("('abc'+'def'+'111').length*4", asMap("ccccc_$$$",new TestObject()));
         testEvaluation("(ccccc_$$$.object2).flt*4", asMap("ccccc_$$$",new TestObject()));
         testEvaluation("(ccccc_$$$['object2']).flt*4", asMap("ccccc_$$$",new TestObject()));
-        testEvaluation("('abc'+'def'+'111').length*4", asMap("ccccc_$$$",new TestObject()));
         //consecutive .
         testEvaluation("ccccc_$$$.object2.flt*4", asMap("ccccc_$$$",new TestObject()));
         testEvaluation("(((ccccc_$$$).object2).flt)*4", asMap("ccccc_$$$",new TestObject()));
@@ -4003,6 +4003,130 @@ public class ScriptTest {
         }
     }
     
+    @Test
+    public void testBV() throws Exception{
+        //check parameter values
+        //test case for boolean
+        testEvaluation("obj.testBoolean(true|false,'abc'.length()>2) && true", asMap("obj",new TestMethodCall()));
+        //test case for number
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9.5");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber2(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9.5");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber3(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber4(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber5(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber6(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber8(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9.5");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber9(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9.5");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber10(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber11(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber12(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber13(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber15(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9.5");
+        assertEquals(((BigDecimal)evaluateMine("obj.testNumber16(3.3,5.2) + 1"
+                , asMap("obj",new TestMethodCall()))).stripTrailingZeros().toString(), "9");
+        //test case for null
+        testEvaluation("obj.testNULL(null, 3+4/2) && true", asMap("obj",new TestMethodCall()));
+        //call protected methods
+        testEvaluation("obj.testProtected(null, 3+4/2) && true", asMap("obj",new TestMethodCall()));
+        //test case for string
+        testEvaluation("obj.testString('abcdef','a'+'b'+'c') + 11", asMap("obj",new TestMethodCall()));
+        //method call as an operand
+        testEvaluation("obj.asOperand('abcdef'.length(),'a'.length()+3.456) + 11", asMap("obj",new TestMethodCall()));
+        //parameter is another method call
+        assertEquals(evaluateMine("obj.anotherMethodCall('abcdef'.length(),'a'.length()+3.456)"
+                , asMap("obj",new TestMethodCall())).toString(), "4");
+        //method call with no parameter
+        assertEquals(evaluateMine("obj.noParameter()", asMap("obj",new TestMethodCall())).toString(), "0");
+        //parameter is another expression
+        assertEquals(evaluateMine("obj.multipleParameters(1+3,2*4/5+6-7^3,'345'+str1+map1['t'+'tt'],false)"
+                , asMap("obj",new TestMethodCall(),"str1","aaa","map1",asMap("ttt","111"))).toString(), "2");
+        //method call with one parameter
+        assertEquals(evaluateMine("obj.oneParameter(3)", asMap("obj",new TestMethodCall())).toString(), "1");
+        //method call with multiple parameters
+        assertEquals(evaluateMine("obj.multipleParameters(1,2,'3456',false)", asMap("obj",new TestMethodCall())).toString(), "2");
+        //parameter is another () expression
+        assertEquals(evaluateMine("obj.nestingParentheses((1+333),(2*4)+5,'3456',((false))|true&((false)))"
+                , asMap("obj",new TestMethodCall())).toString(), "3");
+    }
+    
+    @Test
+    public void testBV1() throws Exception{
+        //method overloading
+        //1.BigDecimal over double
+        assertEquals(evaluateMine("obj.testOverloading1(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //2.double over Double
+        assertEquals(evaluateMine("obj.testOverloading2(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //3.Double over float
+        assertEquals(evaluateMine("obj.testOverloading3(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //4.float over Float
+        assertEquals(evaluateMine("obj.testOverloading4(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //5.Float over BigInteger
+        assertEquals(evaluateMine("obj.testOverloading5(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //6.BigInteger over long
+        assertEquals(evaluateMine("obj.testOverloading6(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //7.long over Long
+        assertEquals(evaluateMine("obj.testOverloading7(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //8.Long over int
+        assertEquals(evaluateMine("obj.testOverloading8(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //9.int over Integer
+        assertEquals(evaluateMine("obj.testOverloading9(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //10.Integer over short
+        assertEquals(evaluateMine("obj.testOverloading10(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //11.short over Short
+        assertEquals(evaluateMine("obj.testOverloading11(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //12.Short over byte
+        assertEquals(evaluateMine("obj.testOverloading12(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        //13.byte over Byte
+        assertEquals(evaluateMine("obj.testOverloading13(-3.4) + 1", asMap("obj",new TestMethodCall())).toString(), "2");
+        
+        //choosing between multiple methods
+        //find the max specific
+        assertEquals(evaluateMine("obj.maxSpecific1(-3,-4) + 1", asMap("obj",new TestMethodCall())).toString(), "7");
+        
+        //ambiguous call
+        assertEvaluationException("obj.maxSpecific2(-3,-4) + 1", asMap("obj",new TestMethodCall()), Identifier.class, 11);
+    }
+    
+    @Test
+    public void testBV2() throws Exception{
+        //calling method on null reference
+        assertEvaluationException("a=null;a.length()"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 9);
+        
+        //mismatch
+        assertEvaluationException("obj.nullMismatch(null)"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 12);
+        assertEvaluationException("obj.stringMismatch('3')"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 12);
+        assertEvaluationException("obj.boolMismatch(false)"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 12);
+        assertEvaluationException("obj.numberMismatch(3)"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 12);
+        
+        //method itself throws exception
+        assertEvaluationException("obj.exception('3')"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 10);
+    }
+    
     private void testEvaluation2(String script, Map<String,Object> context) {
         Object mine = null;
         Object nashornResult;
@@ -4086,6 +4210,15 @@ public class ScriptTest {
     
     private static Object evaluateNashorn(String script, Map<String,Object> context) throws ScriptException {
         return nashorn.eval(script, new SimpleBindings(context));
+    }
+    
+    private static void assertEvaluationException(String script, Map<String,Object> context,Class<?> site, int ordinal) {
+        try {
+            mine.eval(script, new SimpleBindings(context));
+            fail();
+        } catch (Exception e) {
+            testException(e, site, ordinal);
+        }
     }
     
     private static void assertScriptException(ScriptAssertion script) {

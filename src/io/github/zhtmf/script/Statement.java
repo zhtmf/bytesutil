@@ -84,6 +84,16 @@ class BlockStatement extends Statement{
     }
 }
 
+class PListStatement extends Statement{
+    PListStatement(){
+        super.deferred = true;
+    }
+    @Override
+    protected String getType() {
+        return "PLIST";
+    }
+}
+
 /**
  * Placeholder for empty statements. Most of them are removed during flattening
  * phase but still useful and retained if associated with an if.

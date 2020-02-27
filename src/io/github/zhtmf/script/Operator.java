@@ -163,7 +163,8 @@ abstract class Operator {
         }
         if(STMT.is(value)) {
             ((Statement)value).evaluate(ctx);
-            return ctx.pop();
+            //statement can return null
+            return convertValue(ctx, ctx.pop());
         }
         if(NULL.is(value)) {
             return null;
@@ -172,8 +173,11 @@ abstract class Operator {
             if(value instanceof BigInteger) {
                 return new BigDecimal((BigInteger)value);
             }
-            if(value instanceof Number) {
+            else if(value instanceof Number) {
                 return new BigDecimal(((Number)value).doubleValue());
+            }
+            else if(value instanceof Character) {
+                return BigDecimal.valueOf((int)(Character)value);
             }
         }
         return value;

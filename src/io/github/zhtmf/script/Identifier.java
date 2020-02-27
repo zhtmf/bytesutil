@@ -7,6 +7,7 @@ import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,30 @@ abstract class Identifier {
      */
     abstract int getId();
     
+    /*
+     * String <> String
+     * Boolean <> boolean/Boolean
+     * BigDecimal <> BigInteger Integer Long Double Float Short Byte int long double float short byte Character char
+     * 
+     * 选择最合适的方法：
+     * 方法的参数列表长度 = 脚本里的参数列表长度
+     * 对于每个参数：
+     * 类型一致：记20分
+     * 类型不一致：
+     * 不能转换：方法整体记-1分
+     * 能转换：
+     * 基本类型 > 引用类型
+     * double > Double > float > Float > long > Long > BigInteger > int > Integer > char > Character > short > Short > byte > Byte 
+     * 如果最后算出来有多个方法得分相同，且都>0，随机选择一个方法
+     * 是否可以转换：
+     * 同类型可以转换
+     * Boolean <> boolean
+     * BigDecimal <> BigInteger Integer Long Double Float Short Byte int long double float short byte
+     * NULL <> Double Float BigInteger Integer Integer Short Short
+     * NULL和基本类型直接算不能转换（调用也会报错），和引用类型按照优先级匹配 
+     */
+    abstract Object call(Object root, Object[] parameters, TokenType[] parameterTypes);
+    
     @Override
     public String toString() {
         return "ID["+getName()+"]";
@@ -87,6 +112,12 @@ abstract class Identifier {
      */
     static Identifier of(String name) {
         return new SingleIdentifier(name);
+    }
+    //make the string literal "callable" without removing existing 
+    //length/size pseudo property reference
+    //TODO: javadoc
+    static Identifier ofLiteral(String str) {
+        return new StringLiteralIdentifier(str);
     }
 
     /**
@@ -113,6 +144,10 @@ abstract class Identifier {
         void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception;
     }
     
+    @SuppressWarnings("unused")
+    private void __dummyMethod() {}
+    
+    private static final ConcurrentHashMap<String, Method> METHOD_CALLS = new ConcurrentHashMap<String, Method>();
     private static final ConcurrentHashMap<String, Getter> GETTERS = new ConcurrentHashMap<String, Getter>();
     private static final Getter DUMMY = (obj,p)->null;
     private static final ConcurrentHashMap<String, Setter> SETTERS = new ConcurrentHashMap<String, Setter>();
@@ -288,12 +323,164 @@ abstract class Identifier {
         return null;
     }
     
+    private static Method getMostSpecificMethod(
+            Object[] parameters, TokenType[] parameterTypes, Object root, String name) {
+        Class<?> clazz = getClassOf(root);
+        StringBuilder key = new StringBuilder();
+        key.append(clazz.getName()).append(' ').append(name).append(' ');
+        for(int k = 0, l = parameterTypes.length; k < l; ++k) {
+            key.append(parameterTypes[k].name());
+        }
+        String keyStr = key.toString();
+        Method method = METHOD_CALLS.get(keyStr);
+        if(method != null)
+            return method;
+        //cannot return null
+        method = getMostSpecificMethod0(parameters, parameterTypes, clazz, name);
+        METHOD_CALLS.put(keyStr, method);
+        return method;
+    }
+    
+    private static Method getMostSpecificMethod0(Object[] parameters, TokenType[] scriptTypes, Class<?> clazz, String name) {
+        List<Method> candidates = new ArrayList<Method>();
+        List<String> scores = new ArrayList<String>();
+        StringBuilder score = new StringBuilder();
+        while(clazz != Object.class) {
+            Method[] methods = clazz.getDeclaredMethods();
+            for(Method method:methods) {
+                if(!method.getName().equals(name))
+                    continue;
+                int mod = method.getModifiers();
+                if((mod & Modifier.PUBLIC) != 0 || (mod & Modifier.PROTECTED) != 0) {
+                    Class<?>[] types = method.getParameterTypes();
+                    if(types.length == parameters.length) {
+                        //candidate
+                        //calculate scores
+                        if(types.length == 0) {
+                            score.append('A');
+                        }else {
+                            for(int p = 0, l = types.length; p<l; ++p) {
+                                char result = isConvertible(types[p], scriptTypes[p]);
+                                if(result == 0) {
+                                    score.setLength(0);
+                                    break;
+                                }
+                                score.append(result);
+                            }
+                        }
+                        if(score.length() > 0) {
+                            method.setAccessible(true);
+                            candidates.add(method);
+                            scores.add(score.toString());
+                            score.setLength(0);
+                        }
+                    }
+                }
+            }
+            clazz = clazz.getSuperclass();
+        }
+        if(scores.size() > 0) {
+            /*
+             * Similar to what JavaSE specification states about choosing the most specific
+             * method. But we does not take generic parameters or return type into
+             * consideration.
+             * 
+             * Method A is more specific than method B if for all its formal arguments the
+             * type is of higher precedence than method B's counterpart, namely the
+             * character in the method A's score string comes earlier than corresponding
+             * character of method B's in alphabetical order.
+             * 
+             * If no single maximally specific method exists, follow Nashorn's suit and throw an exception.
+             */
+            for(int p = 0;p<scores.size(); ++p) {
+                String max = scores.get(p);
+                boolean result = true;
+                for(int m = 0;m<scores.size();++m) {
+                    if(p != m) {
+                        if(!strictlyGreaterThan(max, scores.get(m))) {
+                            result = false;
+                            break;
+                        }
+                    }
+                }
+                if(result)
+                    return candidates.get(p);
+            }
+            //throw exception
+            throw new ParsingException("cannot call method "+name
+                    +" by unambiguously select between multiple valid signatures "+candidateParameterErrorMessage(candidates)
+                    +" for argument types "+Arrays.toString(scriptTypes))
+            .withSiteAndOrdinal(Identifier.class, 11);
+        }
+        throw new ParsingException("cannot call method "+name
+                +" by select valid signature from "+candidateParameterErrorMessage(candidates)
+                +" for argument types "+Arrays.toString(scriptTypes))
+        .withSiteAndOrdinal(Identifier.class, 12);
+    }
+    
+    private static String candidateParameterErrorMessage(List<Method> candidates) {
+        StringBuilder message = new StringBuilder();
+        for(Method candidate : candidates) {
+            message.append(Arrays.toString(candidate.getParameterTypes())).append(",");
+        }
+        return message.toString();
+    }
+    
+    private static boolean strictlyGreaterThan(String score1, String score2) {
+        boolean result = true;
+        for(int p = 0; p < score1.length(); ++p) {
+            char c1 = score1.charAt(p);
+            char c2 = score2.charAt(p);
+            if(c1 > c2) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+    
     private static Class<?> getClassOf(Object root){
         //supports static fields
         return root instanceof Class ? (Class<?>) root : root.getClass();
     }
     
-    private static Object convertValueIfNeeded(Class<?> fieldClass, Object scriptValue) {
+    private static Class<?>[] NUM_CONVERTIBLE_TYPES = new Class<?>[] { 
+        BigDecimal.class,
+        double.class, Double.class, float.class,Float.class, 
+        BigInteger.class, long.class, Long.class, int.class, Integer.class, 
+        short.class, Short.class, byte.class,Byte.class, };
+        
+    static char isConvertible(Class<?> paramType, TokenType scriptType) {
+        switch (scriptType) {
+        case STR:
+            return paramType == String.class ? 'A' : 0;
+        case BOOL:
+            return paramType == boolean.class ? 'A' : paramType == Boolean.class ? 'B' : 0;
+        case NULL:
+            return !paramType.isPrimitive() ? 'A' : 0;
+        case NUM:
+            for(int p = NUM_CONVERTIBLE_TYPES.length-1; p>=0;--p) {
+                if(paramType == NUM_CONVERTIBLE_TYPES[p])
+                    return (char) (p + 'A');
+            }
+            return 0;
+        default:
+            return 0;
+        }
+    }
+    
+    /**
+     * Try to convert a value to specified type.
+     * <p>
+     * This is for making internal representation compatible with more frequently
+     * used types from user codes. Currently this method only converts BigDecimals
+     * to other numeric types.
+     * 
+     * @param fieldClass the type to convert <tt>scriptValue</tt> to.
+     * @param scriptValue the object generated from this script engine.
+     * @return successfully converted object or the original one on failure.
+     */
+    static Object convertValueIfNeeded(Class<?> fieldClass, Object scriptValue) {
         if(!(scriptValue instanceof BigDecimal)) {
             return scriptValue;
         }
@@ -317,6 +504,48 @@ abstract class Identifier {
             return numValue.toBigInteger();
         }
         return scriptValue;
+    }
+    
+    private static final class StringLiteralIdentifier extends Identifier{
+        
+        private String str;
+        private final int id;
+        public StringLiteralIdentifier(String str) {
+            this.str = str;
+            this.id = -str.hashCode();
+        }
+
+        @Override
+        String getName() {
+            return str;
+        }
+
+        @Override
+        Object dereference(Object root) {
+            return str;
+        }
+
+        @Override
+        void set(Object root, Object value) {
+            throw new ParsingException("setting properties on a string literal")
+                .withSiteAndOrdinal(StringLiteralIdentifier.class, 0);
+        }
+
+        @Override
+        Identifier add(Identifier next) {
+            return new IdentifierList(this).add(next);
+        }
+
+        @Override
+        int getId() {
+            return id;
+        }
+
+        @Override
+        Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
+            throw new UnsupportedOperationException();
+        }
+        
     }
     
     private static final class SingleIdentifier extends Identifier{
@@ -399,6 +628,12 @@ abstract class Identifier {
         String getName() {
             return name;
         }
+
+        @Override
+        Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
+            throw new ParsingException("method "+this.name+" not found on global object")
+                .withSiteAndOrdinal(Identifier.class, 7);
+        }
     }
 
     private static final class IdentifierList extends Identifier{
@@ -479,7 +714,6 @@ abstract class Identifier {
 
         @Override
         void set(Object root, Object value) {
-            
             int k = 0;
             List<Identifier> list = this.list;
             for(int len = list.size() - 1;k<len;++k) {
@@ -521,6 +755,33 @@ abstract class Identifier {
             if(name1.length() == 0)
                 return "";
             return name1.substring(1);
+        }
+        @Override
+        Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
+            int k = 0;
+            List<Identifier> list = this.list;
+            for(int len = list.size() - 1;k<len;++k) {
+                Identifier id = list.get(k);
+                root = id.dereference(root);
+                if(root == null)
+                    break;
+            }
+            if(root == null)
+                throw new ParsingException("calling method on null object")
+                    .withSiteAndOrdinal(Identifier.class, 9);
+            String name = list.get(k).getName();
+            Method method = getMostSpecificMethod(parameters, parameterTypes, root, name);
+            //TODO: optimize getParameterTypes
+            Class<?>[] types = method.getParameterTypes();
+            for(int n = 0, l = parameters.length;n<l;++n) {
+                parameters[n] = convertValueIfNeeded(types[n], parameters[n]);
+            }
+            try {
+                return method.invoke(root, parameters);
+            } catch (Exception e) {
+                throw new ParsingException("exception when calling method " + name + "from script")
+                    .withSiteAndOrdinal(Identifier.class, 10);
+            }
         }
     }
 }

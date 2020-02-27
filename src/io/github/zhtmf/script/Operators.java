@@ -75,11 +75,18 @@ class Operators {
         addOperator(new ElseOperator(), 18);
         
         //level 17
-        addOperator(new PowerOperator(), 17);
+        addOperator(new BracketOperator(), 17);
+        addOperator(new DotOperator(), 17);
+        /*
+         * A Call operator created on the fly follows every parameter list parenthesis
+         * expression. If the method call expression itself is an operand, put the call
+         * operator further down in the precedence sequence will make following +/-
+         * operator be mistakenly regarded as Prefix Positive/Negative operator instead
+         */
+        addOperator(new CallOperator(), 17);
         
         //level 16
-        addOperator(new BracketOperator(), 16);
-        addOperator(new DotOperator(), 16);
+        addOperator(new PowerOperator(), 16);
         
         //level 15
         addOperator(sinc, 15);
@@ -145,6 +152,7 @@ class Operators {
         addOperator(new AssignOperator(), 1);
         
         //level 0
+        addOperator(new CommaOperator(), 0);
         addOperator(new ReturnOperator(), 0);
         
         List<List<Operator>> list = Operators.OPERATORLIST_LIST;
@@ -437,7 +445,7 @@ class Operators {
         protected int reorder0(List<Object> tokenList, int index) {
             Object left = tokenList.get(index-1);
             Object right = tokenList.get(index+1);
-            if(left instanceof Identifier) {
+            if(ID.is(left)) {
                 //hoister some of the concatenation to compile time
                 //but still falls short to deal with expressions like ((a.b).c).d
                 //as parentheses create statements
@@ -449,7 +457,7 @@ class Operators {
                 return index - 1;
             }
             //deal with nested round statements like (a.b).c, concatenate them at compile time
-            else if(left instanceof Statement) {
+            else if(STMT.is(left)) {
                 Statement leftStatement = (Statement)left;
                 Identifier wrappedSingleIdentifier = unwrapIdentifier(leftStatement);
                 if(wrappedSingleIdentifier != null) {
@@ -460,6 +468,14 @@ class Operators {
                     return index - 1;
                 }
             }
+            else if(STR.is(left)) {
+                Identifier leftIdentifier = Identifier.ofLiteral((String) left);
+                Identifier concatenated = leftIdentifier.add((Identifier)right);
+                tokenList.set(index - 1, concatenated);
+                tokenList.remove(index);
+                tokenList.remove(index);
+                return index - 1;
+            }
             return super.reorder0(tokenList, index);
         }
         @Override
@@ -469,7 +485,7 @@ class Operators {
                 Identifier concatenated = leftIdentifier.add((Identifier)right);
                 ctx.push(concatenated);
             }else {
-                ctx.push(((Identifier)right).dereference(left));
+                ctx.push(Identifier.ofLiteral((String)left).add((Identifier) right));
             }
         }
         
@@ -1013,6 +1029,123 @@ class Operators {
         void eval(Context ctx, Object operand) {
             ctx.push(operand);
             throw new ParsingException.ParsingTerminationException();
+        }
+        
+    }
+    
+    public static class CommaOperator extends Operator{
+        
+        public CommaOperator() {
+            super(",", ",");
+        }
+
+        @Override
+        public int arity() {
+            return 2;
+        }
+        
+        @Override
+        public void eval(Context ctx) {
+            ctx.push(convertValue(ctx, ctx.pop()));
+        }
+
+        @Override
+        protected int reorder0(List<Object> tokenList, int index) {
+            Statement stmt = new Statement();
+            stmt.tokenList.add(tokenList.get(index - 1));
+            stmt.tokenList.add(tokenList.get(index));
+            stmt.ordered = true;
+            stmt.deferred = true;
+            tokenList.set(index - 1, stmt);
+            tokenList.remove(index);
+            return index - 1;
+        }
+
+        @Override
+        protected void checkOperands(List<Object> tokenList, int index) {
+            super.checkEnoughOperands(tokenList, index, 1, 0);
+            Object first = tokenList.get(index - 1);
+            if(!TokenType.isTypes(first, ALL_TYPES)) {
+                throw new ParsingException("invalid token for parameter list: " +first)
+                    .withSiteAndOrdinal(CommaOperator.class, 0);
+            }
+        }
+        
+    }
+    
+    public static class CallOperator extends Operator{
+        
+        public CallOperator() {
+            super("CALL", "()");
+        }
+
+        @Override
+        public int arity() {
+            return 2;
+        }
+
+        @Override
+        public void eval(Context ctx) {
+            Statement params = (Statement) ctx.pop();
+            Object ref = ctx.pop();
+            if(!ID.is(ref)) {
+                throw new ParsingException("cannot invoking method on a "+typeof(ref)+" value")
+                .withSiteAndOrdinal(CommaOperator.class, 2);
+            }
+            Object[] tokens = params.tokens;
+            TokenType[] types = new TokenType[tokens.length];
+            for(int p = 0,l = tokens.length;p<l; ++p) {
+                Object param = convertValue(ctx, tokens[p]);
+                tokens[p] = param;
+                TokenType scriptType;
+                if(TokenType.STR.is(param)) {
+                    scriptType = TokenType.STR;
+                }else if(TokenType.NUM.is(param)) {
+                    scriptType = TokenType.NUM;
+                }else if(TokenType.BOOL.is(param)) {
+                    scriptType = TokenType.BOOL;
+                }else if(param == null || TokenType.NULL.is(param)) {
+                    //TODO: remove param == null ?
+                    scriptType = TokenType.NULL;
+                }else {
+                    throw new ParsingException("object of type "
+                            +typeof(param)+" is not available for method parameter");
+                }
+                types[p] = scriptType;
+            }
+            ctx.push(((Identifier)ref).call(ctx, tokens, types));
+        }
+
+        @Override
+        protected int reorder0(List<Object> tokenList, int index) {
+            Object first = tokenList.get(index - 2);
+            Statement second = (Statement) tokenList.get(index - 1);
+            Statement stmt = new Statement();
+            stmt.tokenList.add(first);
+            stmt.tokenList.add(second); // a parameter list
+            stmt.tokenList.add(tokenList.get(index));
+            stmt.ordered = true;
+            tokenList.set(index - 2, stmt);
+            tokenList.remove(index - 1);
+            tokenList.remove(index - 1);
+            return index - 2;
+        }
+
+        @Override
+        protected void checkOperands(List<Object> tokenList, int index) {
+            super.checkEnoughOperands(tokenList, index, 2, 0);
+            Object first = tokenList.get(index - 2);
+            Object second = tokenList.get(index - 1);
+            if(!ID.is(first) && !STMT.is(first)) {
+                throw new ParsingException("invalid method call syntax")
+                .withSiteAndOrdinal(CommaOperator.class, 0);
+            }
+            //a temporary statement with a single token of type parameter list
+            //in its token list
+            if(!STMT.is(second)) {
+                throw new ParsingException("invalid method call syntax")
+                    .withSiteAndOrdinal(CommaOperator.class, 1);
+            }
         }
         
     }

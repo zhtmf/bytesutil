@@ -44,6 +44,7 @@ All numbers are represented by <tt>BigDecimal</tt> instances internally and calc
 So results from this script may or may not be the same as what from other script engines (like nashorn) which utilizes <tt>Double</tt> directly.  For the same reason this script does not have positive or negative Infinity. 
 
 When setting values or comparing numbers the internal representation is converted and thus made interchangeable with numeric basic types of Java / their wrapper classes / <tt>BigInteger</tt>.
+TODO: char/ Characters
 
 ### Operators
 
