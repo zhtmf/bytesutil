@@ -224,4 +224,19 @@ public class TestMethodCall {
     public int exception(String num1) {
         throw new RuntimeException("exception within method");
     }
+    
+    @SuppressWarnings("unused")
+    private int privateMethod(int num1) {
+        return 2;
+    }
+    protected int privateMethod(String num1) {
+        return 2;
+    }
+    
+    public static long static1(int n) {
+        return n*1;
+    }
+    public static long static1(long n) {
+        return n*2;
+    }
 }

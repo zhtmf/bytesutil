@@ -200,9 +200,6 @@ abstract class Identifier {
         }
     }
     
-    @SuppressWarnings("unused")
-    private void __dummyMethod() {}
-    
     private static final ConcurrentHashMap<String, MethodObject> METHOD_CALLS = new ConcurrentHashMap<String, MethodObject>();
     private static final ConcurrentHashMap<String, Getter> GETTERS = new ConcurrentHashMap<String, Getter>();
     private static final Getter DUMMY = (obj,p)->null;
@@ -409,29 +406,29 @@ abstract class Identifier {
                 if(!method.getName().equals(name))
                     continue;
                 int mod = method.getModifiers();
-                if((mod & Modifier.PUBLIC) != 0 || (mod & Modifier.PROTECTED) != 0) {
-                    Class<?>[] types = method.getParameterTypes();
-                    if(types.length == parameters.length) {
-                        //candidate
-                        //calculate scores
-                        if(types.length == 0) {
-                            score.append('A');
-                        }else {
-                            for(int p = 0, l = types.length; p<l; ++p) {
-                                char result = isConvertible(types[p], scriptTypes[p]);
-                                if(result == 0) {
-                                    score.setLength(0);
-                                    break;
-                                }
-                                score.append(result);
+                if((mod & Modifier.PUBLIC) == 0 && (mod & Modifier.PROTECTED) == 0)
+                    continue;
+                Class<?>[] types = method.getParameterTypes();
+                if(types.length == parameters.length) {
+                    //candidate
+                    //calculate scores
+                    if(types.length == 0) {
+                        score.append('A');
+                    }else {
+                        for(int p = 0, l = types.length; p<l; ++p) {
+                            char result = isConvertible(types[p], scriptTypes[p]);
+                            if(result == 0) {
+                                score.setLength(0);
+                                break;
                             }
+                            score.append(result);
                         }
-                        if(score.length() > 0) {
-                            method.setAccessible(true);
-                            candidates.add(method);
-                            scores.add(score.toString());
-                            score.setLength(0);
-                        }
+                    }
+                    if(score.length() > 0) {
+                        method.setAccessible(true);
+                        candidates.add(method);
+                        scores.add(score.toString());
+                        score.setLength(0);
                     }
                 }
             }
@@ -620,7 +617,7 @@ abstract class Identifier {
             this.lengthOrSize = "length".equals(name) || "size".equals(name);
             this.index = tryParseIndex(name);
             this.id = nextId();
-            String initialUppercased = Character.toUpperCase(name.charAt(0))+name.substring(1);
+            String initialUppercased = name.isEmpty() ? "" : Character.toUpperCase(name.charAt(0))+name.substring(1);
             this.getterName = "get" + initialUppercased;
             this.setterName = "set" + initialUppercased;
             this.isName = "is" + initialUppercased;
@@ -693,6 +690,9 @@ abstract class Identifier {
                 .withSiteAndOrdinal(Identifier.class, 7);
         }
     }
+    
+    //TODO: support setting static fields
+    //TODO: refactor similar logic in three main methods
 
     private static final class IdentifierList extends Identifier{
         
@@ -736,34 +736,9 @@ abstract class Identifier {
             }
             
             if(result == null) {
-                //class member reference
-                String fastName = this.name;
-                if( ! fastName.isEmpty()) {
-                    Class<?> found = classCache.get(fastName);
-                    if(found == null) {
-                        try {
-                            found = Class.forName(fastName);
-                        } catch (ClassNotFoundException e) {
-                            if(root instanceof Context) {
-                                List<String> names = ((Context) root).getImplicitPackageNames();
-                                for (int i = 0, len2 = names.size(); i < len2; ++i) {
-                                    String packageName = names.get(i);
-                                    try {
-                                        found = Class.forName(packageName.concat(".").concat(fastName));
-                                        break;
-                                    } catch (ClassNotFoundException e1) {
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // $ is occupied by this feature for inner class reference
-                    if(found != null && found != Identifier.class) {
-                        classCache.put(fastName, found);
-                        result = list.get(len-1).dereference(found);
-                    }else {
-                        classCache.put(fastName, Identifier.class);
-                    }
+                Object found = findClassByFQN(root);
+                if(found != null && found != Identifier.class) {
+                    result = list.get(len-1).dereference(found);
                 }
             }
             
@@ -805,6 +780,7 @@ abstract class Identifier {
         }
         
         private String combineName() {
+            //concatenate all names but the last
             StringBuilder name1 = new StringBuilder();
             List<Identifier> list = this.list;
             for(int i=0; i<list.size()-1;++i) {
@@ -816,24 +792,59 @@ abstract class Identifier {
         }
         @Override
         Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
-            int k = 0;
             List<Identifier> list = this.list;
-            for(int len = list.size() - 1;k<len;++k) {
+            for(int k = 0, len = list.size() - 1;k<len;++k) {
                 Identifier id = list.get(k);
                 root = id.dereference(root);
                 if(root == null)
                     break;
             }
             if(root == null)
+                root = findClassByFQN(root);
+            if(root == null)
                 throw new ParsingException("calling method on null object")
                     .withSiteAndOrdinal(Identifier.class, 9);
-            String name = list.get(k).getName();
+            //k is not necessarily list.size()-1 at this point
+            String name = list.get(list.size()-1).getName();
             MethodObject method = getMostSpecificMethod(parameters, parameterTypes, root, name);
             Class<?>[] types = method.parameterTypes;
             for(int n = 0, l = parameters.length;n<l;++n) {
                 parameters[n] = convertValueIfNeeded(types[n], parameters[n]);
             }
             return method.invoke(root, parameters);
+        }
+        
+        //support class member reference
+        private Object findClassByFQN(Object root) {
+            String fastName = this.name;
+            Class<?> found = classCache.get(fastName);
+            if(found == Identifier.class)
+                return null;
+            if(found == null) {
+                try {
+                    found = Class.forName(fastName);
+                } catch (ClassNotFoundException e) {
+                    if(root instanceof Context) {
+                        List<String> names = ((Context) root).getImplicitPackageNames();
+                        for (int i = 0, len2 = names.size(); i < len2; ++i) {
+                            String packageName = names.get(i);
+                            try {
+                                found = Class.forName(packageName.concat(".").concat(fastName));
+                                break;
+                            } catch (ClassNotFoundException e1) {
+                            }
+                        }
+                    }
+                }
+            }
+            // $ is occupied by this feature for inner class reference
+            if(found != null) {
+                classCache.put(fastName, found);
+            }else {
+                classCache.put(fastName, Identifier.class);
+            }
+            
+            return found;
         }
     }
 }

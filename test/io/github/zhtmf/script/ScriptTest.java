@@ -54,6 +54,7 @@ public class ScriptTest {
     private static final ScriptEngine mine = new ScriptEngineManager().getEngineByName("__zhtmf-script"); 
     
     public static void main(String[] args) throws Exception {
+        io.github.zhtmf.script.test.test1.TestMethodCall.class.getMethod("static1", int.class);
     }
     
   //exception for plain statement not ending with semicolon
@@ -3149,6 +3150,8 @@ public class ScriptTest {
         } catch (Exception e) {
             testException(e, Identifier.class, 5);
         }
+        
+        testEvaluation("''['']", asMap("abc",new TestObject()));
     }
     
     @Test
@@ -4122,10 +4125,23 @@ public class ScriptTest {
                 , asMap("obj",new TestMethodCall())
                 , Identifier.class, 12);
         
+        //private method excluded
+        assertEvaluationException("obj.privateMethod(3)"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 12);
+        
         //method itself throws exception
         assertEvaluationException("obj.exception('3')"
                 , asMap("obj",new TestMethodCall())
                 , Identifier.class, 10);
+    }
+    
+    @Test
+    public void testBV3() throws Exception{
+        //call static method
+        assertEquals(evaluateMine("obj.static1(3)", asMap("obj",new TestMethodCall())).toString(), "6");
+        assertEquals(evaluateMine("io.github.zhtmf.script.test.test1.TestMethodCall.static1(3)", asMap("obj",new TestMethodCall())).toString(), "6");
+        assertEquals(evaluateMine("java.lang.Math.floor(3.456)", asMap("obj",new TestMethodCall())).toString(), "3");
     }
     
     private void testEvaluation2(String script, Map<String,Object> context) {
