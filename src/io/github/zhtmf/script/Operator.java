@@ -176,9 +176,6 @@ abstract class Operator {
             else if(value instanceof Number) {
                 return new BigDecimal(((Number)value).doubleValue());
             }
-            else if(value instanceof Character) {
-                return BigDecimal.valueOf((int)(Character)value);
-            }
         }
         return value;
     }
@@ -299,12 +296,6 @@ abstract class SuffixOperator extends UnaryOperator {
         if(!isTypes(token,super.operandTypes)) {
             throw new ParsingException("unexpected token "+token)
                 .withSiteAndOrdinal(SuffixOperator.class, 1);
-        }
-        //SuffixOperators must be the last token or succeeded by another operator 
-        //for it to be potentially valid.
-        if(!(index == tokenList.size()-1 || (tokenList.get(index+1) instanceof Operator))){
-            throw new ParsingException("unexpected operator "+this.op)
-                .withSiteAndOrdinal(SuffixOperator.class, 2);
         }
     }
     @Override

@@ -75,8 +75,62 @@ abstract class Identifier {
      */
     abstract int getId();
     
+    /**
+     * Call the method probably represented by this identifier.
+     * <p>
+     * This method contains a different code path which dereferences an identifier
+     * so it does not interfere with existing property looking up logic.
+     * <p>
+     * Obviously this feature only supports calling method with parameters of a set
+     * of limited java types with corresponding types in this script.However
+     * <tt>null</tt> literal can be used to call any methods with parameters with
+     * non-primitive types.
+     * <p>
+     * As for overloading, similar to what JSR states, an algorithm is applied in
+     * looking up a single candidate method:
+     * <ol>
+     * <li>Lookup candidate methods from public/protected methods in this class and
+     * inherited ones.</li>
+     * <li>If no candidate methods are found, an exception is thrown to indicate the
+     * failure.</li>
+     * <li>Within the candidates, remove those with a different number of parameters
+     * than the method call expression.</li>
+     * <li>Then for every remaining methods, try to find the <tt>most specific</tt>
+     * method. Method A is more specific than method B if for formal parameters
+     * S1,S2,S3...Sn from method A and formal parameters T1,T2,T3...Tn from method
+     * b, there is Si > Ti for 1<= i <= n.
+     * <p>
+     * A type S is more specific than type T regarding method calls if:
+     * <ul>
+     * <li>The actual argument in this script is of type {@link TokenType#NUM} and S
+     * comes earlier than T in the sequence
+     * <tt>BigDecimal, double, Double, float, Float, 
+        BigInteger, long, Long, int, Integer, short, Short, byte, Byte</tt> or S
+     * matches any of these types but T does not.</li>
+     * <li>The actual argument in this script is of type {@link TokenType#BOOL} and
+     * S comes earlier than T in the sequence <tt>boolean, Boolean</tt> or S matches
+     * any of these types but T does not.
+     * <li>The actual argument in this script is of type {@link TokenType#STR} and S
+     * is of type java.lang.String but T is not.</li>
+     * <li>The actual argument in this script is of type {@link TokenType#NULL} and
+     * S is of a non-primitive type but T is primitive.</li>
+     * </ul>
+     * </li>
+     * <li>If in the previous step all candidate methods fail to pass the test, the
+     * call fails. If multiple candidates remains, the call is ambiguous. In both
+     * cases, exception is thrown to indicate the failure.</li>
+     * <li>Otherwise, the lookup result is remembered and cached using the key
+     * formed by class of the object, method name and all actual arguments types in
+     * the script.</li>
+     * </ol>
+     * 
+     * @param root the object which possesses the method.
+     * @param parameters formal parameters from the script.
+     * @param parameterTypes types of this script for those formal parameters
+     * @return result of the method call if success.
+     */
     abstract Object call(Object root, Object[] parameters, TokenType[] parameterTypes);
-    
+
     @Override
     public String toString() {
         return "ID["+getName()+"]";
@@ -91,9 +145,14 @@ abstract class Identifier {
     static Identifier of(String name) {
         return new SingleIdentifier(name);
     }
-    //make the string literal "callable" without removing existing 
-    //length/size pseudo property reference
-    //TODO: javadoc
+    
+    /**
+     * Make string literal "callable" without removing length/size pseudo
+     * property reference logic
+     * 
+     * @param str   the string literal.
+     * @return  an implementation.
+     */
     static Identifier ofLiteral(String str) {
         return new StringLiteralIdentifier(str);
     }
@@ -507,7 +566,7 @@ abstract class Identifier {
     
     private static final class StringLiteralIdentifier extends Identifier{
         
-        private String str;
+        private final String str;
         private final int id;
         public StringLiteralIdentifier(String str) {
             this.str = str;

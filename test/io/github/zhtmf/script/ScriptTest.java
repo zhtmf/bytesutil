@@ -1874,7 +1874,7 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("3.234234+false"), AffixBinaryOperator.class, 2);
         assertScriptException(new ScriptAssertion("3.234234+null"), AffixBinaryOperator.class, 2);
         
-        assertScriptException(new ScriptAssertion("a++++3"), PrefixOperator.class, 1);
+        assertScriptException(new ScriptAssertion("a++++3"), Script.class, 6);
         
         new ScriptAssertion("a+++3")
             .compile()
@@ -1941,7 +1941,7 @@ public class ScriptTest {
             .token(OP, "+")
             ;
         
-        assertScriptException(new ScriptAssertion("a++++3"), PrefixOperator.class, 1);
+        assertScriptException(new ScriptAssertion("a++++3"), Script.class, 6);
     }
     
     // unary plus -, additive -
@@ -1994,7 +1994,7 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("3.234234-false"), AffixBinaryOperator.class, 2);
         assertScriptException(new ScriptAssertion("3.234234-null"), AffixBinaryOperator.class, 2);
         
-        assertScriptException(new ScriptAssertion("a----3"), PrefixOperator.class, 1);
+        assertScriptException(new ScriptAssertion("a----3"), Script.class, 6);
         
         new ScriptAssertion("a---3")
             .compile()
@@ -2061,7 +2061,7 @@ public class ScriptTest {
             .token(OP, "-")
             ;
         
-        assertScriptException(new ScriptAssertion("a----3"), PrefixOperator.class, 1);
+        assertScriptException(new ScriptAssertion("a----3"), Script.class, 6);
     }
     
     // logical not
@@ -3046,6 +3046,7 @@ public class ScriptTest {
                 asMap("a$$$$",asMap("abc",new BigDecimal("345.6"))));
         //accessing object property by []
         //obtaining length/size
+        testEvaluation("'abc'.length", asMap());
         testEvaluation("a$$$$['length']*4", 
                 asMap("a$$$$",new String[] {"abc","def","tttt","3333"}));
         {

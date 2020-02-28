@@ -445,32 +445,28 @@ class Operators {
         protected int reorder0(List<Object> tokenList, int index) {
             Object left = tokenList.get(index-1);
             Object right = tokenList.get(index+1);
+            Identifier concatenated = null;
             if(ID.is(left)) {
                 //hoister some of the concatenation to compile time
                 //but still falls short to deal with expressions like ((a.b).c).d
                 //as parentheses create statements
                 Identifier leftIdentifier = (Identifier)left;
-                Identifier concatenated = leftIdentifier.add((Identifier)right);
-                tokenList.set(index - 1, concatenated);
-                tokenList.remove(index);
-                tokenList.remove(index);
-                return index - 1;
+                concatenated = leftIdentifier.add((Identifier)right);
             }
             //deal with nested round statements like (a.b).c, concatenate them at compile time
             else if(STMT.is(left)) {
                 Statement leftStatement = (Statement)left;
                 Identifier wrappedSingleIdentifier = unwrapIdentifier(leftStatement);
                 if(wrappedSingleIdentifier != null) {
-                    Identifier concatenated = wrappedSingleIdentifier.add((Identifier) right);
-                    tokenList.set(index - 1, concatenated);
-                    tokenList.remove(index);
-                    tokenList.remove(index);
-                    return index - 1;
+                    concatenated = wrappedSingleIdentifier.add((Identifier) right);
                 }
             }
-            else if(STR.is(left)) {
+            //left is string literal
+            else {
                 Identifier leftIdentifier = Identifier.ofLiteral((String) left);
-                Identifier concatenated = leftIdentifier.add((Identifier)right);
+                concatenated = leftIdentifier.add((Identifier)right);
+            }
+            if(concatenated != null) {
                 tokenList.set(index - 1, concatenated);
                 tokenList.remove(index);
                 tokenList.remove(index);
@@ -1033,42 +1029,22 @@ class Operators {
         
     }
     
-    public static class CommaOperator extends Operator{
+    public static class CommaOperator extends SuffixOperator{
         
         public CommaOperator() {
-            super(",", ",");
-        }
-
-        @Override
-        public int arity() {
-            return 2;
-        }
-        
-        @Override
-        public void eval(Context ctx) {
-            ctx.push(convertValue(ctx, ctx.pop()));
+            super(",", ",", ALL_TYPES);
         }
 
         @Override
         protected int reorder0(List<Object> tokenList, int index) {
-            Statement stmt = new Statement();
-            stmt.tokenList.add(tokenList.get(index - 1));
-            stmt.tokenList.add(tokenList.get(index));
-            stmt.ordered = true;
-            stmt.deferred = true;
-            tokenList.set(index - 1, stmt);
-            tokenList.remove(index);
-            return index - 1;
+            int idx = super.reorder0(tokenList, index);
+            ((Statement) tokenList.get(idx)).deferred = true;
+            return idx;
         }
 
         @Override
-        protected void checkOperands(List<Object> tokenList, int index) {
-            super.checkEnoughOperands(tokenList, index, 1, 0);
-            Object first = tokenList.get(index - 1);
-            if(!TokenType.isTypes(first, ALL_TYPES)) {
-                throw new ParsingException("invalid token for parameter list: " +first)
-                    .withSiteAndOrdinal(CommaOperator.class, 0);
-            }
+        void eval(Context ctx, Object operand) {
+            ctx.push(convertValue(ctx, operand));
         }
         
     }
@@ -1088,10 +1064,6 @@ class Operators {
         public void eval(Context ctx) {
             Statement params = (Statement) ctx.pop();
             Object ref = ctx.pop();
-            if(!ID.is(ref)) {
-                throw new ParsingException("cannot invoking method on a "+typeof(ref)+" value")
-                .withSiteAndOrdinal(CommaOperator.class, 2);
-            }
             Object[] tokens = params.tokens;
             TokenType[] types = new TokenType[tokens.length];
             for(int p = 0,l = tokens.length;p<l; ++p) {
@@ -1104,8 +1076,7 @@ class Operators {
                     scriptType = TokenType.NUM;
                 }else if(TokenType.BOOL.is(param)) {
                     scriptType = TokenType.BOOL;
-                }else if(param == null || TokenType.NULL.is(param)) {
-                    //TODO: remove param == null ?
+                }else if(param == null) {
                     scriptType = TokenType.NULL;
                 }else {
                     throw new ParsingException("object of type "
