@@ -275,6 +275,8 @@ public class Script {
     }
     
     private void inspect(Statement statement) {
+        if(statement instanceof EmptyStatement)
+            return;
         List<Object> tokenList = statement.tokenList; 
         for(Object token:tokenList) {
             if(token instanceof Statement) {
@@ -288,22 +290,13 @@ public class Script {
                 if(token instanceof Operator) {
                     Operator operator = (Operator)token;
                     counter -= operator.arity();
-                    //this check is done in Operator#checkOperands
-//                    if(counter<0) {
-//                        throw new ParsingException("malformed statement:"+statement)
-//                        .withSiteAndOrdinal(Script.class, 8);
-//                    }
                     counter += operator.returns();
                 }else {
                     ++counter;
                 }
             }
             
-            /*
-             * because if/else are considered operators and they don't return any value themselves, 
-             * thus those "If statements" will result in empty stack after inspection.
-             */
-            if(counter != 0 && counter != 1) {
+            if(counter != 1) {
                 throw new ParsingException("malformed statement:"+statement)
                 .withSiteAndOrdinal(Script.class, 6);
             }

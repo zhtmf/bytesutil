@@ -320,13 +320,13 @@ class Operators {
         public IfOperator() {
             super("IF","if");
         }
+        //If statements do not really return something.
+        //Arity and returns methods are coined for this operator to
+        //make it structurally same with other real operators.
+        //The same is true for ElseOperator.
         @Override
         public int arity() {
             return 2;
-        }
-        @Override
-        public int returns() {
-            return 0;
         }
         @Override
         protected void checkOperands(List<Object> tokenList, int index) {
@@ -374,17 +374,10 @@ class Operators {
             tokenList.set(index + 1, this);
             return index+1;
         }
-
         @Override
         public int arity() {
-            return 1;
+            return 2;
         }
-
-        @Override
-        public int returns() {
-            return 0;
-        }
-        
         @Override
         public void eval(Context ctx) {
             Statement operation = (Statement) ctx.pop();
