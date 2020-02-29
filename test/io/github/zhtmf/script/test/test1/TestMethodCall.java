@@ -239,4 +239,11 @@ public class TestMethodCall {
     public static long static1(long n) {
         return n*2;
     }
+    
+    public static long static2(String n) {
+        return 1;
+    }
+    public long static2(long n) {
+        return 2;
+    }
 }

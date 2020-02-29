@@ -4139,9 +4139,21 @@ public class ScriptTest {
     @Test
     public void testBV3() throws Exception{
         //call static method
-        assertEquals(evaluateMine("obj.static1(3)", asMap("obj",new TestMethodCall())).toString(), "6");
+        assertEvaluationException("obj.static1(3)", asMap("obj",new TestMethodCall()), Identifier.class, 12);
         assertEquals(evaluateMine("io.github.zhtmf.script.test.test1.TestMethodCall.static1(3)", asMap("obj",new TestMethodCall())).toString(), "6");
         assertEquals(evaluateMine("java.lang.Math.floor(3.456)", asMap("obj",new TestMethodCall())).toString(), "3");
+        
+        //lookup static methods when calling method of a class object,
+        //lookup instance methods when calling method of an non-class object
+        assertEvaluationException("obj.static2('3')"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 12);
+        assertEvaluationException("io.github.zhtmf.script.test.test1.TestMethodCall.static2(3)"
+                , asMap("obj",new TestMethodCall())
+                , Identifier.class, 12);
+        assertEvaluationException("obj.static2(3)"
+                , asMap("obj",TestMethodCall.class)
+                , Identifier.class, 12);
     }
     
     private void testEvaluation2(String script, Map<String,Object> context) {

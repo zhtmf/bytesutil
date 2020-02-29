@@ -86,8 +86,12 @@ abstract class Identifier {
      * <tt>null</tt> literal can be used to call any methods with parameters with
      * non-primitive types.
      * <p>
-     * As for overloading, similar to what JSR states, an algorithm is applied in
-     * looking up a single candidate method:
+     * When calling method on a variable, only instance methods are checked for
+     * validity. In contrast, when calling method on the full qualified name of a
+     * class, only static methods are checked.
+     * <p>
+     * As for calling overloaded methods, similar to what JSR states, an algorithm
+     * is applied in looking up a single candidate method:
      * <ol>
      * <li>Lookup candidate methods from public/protected methods in this class and
      * inherited ones.</li>
@@ -391,15 +395,16 @@ abstract class Identifier {
         //cannot return null
         method = new MethodObject(
                 getMostSpecificMethod0(
-                        parameters, parameterTypes, clazz, name));
+                        parameters, parameterTypes, clazz, name, root instanceof Class));
         METHOD_CALLS.put(keyStr, method);
         return method;
     }
     
-    private static Method getMostSpecificMethod0(Object[] parameters, TokenType[] scriptTypes, Class<?> clazz, String name) {
+    private static Method getMostSpecificMethod0(Object[] parameters, TokenType[] scriptTypes, Class<?> clazz, String name, boolean staticOnly) {
         List<Method> candidates = new ArrayList<Method>();
         List<String> scores = new ArrayList<String>();
         StringBuilder score = new StringBuilder();
+        int mask = staticOnly ? Modifier.STATIC : 0;
         while(clazz != Object.class) {
             Method[] methods = clazz.getDeclaredMethods();
             for(Method method:methods) {
@@ -407,6 +412,8 @@ abstract class Identifier {
                     continue;
                 int mod = method.getModifiers();
                 if((mod & Modifier.PUBLIC) == 0 && (mod & Modifier.PROTECTED) == 0)
+                    continue;
+                if((mod & Modifier.STATIC) != mask)
                     continue;
                 Class<?>[] types = method.getParameterTypes();
                 if(types.length == parameters.length) {
@@ -692,7 +699,7 @@ abstract class Identifier {
     }
     
     //TODO: support setting static fields
-    //TODO: refactor similar logic in three main methods
+    //TODO: revamp similar logic in three main methods
 
     private static final class IdentifierList extends Identifier{
         
