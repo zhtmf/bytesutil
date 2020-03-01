@@ -519,10 +519,10 @@ public class Script {
                 .withSiteAndOrdinal(Script.class, 26);
         }else {
             List<Object> ret = new ArrayList<Object>();
-            ret.add(Operators.getOperator("[]"));
             Statement property = new Statement();
             property.tokenList.addAll(between);
             ret.add(property);
+            ret.add(Operators.getOperator("[]"));
             return ret;
         }
     }
@@ -602,7 +602,7 @@ public class Script {
     }
     
     private static ParsingException unexpectedTokenException(Object token, State program) {
-        return parsingException("unexpected token"+(token == null ? "" : " "+token)+" at "+program.index, program);
+        return parsingException("unexpected token"+token+" at "+program.index, program);
     }
     
     private static ParsingException parsingException(String message, State program) {

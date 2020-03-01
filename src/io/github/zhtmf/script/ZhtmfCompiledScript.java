@@ -45,6 +45,6 @@ class ZhtmfCompiledScript extends CompiledScript{
 
     @Override
     public String toString() {
-        return "Compiled[" + compiledScript + "]";
+        return compiledScript.toString();
     }
 }

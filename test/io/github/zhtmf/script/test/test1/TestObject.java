@@ -6,8 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import io.github.zhtmf.script.ScriptTest;
 
-//nashorn引擎访问不了私有实例域
-public class TestObject{
+public class TestObject extends TestObjectParent{
     public static BigDecimal static2 = BigDecimal.ZERO;
     public static final int static1 = 10;
     public static int static3 = 10;

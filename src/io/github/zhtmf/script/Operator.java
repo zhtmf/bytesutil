@@ -308,6 +308,7 @@ abstract class SuffixOperator extends UnaryOperator {
     }
 }
 
+//suffix operators whose string representation are not unique
 abstract class ChainingSuffixOperator extends SuffixOperator{
     
     public ChainingSuffixOperator(String name, String op, TokenType[] operandTypes) {
@@ -324,6 +325,64 @@ abstract class ChainingSuffixOperator extends SuffixOperator{
         }
         super.checkOperands(tokenList, index);
     }
+}
+
+abstract class SuffixBinaryOperator extends Operator {
+    protected TokenType[] firstOperandTypes;
+    protected TokenType[] secondOperandTypes;
+    public SuffixBinaryOperator(
+            String name
+            ,String op
+            ,TokenType[] firstOperandTypes
+            ,TokenType[] secondOperandTypes) {
+        super(name,op);
+        this.firstOperandTypes = firstOperandTypes;
+        this.secondOperandTypes = secondOperandTypes;
+    }
+    @Override
+    public int arity() {
+        return 2;
+    }
+    
+    protected void checkOperands(List<Object> tokenList, int index) {
+        checkEnoughOperands(tokenList, index, 2, 0);
+        Object first = tokenList.get(index-2);
+        Object second = tokenList.get(index-1);
+        if(!isTypes(first,firstOperandTypes)) {
+            throw new ParsingException("unexpected left token "+first)
+                .withSiteAndOrdinal(SuffixBinaryOperator.class, 1);
+        }
+        //currently this branch is unreachable due to validity of the second operand of its two
+        //subclass CallOperator and BracketOperator is guaranteed during initial parsing phase
+        if(!isTypes(second,secondOperandTypes)) {
+            throw new ParsingException("unexpected right token "+second)
+                .withSiteAndOrdinal(SuffixBinaryOperator.class, 2);
+        }
+    }
+    
+    @Override
+    protected int reorder0(List<Object> tokenList, int index) {
+        Object first = tokenList.get(index-2);
+        Object second = tokenList.get(index-1);
+        Statement statement = new Statement();
+        statement.tokenList.add(first);
+        statement.tokenList.add(second);
+        statement.tokenList.add(this);
+        statement.ordered = true;
+        tokenList.set(index-2, statement);
+        tokenList.remove(index-1);
+        tokenList.remove(index-1);
+        return index-2;
+    }
+    
+    @Override
+    public void eval(Context ctx) {
+        Object second = ctx.pop();
+        Object first = ctx.pop();
+        eval(ctx,first,second);
+    }
+    
+    abstract void eval(Context ctx, Object first, Object second);
 }
 
 abstract class AffixBinaryOperator extends Operator {

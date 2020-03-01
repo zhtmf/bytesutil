@@ -2,7 +2,6 @@ package io.github.zhtmf.script;
 
 import static io.github.zhtmf.script.TokenType.BOOL;
 import static io.github.zhtmf.script.TokenType.ID;
-import static io.github.zhtmf.script.TokenType.NULL;
 import static io.github.zhtmf.script.TokenType.NUM;
 import static io.github.zhtmf.script.TokenType.STMT;
 import static io.github.zhtmf.script.TokenType.STR;
@@ -395,34 +394,44 @@ class Operators {
     }
     
     //[] access array element/access object property
-    public static class BracketOperator extends AffixBinaryOperator{
+    //it is intentionally made a suffix binary operator in order to ease detection of method call syntax
+    public static class BracketOperator extends SuffixBinaryOperator{
         public BracketOperator() {
             //STR for accessing length/size
             super("B","[]"
-                  ,new TokenType[] {ID,STMT,NULL,STR} 
-                  ,new TokenType[] {ID,STMT,NUM ,STR});
+                  ,new TokenType[] {ID,STMT,STR} 
+                  ,new TokenType[] {STMT});
         }
         @Override
         void eval(Context ctx, Object left, Object right) {
-            if(right instanceof Identifier) {
+            
+            if(STR.is(left)) {
+                left = Identifier.ofLiteral(left.toString());
+            }
+            
+            if(ID.is(right)) {
+                //chaining literal identifiers like a.b.c are concatenated at compile time
+                //right identifier here can only be direct/indirect reference to 
+                //formerly defined number literal or string literal
+                //the actual value must be restored against the global Context here
                 right = ((Identifier)right).dereference(ctx);
             }
             if(NUM.is(right)) {
-                right = ((BigDecimal)right).stripTrailingZeros().toPlainString();
+                right = Identifier.of(((BigDecimal)right).stripTrailingZeros().toPlainString());
             }
-            else if(!STR.is(right)) {
-                throw new ParsingException("invalid property name "+right)
-                    .withSiteAndOrdinal(BracketOperator.class, 3);
+            else if(STR.is(right)) {
+                right = Identifier.of(right.toString());
+            }
+            else if(right == null) {
+                throw new ParsingException("property cannot be null")
+                    .withSiteAndOrdinal(BracketOperator.class, 1);
+            }
+            else {
+                throw new ParsingException("invalid value of type "+typeof(right)+" as property name")
+                .withSiteAndOrdinal(BracketOperator.class, 2);
             }
             
-            if(left instanceof Identifier) {
-                //str or num
-                ctx.push(((Identifier)left).add(Identifier.of(right.toString())));
-                return;
-            }
-            
-            //dereference string literals
-            ctx.push(Identifier.of(right.toString()).dereference(left));
+            ctx.push(((Identifier)left).add((Identifier)right));
         }
     }
     
@@ -473,8 +482,11 @@ class Operators {
                 Identifier leftIdentifier = (Identifier)left;
                 Identifier concatenated = leftIdentifier.add((Identifier)right);
                 ctx.push(concatenated);
-            }else {
+            }else if(STR.is(left)){
                 ctx.push(Identifier.ofLiteral((String)left).add((Identifier) right));
+            }else {
+                throw new ParsingException("invalid token "+left+" for property reference")
+                    .withSiteAndOrdinal(DotOperator.class, 0);
             }
         }
         
@@ -1042,10 +1054,10 @@ class Operators {
         
     }
     
-    public static class CallOperator extends Operator{
+    public static class CallOperator extends SuffixBinaryOperator{
         
         public CallOperator() {
-            super("CALL", "()");
+            super("CALL", "()", new TokenType[] {STMT, ID}, new TokenType[] {STMT});
         }
 
         @Override
@@ -1054,9 +1066,11 @@ class Operators {
         }
 
         @Override
-        public void eval(Context ctx) {
-            Statement params = (Statement) ctx.pop();
-            Object ref = ctx.pop();
+        void eval(Context ctx, Object first, Object second) {
+            //first must be ID
+            //literal boolean/null/number or values of these types returned by STMT
+            //is illegal for property access syntax and will be blocked by DotOperator
+            Statement params = (Statement)second;
             Object[] tokens = params.tokens;
             TokenType[] types = new TokenType[tokens.length];
             for(int p = 0,l = tokens.length;p<l; ++p) {
@@ -1073,43 +1087,12 @@ class Operators {
                     scriptType = TokenType.NULL;
                 }else {
                     throw new ParsingException("object of type "
-                            +typeof(param)+" is not available for method parameter");
+                            +typeof(param)+" is not available for method parameter")
+                        .withSiteAndOrdinal(CallOperator.class, 0);
                 }
                 types[p] = scriptType;
             }
-            ctx.push(((Identifier)ref).call(ctx, tokens, types));
-        }
-
-        @Override
-        protected int reorder0(List<Object> tokenList, int index) {
-            Object first = tokenList.get(index - 2);
-            Statement second = (Statement) tokenList.get(index - 1);
-            Statement stmt = new Statement();
-            stmt.tokenList.add(first);
-            stmt.tokenList.add(second); // a parameter list
-            stmt.tokenList.add(tokenList.get(index));
-            stmt.ordered = true;
-            tokenList.set(index - 2, stmt);
-            tokenList.remove(index - 1);
-            tokenList.remove(index - 1);
-            return index - 2;
-        }
-
-        @Override
-        protected void checkOperands(List<Object> tokenList, int index) {
-            super.checkEnoughOperands(tokenList, index, 2, 0);
-            Object first = tokenList.get(index - 2);
-            Object second = tokenList.get(index - 1);
-            if(!ID.is(first) && !STMT.is(first)) {
-                throw new ParsingException("invalid method call syntax")
-                .withSiteAndOrdinal(CommaOperator.class, 0);
-            }
-            //a temporary statement with a single token of type parameter list
-            //in its token list
-            if(!STMT.is(second)) {
-                throw new ParsingException("invalid method call syntax")
-                    .withSiteAndOrdinal(CommaOperator.class, 1);
-            }
+            ctx.push(((Identifier)first).call(ctx, tokens, types));
         }
         
     }
