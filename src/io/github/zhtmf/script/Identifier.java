@@ -353,11 +353,12 @@ abstract class Identifier {
                 } catch (Exception e2) {
                     //try to find inherited, non-private methods
                     Class<?> current = cls.getSuperclass();
-                    while(current!= null && current != Object.class) {
+                    while(current != Object.class) {
                         try {
                             Method method = current.getDeclaredMethod(property.name);
                             int mod = method.getModifiers();
-                            if(Modifier.isProtected(mod) || Modifier.isPublic(mod)) {
+                            //public methods are already checked by getMethod
+                            if((mod & Modifier.PROTECTED) != 0) {
                                 method.setAccessible(true);
                                 return method;
                             }
@@ -592,8 +593,7 @@ abstract class Identifier {
 
         @Override
         void set(Object root, Object value) {
-            throw new ParsingException("setting properties on a string literal")
-                .withSiteAndOrdinal(StringLiteralIdentifier.class, 0);
+            throw new UnsupportedOperationException();
         }
 
         @Override
@@ -696,8 +696,8 @@ abstract class Identifier {
 
         @Override
         Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
-            if(root == null)
-                throw new ParsingException("calling method on null object")
+            if(root instanceof Context)
+                throw new ParsingException("calling method on global object is not supported")
                     .withSiteAndOrdinal(Identifier.class, 9);
             MethodObject method = getMostSpecificMethod(parameters, parameterTypes, root, name);
             Class<?>[] types = method.parameterTypes;

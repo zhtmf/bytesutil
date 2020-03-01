@@ -3168,6 +3168,22 @@ public class ScriptTest {
         assertEquals(evaluateMine("c="+name+".static3;"+name+".static3=12;c+"+name+".static3", asMap("abc",new TestObject()))+"", "22");
         //avoid setting final field
         assertEvaluationException("c=abc.static4;abc.static4=12;c+abc.static4", asMap("abc",new TestObject()), Identifier.class, 6);
+        //trigger cache
+        assertEvaluationException("c=abc.static4;abc.static4=12;c+abc.static4", asMap("abc",new TestObject()), Identifier.class, 6);
+    }
+    
+    //inherited getter or method
+    @Test
+    public void testAV2() throws Exception {
+        assertEquals(evaluateMine("abc.parentPublicMethod", asMap("abc",new TestObject()))+"", "32");
+        assertEquals(evaluateMine("abc.parentPrivateMethod", asMap("abc",new TestObject()))+"", "null");
+        
+        assertEquals(evaluateMine("abc.parentProtectedMethod()", asMap("abc",new TestObject()))+"", "31");
+        assertEquals(evaluateMine("abc.parentProtectedMethod", asMap("abc",new TestObject()))+"", "31");
+        assertEquals(evaluateMine("abc.parentPublicMethod()", asMap("abc",new TestObject()))+"", "32");
+        assertEquals(evaluateMine("abc.getParentValue()", asMap("abc",new TestObject()))+"", "33");
+        assertEquals(evaluateMine("abc.parentValue", asMap("abc",new TestObject()))+"", "33");
+        
     }
     
     @Test
@@ -3989,26 +4005,12 @@ public class ScriptTest {
         testEvaluation("test.b1=1;test.s1=1;test.i1=1;test.l1=1;test.f1=1;test.d1=1;"
                 + "test.b1+test.s1+test.i1+test.l1+test.f1+test.d1", asMap("test",new Test2()));
         assertEquals(evaluateMine("test.bi=333", asMap("test",new Test2()))+"", "333");
-    }
-    
-    @Test
-    public void testBU1() throws Exception{
+        
         assertScriptException(new ScriptAssertion("a+0abcdef"), Script.class, 6);
-    }
-    
-    @Test
-    public void testBU2() throws Exception{
-        evaluateMine("if(a+b>10){a--;}else {}",asMap("a",1,"b",2));
-    }
-    
-    @Test
-    public void testBU3() throws Exception{
+        
         Object obj = evaluateMine("java.lang.System.currentTimeMillis",asMap("a",1,"b",2));
         assertTrue(obj instanceof Number);
-    }
-    
-    @Test
-    public void testBU4() throws Exception{
+        
         try {
             evaluateMine("a.b=3;",asMap("a",null));
             fail();
@@ -4021,6 +4023,28 @@ public class ScriptTest {
         } catch (Exception e) {
             testException(e, Identifier.class, 8);
         }
+    }
+    
+    //cover impossible branches
+    //make jacoco happy
+    @Test
+    public void testBU1() throws Exception{
+        assertEquals(Identifier.isConvertible(String.class, TokenType.STMT), 0);
+        
+        Identifier id = Identifier.ofLiteral("abc");
+        try {
+            id.set(null, null);
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof UnsupportedOperationException);
+        }
+        try {
+            id.call(null, null, null);
+            fail();
+        } catch (Exception e) {
+            assertTrue(e instanceof UnsupportedOperationException);
+        }
+        assertEquals(id.getId(), -"abc".hashCode());
     }
     
     @Test
@@ -4080,6 +4104,10 @@ public class ScriptTest {
         //parameter is another () expression
         assertEquals(evaluateMine("obj.nestingParentheses((1+333),(2*4)+5,'3456',((false))|true&((false)))"
                 , asMap("obj",new TestMethodCall())).toString(), "3");
+        
+        assertEvaluationException("abc(3)", asMap("obj",new TestMethodCall()), Identifier.class, 9);
+        
+        assertEvaluationException("null['abc'](3)", asMap("obj",new TestMethodCall()), Identifier.class, 9);
     }
     
     @Test
@@ -4154,6 +4182,7 @@ public class ScriptTest {
     
     @Test
     public void testBV3() throws Exception{
+        
         //call static method
         assertEvaluationException("obj.static1(3)", asMap("obj",new TestMethodCall()), Identifier.class, 12);
         assertEquals(evaluateMine("io.github.zhtmf.script.test.test1.TestMethodCall.static1(3)", asMap("obj",new TestMethodCall())).toString(), "6");
