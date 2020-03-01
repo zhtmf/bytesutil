@@ -308,6 +308,24 @@ abstract class SuffixOperator extends UnaryOperator {
     }
 }
 
+abstract class ChainingSuffixOperator extends SuffixOperator{
+    
+    public ChainingSuffixOperator(String name, String op, TokenType[] operandTypes) {
+        super(name, op, operandTypes);
+    }
+
+    @Override
+    protected void checkOperands(List<Object> tokenList, int index) {
+        //SuffixOperators must be the last token or succeeded by another operator 
+        //for it to be potentially valid.
+        if(!(index == tokenList.size()-1 || (tokenList.get(index+1) instanceof Operator))){
+            throw new ParsingException("unexpected operator "+this.op)
+                .withSiteAndOrdinal(SuffixOperator.class, 2);
+        }
+        super.checkOperands(tokenList, index);
+    }
+}
+
 abstract class AffixBinaryOperator extends Operator {
     protected TokenType[] leftOperandTypes;
     protected TokenType[] rightOperandTypes;

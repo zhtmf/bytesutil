@@ -1877,7 +1877,7 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("3.234234+false"), AffixBinaryOperator.class, 2);
         assertScriptException(new ScriptAssertion("3.234234+null"), AffixBinaryOperator.class, 2);
         
-        assertScriptException(new ScriptAssertion("a++++3"), Script.class, 6);
+        assertScriptException(new ScriptAssertion("a++++3"), PrefixOperator.class, 1);
         
         new ScriptAssertion("a+++3")
             .compile()
@@ -1944,7 +1944,7 @@ public class ScriptTest {
             .token(OP, "+")
             ;
         
-        assertScriptException(new ScriptAssertion("a++++3"), Script.class, 6);
+        assertScriptException(new ScriptAssertion("a++++3"), PrefixOperator.class, 1);
     }
     
     // unary plus -, additive -
@@ -1997,7 +1997,7 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("3.234234-false"), AffixBinaryOperator.class, 2);
         assertScriptException(new ScriptAssertion("3.234234-null"), AffixBinaryOperator.class, 2);
         
-        assertScriptException(new ScriptAssertion("a----3"), Script.class, 6);
+        assertScriptException(new ScriptAssertion("a----3"), PrefixOperator.class, 1);
         
         new ScriptAssertion("a---3")
             .compile()
@@ -2064,7 +2064,7 @@ public class ScriptTest {
             .token(OP, "-")
             ;
         
-        assertScriptException(new ScriptAssertion("a----3"), Script.class, 6);
+        assertScriptException(new ScriptAssertion("a----3"), PrefixOperator.class, 1);
     }
     
     // logical not

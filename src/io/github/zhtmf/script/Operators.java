@@ -491,7 +491,7 @@ class Operators {
     }
     
     // ++ unary post-increment
-    public static class SuffixIncrementOperator extends SuffixOperator{
+    public static class SuffixIncrementOperator extends ChainingSuffixOperator{
         public SuffixIncrementOperator() {
             super("SI","++", COMPOSITE_TYPES);
         }
@@ -519,7 +519,7 @@ class Operators {
     }
     
     // -- unary post-decrement
-    public static class SuffixDecrementOperator extends SuffixOperator{
+    public static class SuffixDecrementOperator extends ChainingSuffixOperator{
         public SuffixDecrementOperator() {
             super("SD","--", COMPOSITE_TYPES);
         }
