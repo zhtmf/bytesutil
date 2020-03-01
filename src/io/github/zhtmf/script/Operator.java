@@ -227,8 +227,6 @@ abstract class PrefixOperator extends UnaryOperator {
          * never get a chance to be applied, although unary plus operator does have a
          * higher precedence.
          * 
-         * Similar checking is done in SuffixOperator.
-         * 
          * PrefixOperators must be the first token or preceded by another operator 
          * for it to be potentially valid.
          */

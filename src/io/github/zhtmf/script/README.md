@@ -44,7 +44,6 @@ All numbers are represented by <tt>BigDecimal</tt> instances internally and calc
 So results from this script may or may not be the same as what from other script engines (like nashorn) which utilizes <tt>Double</tt> directly.  For the same reason this script does not have positive or negative Infinity. 
 
 When setting values or comparing numbers the internal representation is converted and thus made interchangeable with numeric basic types of Java / their wrapper classes / <tt>BigInteger</tt>.
-TODO: char/ Characters
 
 ### Operators
 
@@ -91,6 +90,8 @@ Following operators are defined in this script language, which are not necessary
 * <tt>=</tt> : assignment
 ##### Level 0
 * <tt>return</tt> : return whatever value follows and terminates evaluation of this script prematurely.
+
+//TODO: set static fields, final fields, method call
 
  The lookup algorithm for operator ````[]```` and ````.```` is:
 * if the expression between <tt>[]</tt> can be converted to a number, then it is recognized as an index. Otherwise it is recognized as property name.

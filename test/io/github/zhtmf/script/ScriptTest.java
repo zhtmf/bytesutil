@@ -54,7 +54,9 @@ public class ScriptTest {
     private static final ScriptEngine mine = new ScriptEngineManager().getEngineByName("__zhtmf-script"); 
     
     public static void main(String[] args) throws Exception {
-        io.github.zhtmf.script.test.test1.TestMethodCall.class.getMethod("static1", int.class);
+        System.out.println(evaluateNashorn("c=abc.length;"
+                + "c"
+                , asMap("abc",new TestObject())));
     }
     
   //exception for plain statement not ending with semicolon
@@ -3152,6 +3154,20 @@ public class ScriptTest {
         }
         
         testEvaluation("''['']", asMap("abc",new TestObject()));
+        
+    }
+    
+    //set static property
+    @Test
+    public void testAV1() throws Exception {
+        //set static field through object reference or class fqn
+        TestObject.static3 = 10;
+        assertEquals(evaluateMine("c=abc.static3;abc.static3=12;c+abc.static3", asMap("abc",new TestObject()))+"", "22");
+        TestObject.static3 = 10;
+        String name = TestObject.class.getName();
+        assertEquals(evaluateMine("c="+name+".static3;"+name+".static3=12;c+"+name+".static3", asMap("abc",new TestObject()))+"", "22");
+        //avoid setting final field
+        assertEvaluationException("c=abc.static4;abc.static4=12;c+abc.static4", asMap("abc",new TestObject()), Identifier.class, 6);
     }
     
     @Test

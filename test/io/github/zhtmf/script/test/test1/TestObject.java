@@ -10,6 +10,8 @@ import io.github.zhtmf.script.ScriptTest;
 public class TestObject{
     public static BigDecimal static2 = BigDecimal.ZERO;
     public static final int static1 = 10;
+    public static int static3 = 10;
+    public static final int static4 = 10;
     public int length = 333;
     public int getProperty2333() {
         throw new UnsupportedOperationException();

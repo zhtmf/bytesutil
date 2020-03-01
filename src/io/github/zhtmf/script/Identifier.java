@@ -327,6 +327,9 @@ abstract class Identifier {
         Field field = null;
         try {
             field = clazz.getDeclaredField(property.name);
+            if((field.getModifiers() & Modifier.FINAL) != 0) {
+                return null;
+            }
             field.setAccessible(true);
             final Field tmp = field;
             final Class<?> type = tmp.getType();
@@ -693,14 +696,18 @@ abstract class Identifier {
 
         @Override
         Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
-            throw new ParsingException("method "+this.name+" not found on global object")
-                .withSiteAndOrdinal(Identifier.class, 7);
+            if(root == null)
+                throw new ParsingException("calling method on null object")
+                    .withSiteAndOrdinal(Identifier.class, 9);
+            MethodObject method = getMostSpecificMethod(parameters, parameterTypes, root, name);
+            Class<?>[] types = method.parameterTypes;
+            for(int n = 0, l = parameters.length;n<l;++n) {
+                parameters[n] = convertValueIfNeeded(types[n], parameters[n]);
+            }
+            return method.invoke(root, parameters);
         }
     }
     
-    //TODO: support setting static fields
-    //TODO: revamp similar logic in three main methods
-
     private static final class IdentifierList extends Identifier{
         
         private String name;
@@ -732,21 +739,9 @@ abstract class Identifier {
                     return cachedValue;
             }
             
-            Object result = root;
-            List<Identifier> list = this.list;
-            final int len = list.size();
-            for(int k=0;k<len;++k) {
-                Identifier id = list.get(k);
-                result = id.dereference(result);
-                if(result == null)
-                    break;
-            }
-            
-            if(result == null) {
-                Object found = findClassByFQN(root);
-                if(found != null && found != Identifier.class) {
-                    result = list.get(len-1).dereference(found);
-                }
+            Object result = dereference0(root);
+            if(result != null && result != Identifier.class) {
+                result = list.get(list.size()-1).dereference(result);
             }
             
             return result;
@@ -754,18 +749,21 @@ abstract class Identifier {
 
         @Override
         void set(Object root, Object value) {
-            int k = 0;
-            List<Identifier> list = this.list;
-            for(int len = list.size() - 1;k<len;++k) {
-                Identifier id = list.get(k);
-                root = id.dereference(root);
-                if(root == null)
-                    break;
-            }
+            root = dereference0(root);
             if(root == null)
                 throw new ParsingException("setting property on null object")
                     .withSiteAndOrdinal(Identifier.class, 8);
-            list.get(k).set(root, value);
+            list.get(list.size() - 1).set(root, value);
+        }
+        
+        @Override
+        Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
+            root = dereference0(root);
+            if(root == null)
+                throw new ParsingException("calling method on null object")
+                    .withSiteAndOrdinal(Identifier.class, 9);
+            //k is not necessarily list.size()-1 at this point
+            return list.get(list.size() - 1).call(root, parameters, parameterTypes);
         }
 
         @Override
@@ -797,61 +795,48 @@ abstract class Identifier {
                 return "";
             return name1.substring(1);
         }
-        @Override
-        Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
+        
+        private Object dereference0(Object root) {
+            Object result = root;
             List<Identifier> list = this.list;
-            for(int k = 0, len = list.size() - 1;k<len;++k) {
+            for(int k=0, to = list.size()-1;k<to;++k) {
                 Identifier id = list.get(k);
-                root = id.dereference(root);
-                if(root == null)
+                result = id.dereference(result);
+                if(result == null)
                     break;
             }
-            if(root == null)
-                root = findClassByFQN(root);
-            if(root == null)
-                throw new ParsingException("calling method on null object")
-                    .withSiteAndOrdinal(Identifier.class, 9);
-            //k is not necessarily list.size()-1 at this point
-            String name = list.get(list.size()-1).getName();
-            MethodObject method = getMostSpecificMethod(parameters, parameterTypes, root, name);
-            Class<?>[] types = method.parameterTypes;
-            for(int n = 0, l = parameters.length;n<l;++n) {
-                parameters[n] = convertValueIfNeeded(types[n], parameters[n]);
-            }
-            return method.invoke(root, parameters);
-        }
-        
-        //support class member reference
-        private Object findClassByFQN(Object root) {
-            String fastName = this.name;
-            Class<?> found = classCache.get(fastName);
-            if(found == Identifier.class)
-                return null;
-            if(found == null) {
-                try {
-                    found = Class.forName(fastName);
-                } catch (ClassNotFoundException e) {
-                    if(root instanceof Context) {
-                        List<String> names = ((Context) root).getImplicitPackageNames();
-                        for (int i = 0, len2 = names.size(); i < len2; ++i) {
-                            String packageName = names.get(i);
-                            try {
-                                found = Class.forName(packageName.concat(".").concat(fastName));
-                                break;
-                            } catch (ClassNotFoundException e1) {
+            if(result == null){
+                //support class member reference
+                String fastName = this.name;
+                Class<?> found = classCache.get(fastName);
+                if(found == Identifier.class)
+                    return null;
+                if(found == null) {
+                    try {
+                        found = Class.forName(fastName);
+                    } catch (ClassNotFoundException e) {
+                        if(root instanceof Context) {
+                            List<String> names = ((Context) root).getImplicitPackageNames();
+                            for (int i = 0, len2 = names.size(); i < len2; ++i) {
+                                String packageName = names.get(i);
+                                try {
+                                    found = Class.forName(packageName.concat(".").concat(fastName));
+                                    break;
+                                } catch (ClassNotFoundException e1) {
+                                }
                             }
                         }
                     }
                 }
+                // $ is occupied by this feature for inner class reference
+                if(found != null) {
+                    classCache.put(fastName, found);
+                    result = found;
+                }else {
+                    classCache.put(fastName, Identifier.class);
+                }
             }
-            // $ is occupied by this feature for inner class reference
-            if(found != null) {
-                classCache.put(fastName, found);
-            }else {
-                classCache.put(fastName, Identifier.class);
-            }
-            
-            return found;
+            return result;
         }
     }
 }
