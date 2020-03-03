@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
+import javax.script.Bindings;
 import javax.script.Compilable;
 import javax.script.CompiledScript;
 import javax.script.ScriptContext;
@@ -76,11 +77,15 @@ public class ScriptEngineTest {
         ssc.setBindings(engine.createBindings(), ScriptContext.ENGINE_SCOPE);
         ssc.setAttribute("a",3,ScriptContext.ENGINE_SCOPE);
         assertEquals(engine.eval(new StringReader("a+a*3/10^5"), ssc), engine.eval("a+a*3/10^5", ssc));
+        Bindings bd = engine.createBindings();
+        bd.put("a", 3);
+        assertEquals(engine.eval(new StringReader("a+a*3/10^5"), bd), engine.eval("a+a*3/10^5", ssc));
         assertEquals(((Compilable)engine).compile(new StringReader("a+b+c"))
                     ,((Compilable)engine).compile("a+b+c"));
         
         CompiledScript cs = ((Compilable)engine).compile(new StringReader("a+b+c"));
         assertEquals(cs.getEngine(), engine);
+        assertEquals(cs.toString(), new Script("a+b+c").toString());
         
         List<ScriptEngineFactory> factories = MANAGER.getEngineFactories();
         for(ScriptEngineFactory factory :factories) {
@@ -97,5 +102,7 @@ public class ScriptEngineTest {
         } catch (ScriptException e) {
             assertTrue(e.getCause() instanceof IOException);
         }
+        
+        
     }
 }

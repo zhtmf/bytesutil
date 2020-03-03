@@ -39,6 +39,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import io.github.zhtmf.script.Operators.BracketOperator;
+import io.github.zhtmf.script.Operators.CallOperator;
+import io.github.zhtmf.script.Operators.DotOperator;
 import io.github.zhtmf.script.Operators.IfOperator;
 import io.github.zhtmf.script.Operators.LogicalNotOperator;
 import io.github.zhtmf.script.Operators.QuestionOperator;
@@ -174,10 +176,10 @@ public class ScriptTest {
                 .token(ID, "c")
                 .token(OP, "=")
                 .token(ID, "a")
-                .token(OP, "[]")
                 .child()
                     .token(ID, "b")
                     .parent()
+                .token(OP, "[]")
                 ;
     }
     
@@ -190,7 +192,6 @@ public class ScriptTest {
                 .token(ID, "c")
                 .token(OP, "=")
                 .token(ID, "a")
-                .token(OP, "[]")
                 .child()
                     .token(ID, "b")
                     .token(OP, "+")
@@ -198,6 +199,9 @@ public class ScriptTest {
                         .token(ID, "a")
                         .token(OP, "-")
                         .token(NUM, "4")
+                        .parent()
+                    .parent()
+                .token(OP, "[]")
                 ;
     }
     
@@ -211,18 +215,18 @@ public class ScriptTest {
                 .token(ID, "c")
                 .token(OP, "=")
                 .token(ID, "a")
-                .token(OP, "[]")
                 .child()
                     .token(ID, "b")
                     .token(OP, "+")
                     .token(ID, "c")
-                    .token(OP, "[]")
                     .child()
                         .token(ID, "a")
                         .token(OP, "-")
                         .token(NUM, "4")
                         .parent()
+                    .token(OP, "[]")
                     .parent()
+                .token(OP, "[]")
                 .token(OP, "+")
                 .token(ID, "a")
                 .token(OP, "+")
@@ -240,12 +244,14 @@ public class ScriptTest {
                 .token(ID, "c")
                 .token(OP, "=")
                 .token(ID, "a")
-                .token(OP, "[]")
                 .child()
                     .token(ID, "b")
-                    .token(OP, "[]")
                     .child()
                         .token(ID, "c")
+                        .parent()
+                    .token(OP, "[]")
+                    .parent()
+                .token(OP, "[]")
                 ;
     }
     
@@ -270,20 +276,20 @@ public class ScriptTest {
                         .token(OP, "=")
                         .child()
                             .token(ID, "a")
-                            .token(OP, "[]")
                             .child()
                                 .token(ID, "b")
                                 .token(OP, "+")
                                 .token(ID, "a")
-                                .token(OP, "[]")
                                 .child()
                                     .token(ID, "b")
-                                    .token(OP, "[]")
                                     .child()
                                         .token(NUM, "3")
                                         .parent()
+                                    .token(OP, "[]")
                                     .parent()
+                                .token(OP, "[]")
                                 .parent()
+                            .token(OP, "[]")
                             .token(OP, "-")
                             .token(ID, "c")
                             .parent()
@@ -312,10 +318,11 @@ public class ScriptTest {
             .child(0)
                 .hasChild(3)
                 .token(ID, "a")
-                .token(OP, "[]")
-                .child(2)
+                .child()
                     .hasChild(1)
                     .token(STR, "b_{}[]*&#($&*(&#_ASDA")
+                    .parent()
+                .token(OP, "[]")
                 ;
     }
     
@@ -326,10 +333,11 @@ public class ScriptTest {
             .child(0)
                 .hasChild(3)
                 .token(ID, "a")
-                .token(OP, "[]")
-                .child(2)
+                .child()
                     .hasChild(1)
                     .token(STR, "b_{}[]*&#($&*(&#_ASDA")
+                    .parent()
+                .token(OP, "[]")
                 ;
     }
     
@@ -340,10 +348,11 @@ public class ScriptTest {
             .child(0)
                 .hasChild(3)
                 .token(ID, "a")
-                .token(OP, "[]")
-                .child(2)
+                .child()
                     .hasChild(1)
                     .token(STR, "b_{}[]*&#($&*(&#_ASDA")
+                    .parent()
+                .token(OP, "[]")
                 ;
     }
     
@@ -436,32 +445,32 @@ public class ScriptTest {
                 .token(NUM, "456.777")
                 .token(OP, "*")
                 .token(ID, "accc")
-                .token(OP, "[]")
                 .child()
                     .hasChild(1)
                     .token(NUM, "1.2")
                     .parent()
+                .token(OP, "[]")
                 .token(OP, "+")
                 .token(ID, "accc")
-                .token(OP, "[]")
                 .child()
                     .hasChild(1)
                     .token(NUM, "1.2")
                     .parent()
+                .token(OP, "[]")
                 .token(OP, "+")
                 .token(ID, "accc")
-                .token(OP, "[]")
                 .child()
                     .hasChild(1)
                     .token(NUM, "1.2")
                     .parent()
+                .token(OP, "[]")
                 .token(OP, "+")
                 .token(ID, "accc")
-                .token(OP, "[]")
                 .child()
                     .hasChild(1)
                     .token(NUM, "1.2")
                     .parent()
+                .token(OP, "[]")
                 ;
     }
     
@@ -588,8 +597,7 @@ public class ScriptTest {
                         .token(ID, "b")
                         .token(OP, "+")
                         .token(ID, "abdef")
-                        .token(5, OP, "[]")
-                        .child(6)
+                        .child(5)
                             .hasChild(7)
                             .token(OP, "++")
                             .token(ID, "a")
@@ -599,24 +607,26 @@ public class ScriptTest {
                             .token(OP, "-")
                             .token(NUM, "3.453")
                             .parent()
+                        .token(6, OP, "[]")
                         .parent()
                     .token(1, OP, "-")
                     .token(ID, "cCcC")
-                    .token(OP, "[]")
-                    .child(4)
+                    .child()
                         .hasChild(3)
                         .token(NUM, "4.234")
                         .token(OP, "-")
                         .token(NUM, "1.234")
                         .parent()
+                    .token(OP, "[]")
                     .token(5, OP, "*")
                     .token(NUM, "5.7")
                     .token(OP, "+")
                     .token(ID, "a")
-                    .token(OP, "[]")
-                    .child(10)
+                    .child()
                         .hasChild(1)
                         .token(STR, "$_{}[]./*_$de$")
+                        .parent()
+                    .token(OP, "[]")
             ;
     }
     
@@ -633,14 +643,14 @@ public class ScriptTest {
                     .token(ID, "abcdef")
                     .token(OP, "=")
                     .token(ID, "cc")
-                    .token(OP, "[]")
-                    .child(4)
+                    .child(3)
                         .hasChild(4)
                         .token(NUM, "3")
                         .token(OP, "*")
                         .token(ID, "bb")
                         .token(OP, "++")
                         .parent()
+                    .token(OP, "[]")
                     .token(5, OP, "*")
                     .token(NUM, "2.1")
                     .parent()
@@ -649,16 +659,16 @@ public class ScriptTest {
                     .child(0)
                         .hasChild(8)
                         .token(ID, "abcdef")
-                        .token(1, OP, "[]")
-                        .child(2)
+                        .child(1)
                             .hasChild(3)
                             .token(ID, "c")
-                            .token(1, OP, "[]")
-                            .child(2)
+                            .child(1)
                                 .hasChild(1)
                                 .token(NUM, "3")
                                 .parent()
+                            .token(2, OP, "[]")
                             .parent()
+                        .token(2, OP, "[]")
                         .token(OP, "=")
                         .token(ID, "c")
                         .token(OP, "--")
@@ -1729,9 +1739,9 @@ public class ScriptTest {
         assertScriptException(new ScriptAssertion("a[3]"));
         assertScriptException(new ScriptAssertion("a[]"),Script.class,26);
         assertScriptException(new ScriptAssertion("a[   ]"),Script.class,26);
-        assertScriptException(new ScriptAssertion("3[3]"),AffixBinaryOperator.class,1);
-        assertScriptException(new ScriptAssertion("true[3]"),AffixBinaryOperator.class,1);
-        assertScriptException(new ScriptAssertion("false[3]"),AffixBinaryOperator.class,1);
+        assertScriptException(new ScriptAssertion("3[3]"),SuffixBinaryOperator.class,1);
+        assertScriptException(new ScriptAssertion("true[3]"),SuffixBinaryOperator.class,1);
+        assertScriptException(new ScriptAssertion("false[3]"),SuffixBinaryOperator.class,1);
         assertScriptException(new ScriptAssertion("(a+b+c)[3]"));
         assertScriptException(new ScriptAssertion("a[3]"));
         assertScriptException(new ScriptAssertion("a[b]"));
@@ -3038,15 +3048,16 @@ public class ScriptTest {
     // property access [] .
     @Test
     public void testAV() throws Exception {
+        
+        //accessing map property by []
+        testEvaluation("a$$$$['abc']+'rrr'", 
+                asMap("a$$$$",asMap("abc",new BigDecimal("345.6"))));
         //indexing array by []
         testEvaluation("a$$$$[3]+'rrr'", 
                 asMap("a$$$$",new String[] {"abc","def","tttt","3333"}));
         //indexing list by []
         testEvaluation("a$$$$[3]+'rrr'", 
                 asMap("a$$$$",Arrays.asList("abc","def","tttt","3333")));
-        //accessing map property by []
-        testEvaluation("a$$$$['abc']+'rrr'", 
-                asMap("a$$$$",asMap("abc",new BigDecimal("345.6"))));
         //accessing object property by []
         //obtaining length/size
         testEvaluation("'abc'.length", asMap());
@@ -3146,6 +3157,8 @@ public class ScriptTest {
         assertEquals(evaluateMine("abc.length", asMap("abc",new TestObject()))+"", "333");
         assertEquals(evaluateMine("abc.size", asMap("abc",asMap("a","b","b","c","d",1)))+"", "3");
         
+        testEvaluation("(abc.list[0])['len'+'gth']", asMap("abc",new TestObject()));
+        
         //setter throws exception
         try {
             evaluateMine("abc.propertyX = 333;", asMap("abc",new TestObject()));
@@ -3153,8 +3166,21 @@ public class ScriptTest {
             testException(e, Identifier.class, 5);
         }
         
+        assertEvaluationException("null['abc'](3)", asMap("obj",new TestMethodCall()), SuffixBinaryOperator.class, 1);
+        
         testEvaluation("''['']", asMap("abc",new TestObject()));
         
+        assertEvaluationException("(3+4).c"
+                , asMap("obj",new TestMethodCall())
+                , DotOperator.class, 0);
+        
+        assertEvaluationException("obj[false]"
+                , asMap("obj",new TestMethodCall())
+                , BracketOperator.class, 2);
+        
+        assertEvaluationException("java.lang.SystemXXX.abc", asMap(), Identifier.class, 13);
+        //trigger cache
+        assertEvaluationException("java.lang.SystemXXX.abc", asMap(), Identifier.class, 13);
     }
     
     //set static property
@@ -3280,6 +3306,16 @@ public class ScriptTest {
     //assign = 
     @Test
     public void testAY() throws Exception{
+        //assign values to property represented by interspersed [] and . expressions
+        testEvaluation("a='ghi';ghi[a].list[2][1] = '12345';ghi[a].list[2][1]"
+                ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
+        testEvaluation("a='ghi';b=2;c=1;ghi[a].list[b][c] = '12345';ghi[a].list[b][c]"
+                ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
+        testEvaluation("a='ghi';b=2;c=1;d=c;e=d;f=b;ghi[a].list[f][e] = '12345';ghi[a].list[f][e]"
+                ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
+        testEvaluation("ghi['ghi'].list[2][1] = '12345';ghi['ghi'].list[2][1]"
+                ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
+        
         //assign to new references
         testEvaluation("aaaa = null;aaaa", asMap("obj",new TestObject()));
         testEvaluation("aaaa = false;aaaa", asMap("obj",new TestObject()));
@@ -3308,12 +3344,6 @@ public class ScriptTest {
         testEvaluation("ghi.ghi.str1 = '12345';ghi.ghi.str1"
                 ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
         
-        //assign values to property represented by interspersed [] and . expressions
-        testEvaluation("ghi['ghi'].list[2][1] = '12345';ghi['ghi'].list[2][1]"
-                ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
-        testEvaluation("a='ghi';ghi[a].list[2][1] = '12345';ghi[a].list[2][1]"
-                ,asMap("obj","def","ghi",asMap("obj","def","ghi", new TestObject())));
-        
         //assign values of local reference to a global variable
         Assert.assertEquals(evaluateMine("a=3.0;obj.abc=a;obj.abc", asMap("obj",new TestObject()))+"", "3.0");
         
@@ -3324,7 +3354,7 @@ public class ScriptTest {
         try {
             evaluateMine("obj.list2.abc = 5", asMap("obj",new TestObject()));
         } catch (Exception e) {
-            testException(e, Identifier.class, 8);
+            testException(e, Identifier.class, 13);
         }
         
         //both value to be assigned and property accessing are complex expression
@@ -3814,9 +3844,14 @@ public class ScriptTest {
         testEvaluationConcurrently(script,asMap("a",3,"b",4,"c",5,"d",20),10,20);
     }
     
-    //missed instructions, branches
+    //missed instructions, branches, corner cases
     @Test
     public void testBU() throws Exception{
+        
+        assertEvaluationException("str1=map1.ccc;str1['length']", asMap("map1",asMap("abc","def","ttt",3)
+                ,"map2",false), Identifier.class, 13);
+        
+        testEvaluation("str1=map1.abc;str1['length']", asMap("map1",asMap("abc","def","ttt",3)));
         
         //esacpe sequences in string
         testEvaluation("a+b+c+'\\'\\b\\f\\n\\r\\t \\\\ abcdef'", asMap("a","abc","b","bac","c","cab"));
@@ -3881,10 +3916,10 @@ public class ScriptTest {
         }
         
         try {
-            evaluateMine("str1=null;map1[str2]", asMap("map1",asMap("abc","def","ttt",3),"map2",false));
+            evaluateMine("str1=null;map1[str1]", asMap("map1",asMap("abc","def","ttt",3),"map2",false));
             Assert.fail();
         } catch (Exception e) {
-            testException(e, BracketOperator.class, 3);
+            testException(e, BracketOperator.class, 1);
         }
         testEvaluation("str1='map';str2=str1+1;map1[str2]", asMap("map1",asMap("abc","def","ttt",3),"map2",false));
         
@@ -4010,19 +4045,6 @@ public class ScriptTest {
         
         Object obj = evaluateMine("java.lang.System.currentTimeMillis",asMap("a",1,"b",2));
         assertTrue(obj instanceof Number);
-        
-        try {
-            evaluateMine("a.b=3;",asMap("a",null));
-            fail();
-        } catch (Exception e) {
-            testException(e, Identifier.class, 8);
-        }
-        try {
-            evaluateMine("a=java.lang.System.abc;a.b=3;",asMap("a",null));
-            fail();
-        } catch (Exception e) {
-            testException(e, Identifier.class, 8);
-        }
     }
     
     //cover impossible branches
@@ -4045,8 +4067,40 @@ public class ScriptTest {
             assertTrue(e instanceof UnsupportedOperationException);
         }
         assertEquals(id.getId(), -"abc".hashCode());
+        
+        try {
+            BracketOperator op = new BracketOperator();
+            op.checkOperands(Arrays.asList(Identifier.of("abc"),1,op), 2);
+        } catch (Exception e) {
+            testException(e, SuffixBinaryOperator.class, 2);
+        }
+        
+        assertEquals(new Script("abcdef;").toString(), "Script[abcdef;]");
+        
+        assertEquals(new PListStatement().getType(), "PLIST");
+        
+        new EmptyStatement().evaluate(null);
+        
+        {
+            Identifier list = Identifier.of("a").add(Identifier.of("b")).add(Identifier.of("c"));
+            try {
+                list.call(asMap("a",345), null, null);
+            } catch (Exception e) {
+                testException(e, Identifier.class, 9);
+            }
+        }
+        
+        {
+            Identifier list = Identifier.of("a").add(Identifier.of("b")).add(Identifier.of("c"));
+            try {
+                list.set(asMap("a",345), new Object());
+            } catch (Exception e) {
+                testException(e, Identifier.class, 8);
+            }
+        }
     }
     
+    //method call
     @Test
     public void testBV() throws Exception{
         //check parameter values
@@ -4097,6 +4151,10 @@ public class ScriptTest {
         //parameter is another expression
         assertEquals(evaluateMine("obj.multipleParameters(1+3,2*4/5+6-7^3,'345'+str1+map1['t'+'tt'],false)"
                 , asMap("obj",new TestMethodCall(),"str1","aaa","map1",asMap("ttt","111"))).toString(), "2");
+        assertEquals(evaluateMine("obj['multipleParameters'](1+3,2*4/5+6-7^3,'345'+str1+map1['t'+'tt'],false)"
+                , asMap("obj",new TestMethodCall(),"str1","aaa","map1",asMap("ttt","111"))).toString(), "2");
+        assertEquals(evaluateMine("obj['multi'+'pleParameters'](1+3,2*4/5+6-7^3,'345'+str1+map1['t'+'tt'],false)"
+                , asMap("obj",new TestMethodCall(),"str1","aaa","map1",asMap("ttt","111"))).toString(), "2");
         //method call with one parameter
         assertEquals(evaluateMine("obj.oneParameter(3)", asMap("obj",new TestMethodCall())).toString(), "1");
         //method call with multiple parameters
@@ -4104,10 +4162,10 @@ public class ScriptTest {
         //parameter is another () expression
         assertEquals(evaluateMine("obj.nestingParentheses((1+333),(2*4)+5,'3456',((false))|true&((false)))"
                 , asMap("obj",new TestMethodCall())).toString(), "3");
-        
-        assertEvaluationException("abc(3)", asMap("obj",new TestMethodCall()), Identifier.class, 9);
-        
-        assertEvaluationException("null['abc'](3)", asMap("obj",new TestMethodCall()), Identifier.class, 9);
+        //method call within []
+        testEvaluation("obj['testNumber'+'a'.length()+'bcd'.length()](3,4)", asMap("obj",new TestMethodCall()));
+        //call method by string name
+        testEvaluation("'abc'['len'+'gth']()", asMap("obj",new TestMethodCall()));
     }
     
     @Test
@@ -4146,6 +4204,9 @@ public class ScriptTest {
         
         //ambiguous call
         assertEvaluationException("obj.maxSpecific2(-3,-4) + 1", asMap("obj",new TestMethodCall()), Identifier.class, 11);
+        
+        //directly call method on global object
+        assertEvaluationException("abc(3)", asMap("obj",new TestMethodCall()), Identifier.class, 9);
     }
     
     @Test
@@ -4153,7 +4214,7 @@ public class ScriptTest {
         //calling method on null reference
         assertEvaluationException("a=null;a.length()"
                 , asMap("obj",new TestMethodCall())
-                , Identifier.class, 9);
+                , Identifier.class, 13);
         
         //mismatch
         assertEvaluationException("obj.nullMismatch(null)"
@@ -4178,6 +4239,11 @@ public class ScriptTest {
         assertEvaluationException("obj.exception('3')"
                 , asMap("obj",new TestMethodCall())
                 , Identifier.class, 10);
+        
+        //illegal parameter type
+        assertEvaluationException("obj.oneParameter(c)"
+                , asMap("obj",new TestMethodCall(),"c",new Object())
+                , CallOperator.class, 0);
     }
     
     @Test
@@ -4198,6 +4264,13 @@ public class ScriptTest {
                 , Identifier.class, 12);
         assertEvaluationException("obj.static2(3)"
                 , asMap("obj",TestMethodCall.class)
+                , Identifier.class, 12);
+        
+        assertEvaluationException("obj[3](3)"
+                , asMap("obj",asList(1,2,3,4,5))
+                , Identifier.class, 12);
+        assertEvaluationException("a=3;obj[a](3)"
+                , asMap("obj",asList(1,2,3,4,5))
                 , Identifier.class, 12);
     }
     

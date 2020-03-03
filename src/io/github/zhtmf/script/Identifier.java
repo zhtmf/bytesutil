@@ -740,8 +740,11 @@ abstract class Identifier {
             }
             
             Object result = dereference0(root);
-            if(result != null && result != Identifier.class) {
+            if(result != null) {
                 result = list.get(list.size()-1).dereference(result);
+            }else {
+                throw new ParsingException("dereferencing null")
+                    .withSiteAndOrdinal(Identifier.class, 13);
             }
             
             return result;
@@ -750,6 +753,9 @@ abstract class Identifier {
         @Override
         void set(Object root, Object value) {
             root = dereference0(root);
+            //root cannot be null
+            //as all identifiers are first cached before evaluated by assign operator
+            //this check may be required if that logic is modified in the future
             if(root == null)
                 throw new ParsingException("setting property on null object")
                     .withSiteAndOrdinal(Identifier.class, 8);
@@ -758,6 +764,9 @@ abstract class Identifier {
         
         @Override
         Object call(Object root, Object[] parameters, TokenType[] parameterTypes) {
+            //root cannot be null
+            //as all identifiers are first cached before evaluated by call operator
+            //this check may be required if that logic is modified in the future
             root = dereference0(root);
             if(root == null)
                 throw new ParsingException("calling method on null object")
@@ -799,7 +808,8 @@ abstract class Identifier {
         private Object dereference0(Object root) {
             Object result = root;
             List<Identifier> list = this.list;
-            for(int k=0, to = list.size()-1;k<to;++k) {
+            int k = 0, to = list.size()-1;
+            for(;k<to;++k) {
                 Identifier id = list.get(k);
                 result = id.dereference(result);
                 if(result == null)
