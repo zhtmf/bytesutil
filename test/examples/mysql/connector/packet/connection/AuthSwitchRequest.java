@@ -28,7 +28,7 @@ public class AuthSwitchRequest extends DataPacket implements PayLoadLengthAware{
     
     @Order(2)
     @CHAR
-    @Length(scripts = @Script(value = "", deserialize = "entity.payLoadLength - handler.offset"))
+    @Length(scripts = @Script(value = "", deserialize = "entity.payLoadLength - handler.offset()"))
     public String pluginProvidedData;
     
     @Override

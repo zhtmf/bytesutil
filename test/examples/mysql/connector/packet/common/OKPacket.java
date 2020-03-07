@@ -96,7 +96,7 @@ public class OKPacket extends DataPacket implements ClientCapabilityAware, PayLo
     //RestOfPacketStringHandler
     @Length(scripts = @Script(
             value = "(entity[fieldName] + '').length"
-    ,deserialize = "entity.payLoadLength - handler.offset"))
+    ,deserialize = "entity.payLoadLength - handler.offset()"))
     public String info2;
     
     @Override

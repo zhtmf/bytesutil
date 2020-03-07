@@ -6,8 +6,10 @@ import java.lang.annotation.Retention;
 
 @Retention(RUNTIME)
 public @interface Script {
+    
+    public static final String DEFAULT = "\0";
 
     String value();
     
-    String deserialize() default "";
+    String deserialize() default DEFAULT;
 }

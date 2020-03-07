@@ -30,12 +30,20 @@ class ZhtmfCompiledScript extends CompiledScript{
                 global.putAll(bindings);
             }
         }
-        return compiledScript.evaluate(global);
+        try {
+            return compiledScript.evaluate(global);
+        } catch (ParsingException e) {
+            throw new ScriptException(e);
+        }
     }
     
     @Override
     public Object eval(Bindings bindings) throws ScriptException {
-        return compiledScript.evaluate(bindings);
+        try {
+            return compiledScript.evaluate(bindings);
+        } catch (ParsingException e) {
+            throw new ScriptException(e);
+        }
     }
     
     @Override

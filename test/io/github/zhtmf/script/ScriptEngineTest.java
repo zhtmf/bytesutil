@@ -22,6 +22,8 @@ import javax.script.SimpleScriptContext;
 
 import org.junit.Test;
 
+import io.github.zhtmf.converters.TestUtils;
+
 public class ScriptEngineTest {
     
     private static final ScriptEngineManager MANAGER = new ScriptEngineManager();
@@ -103,6 +105,11 @@ public class ScriptEngineTest {
             assertTrue(e.getCause() instanceof IOException);
         }
         
-        
+        try {
+            engine.eval("a*b", ssc);
+            fail();
+        } catch (ScriptException e) {
+            TestUtils.assertException(e, ParsingException.class);
+        }
     }
 }

@@ -33,9 +33,12 @@ public class TestUtils {
         throw new IllegalArgumentException(expected+" not found",original);
     }
     public static boolean assertExactException(Throwable ex,Class<?> site, int ordinal) {
-        if(!((ex instanceof ExactException)
-        && ((ExactException)ex).getSite() == site
-        && ((ExactException)ex).getOrdinal() == ordinal)){
+        if(!(ex instanceof ExactException)) {
+            ex.printStackTrace();
+            throw new IllegalArgumentException(ex.getClass()+" not expected");
+        }
+        if(((ExactException)ex).getSite() != site
+        || ((ExactException)ex).getOrdinal() != ordinal){
             throw new IllegalArgumentException(ex+" "+((ExactException)ex).getSite()+" "+((ExactException)ex).getOrdinal()+" not expected");
         }
         return true;

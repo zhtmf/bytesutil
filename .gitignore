@@ -5,3 +5,5 @@
 .project
 .settings
 *.vsd
+
+src/io/github/zhtmf/converters/MiniScriptTest.java

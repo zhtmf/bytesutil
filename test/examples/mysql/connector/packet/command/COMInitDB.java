@@ -16,6 +16,6 @@ public class COMInitDB extends DataPacket{
     @CHAR
     @Length(scripts = @Script(
             value = "(entity[fieldName] + '').length"
-    ,deserialize = "entity.payLoadLength - handler.offset"))
+    ,deserialize = "entity.payLoadLength - handler.offset()"))
     public String schemaName;
 }

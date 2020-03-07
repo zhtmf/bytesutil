@@ -45,7 +45,7 @@ public class ERRPacket extends DataPacket implements ClientCapabilityAware, PayL
     
     @Order(4)
     @CHAR
-    @Length(scripts = @Script(value = "entity.errorMessage.length", deserialize = "entity.payLoadLength - handler.offset"))
+    @Length(scripts = @Script(value = "entity.errorMessage.length", deserialize = "entity.payLoadLength - handler.offset()"))
     public String errorMessage;
     
     @Override

@@ -19,11 +19,6 @@ class ScriptModifierHandler<E> extends ModifierHandler<E>{
     private final CompiledScript scriptDeserialize;
     private final Class<?> handlerClass;
     private static final ScriptEngine engine = new ScriptEngineManager().getEngineByName("__zhtmf-script");
-    private static final ThreadLocal<Bindings> THREADLOCALBINDINGS = new ThreadLocal<Bindings>() {
-        protected Bindings initialValue() {
-            return engine.createBindings();
-        };
-    };
     
     public ScriptModifierHandler(String scriptSerialize, String scriptDeserialize, Class<E> handlerClass) throws ScriptException {
         Compilable compilable = (Compilable)engine;
@@ -39,7 +34,7 @@ class ScriptModifierHandler<E> extends ModifierHandler<E>{
             throw new UnsatisfiedIOException(
                     "script is absent, which may means this script should not be called during deserialization")
                         .withSiteAndOrdinal(ScriptModifierHandler.class, 3);
-        Bindings bindings = THREADLOCALBINDINGS.get();
+        Bindings bindings = engine.createBindings();
         bindings.put("fieldName", fieldName);
         bindings.put("entity", entity);
         bindings.put("handler", this);
@@ -58,7 +53,7 @@ class ScriptModifierHandler<E> extends ModifierHandler<E>{
             throw new UnsatisfiedConstraintException(
                     "script is absent, which may means this script should not be called during serialization")
                         .withSiteAndOrdinal(ScriptModifierHandler.class, 4);
-        Bindings bindings = THREADLOCALBINDINGS.get();
+        Bindings bindings = engine.createBindings();
         bindings.put("fieldName", fieldName);
         bindings.put("entity", entity);
         bindings.put("handler", this);

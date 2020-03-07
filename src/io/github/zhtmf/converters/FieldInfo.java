@@ -357,28 +357,28 @@ class FieldInfo{
         
         Conditional conditional = localAnnotation(Conditional.class);
         
-            if(conditional != null) {
-                Script[] scripts = conditional.scripts();
-                if(scripts.length > 0) {
-                    this.conditionalHandler = 
-                            new DelegateModifierHandler<>(this.<Boolean>createScriptModifierHandler(scripts, Boolean.class));
-                }else {
-                    Class<? extends ModifierHandler<Boolean>> handlerclaClass = conditional.value();
-                    if(isDummy(handlerclaClass)) {
-                        throw forContext(base.entityClass, name,
-                                "custom implementation of Conditional handler must be provided")
-                        .withSiteAndOrdinal(FieldInfo.class, 26);
-                    }
-                    try {
-                        this.conditionalHandler = new DelegateModifierHandler<Boolean>(handlerclaClass.newInstance());
-                    } catch (Exception e) {
-                        throw forContext(base.entityClass, name, "ModiferHandler of Conditional cannot be instantiated by no-arg contructor")
-                        .withSiteAndOrdinal(FieldInfo.class, 25);
-                    }
-                }
+        if(conditional != null) {
+            Script[] scripts = conditional.scripts();
+            if(scripts.length > 0) {
+                this.conditionalHandler = 
+                        new DelegateModifierHandler<>(this.<Boolean>createScriptModifierHandler(scripts, Boolean.class));
             }else {
-                this.conditionalHandler = null;
+                Class<? extends ModifierHandler<Boolean>> handlerclaClass = conditional.value();
+                if(isDummy(handlerclaClass)) {
+                    throw forContext(base.entityClass, name,
+                            "custom implementation of Conditional handler must be provided")
+                    .withSiteAndOrdinal(FieldInfo.class, 26);
+                }
+                try {
+                    this.conditionalHandler = new DelegateModifierHandler<Boolean>(handlerclaClass.newInstance());
+                } catch (Exception e) {
+                    throw forContext(base.entityClass, name, "ModiferHandler of Conditional cannot be instantiated by no-arg contructor")
+                    .withSiteAndOrdinal(FieldInfo.class, 25);
+                }
             }
+        }else {
+            this.conditionalHandler = null;
+        }
         
         Converter<?> converter = null;
         if(isEntityList) {
@@ -776,7 +776,7 @@ class FieldInfo{
     
     //↑ utility methods used by converters
     
-    private <T> boolean isDummy(Class<? extends ModifierHandler<T>> mc) {
+    private static <T> boolean isDummy(Class<? extends ModifierHandler<T>> mc) {
         return mc.getName().startsWith("io.github.zhtmf.annotations.modifiers.PlaceHolderHandler");
     }
     
@@ -880,7 +880,7 @@ class FieldInfo{
             Script first = annotations[0];
             if(first != null) {
                 String serialize = first.value();
-                String deserialize = first.deserialize().isEmpty() ? serialize : first.deserialize();
+                String deserialize = first.deserialize().equals(Script.DEFAULT) ? serialize : first.deserialize();
                 if( ! serialize.isEmpty() || ! deserialize.isEmpty())
                     try {
                         return new ScriptModifierHandler<E>(serialize,deserialize,clazz);

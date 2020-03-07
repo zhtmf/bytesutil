@@ -343,11 +343,12 @@ public class Script {
      * This method can be called concurrently. As the <tt>global</tt> parameter is
      * copied internally it can be reused across different calls.
      * 
-     * @param global  initial global mappings
+     * @param global initial global mappings
      * @throws IllegalStateException if this script has not been compiled in
-     *                               advance.
+     *         advance.
+     * @throws ParsingException error thrown by script itself
      */
-    public Object evaluate(Map<String, Object> global) throws IllegalStateException {
+    public Object evaluate(Map<String, Object> global) throws IllegalStateException, ParsingException {
         if(!compiled) {
             throw new IllegalStateException("not compiled");
         }
