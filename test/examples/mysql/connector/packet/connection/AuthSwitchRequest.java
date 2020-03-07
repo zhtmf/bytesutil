@@ -1,18 +1,15 @@
 package examples.mysql.connector.packet.connection;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import examples.mysql.connector.packet.PayLoadLengthAware;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
-import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @LittleEndian
 @Unsigned
@@ -31,22 +28,9 @@ public class AuthSwitchRequest extends DataPacket implements PayLoadLengthAware{
     
     @Order(2)
     @CHAR
-    @Length(handler=PluginProvidedData.class)
+    @Length(scripts = @Script(value = "", deserialize = "entity.payLoadLength - handler.offset()"))
     public String pluginProvidedData;
     
-    public static class PluginProvidedData extends ModifierHandler<Integer>{
-        @Override
-        public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            AuthSwitchRequest ret = (AuthSwitchRequest)entity;
-            return ret.payLoadLength - offset();
-        }
-
-        @Override
-        public Integer handleSerialize0(String fieldName, Object entity) {
-            throw new UnsupportedOperationException();
-        }
-    }
-
     @Override
     public String toString() {
         return "AuthSwitchRequest [header=" + header + ", pluginName=" + pluginName

@@ -14,6 +14,8 @@ import io.github.zhtmf.converters.auxiliary.DataType;
 
 class StreamUtils {
     
+    private StreamUtils() {}
+    
     public static void writeBYTE(OutputStream os, byte value) throws IOException {
         os.write(value);
     }

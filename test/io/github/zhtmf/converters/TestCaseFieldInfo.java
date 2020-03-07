@@ -1,5 +1,7 @@
 package io.github.zhtmf.converters;
 
+import static org.junit.Assert.fail;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -17,9 +19,11 @@ import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.TypeConverter;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
@@ -447,6 +451,56 @@ public class TestCaseFieldInfo {
             Assert.fail();
         } catch (Exception e) {
             TestUtils.assertExactException(e, FieldInfo.class, 22);
+        }
+    }
+    
+    @Unsigned
+    public static class Entity23 extends DataPacket{
+        @BYTE
+        @Order(0)
+        public int len;
+        @CHAR(3)
+        @Conditional(scripts = @Script("return 3()*4;"))
+        @CHARSET(scripts = @Script("return 3;"))
+        @Order(1)
+        public String str;
+    }
+    
+    @Test
+    public void test23() throws ConversionException {
+        Entity23 entity = new Entity23();
+        entity.len = 5;
+        entity.str = "abc";
+        try {
+            entity.serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 12);
+        }
+    }
+    
+    @Unsigned
+    public static class Entity24 extends DataPacket{
+        @BYTE
+        @Order(0)
+        public int len;
+        @CHAR(3)
+        @Conditional
+        @CHARSET(scripts = @Script("return 'gbk';"))
+        @Order(1)
+        public String str;
+    }
+    
+    @Test
+    public void test24() throws ConversionException {
+        Entity24 entity = new Entity24();
+        entity.len = 5;
+        entity.str = "abc";
+        try {
+            entity.serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 26);
         }
     }
 }

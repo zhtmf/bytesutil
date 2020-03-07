@@ -1,4 +1,4 @@
-package examples.mysql.connector.packet;
+package examples.mysql.connector.packet.connection;
 
 public class ClientCapabilities {
     public static final int CLIENT_PLUGIN_AUTH = 1<<19;

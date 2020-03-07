@@ -23,4 +23,5 @@ class PlaceHolderHandler<E> extends ModifierHandler<E> {
     }
     static class DefaultCharsetHandler extends PlaceHolderHandler<Charset>{}
     static class DefaultLengthHandler extends PlaceHolderHandler<Integer>{}
+    static class DefaultConditionalHandler extends PlaceHolderHandler<Boolean>{}
 }

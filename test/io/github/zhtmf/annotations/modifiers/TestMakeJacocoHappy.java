@@ -7,7 +7,7 @@ import io.github.zhtmf.converters.TestUtils;
 public class TestMakeJacocoHappy {
     @SuppressWarnings("rawtypes")
     @Test
-    public void testMakeJacocoHappy() throws Exception {
+    public void test() {
         {
             try {
                 new io.github.zhtmf.annotations.modifiers.PlaceHolderHandler().handleDeserialize0(null, null, null);
@@ -21,6 +21,7 @@ public class TestMakeJacocoHappy {
             }
             new PlaceHolderHandler.DefaultCharsetHandler();
             new PlaceHolderHandler.DefaultLengthHandler();
+            new PlaceHolderHandler.DefaultConditionalHandler();
         }
     }
 }

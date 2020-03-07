@@ -48,4 +48,28 @@ public @interface ListLength {
      * @return  handler class
      */
     Class<? extends ModifierHandler<Integer>> handler() default PlaceHolderHandler.DefaultLengthHandler.class;
+    
+    /**
+     * Use a {@link Script Script} to generate implementation of {@link #value()
+     * value}.
+     * <p>
+     * This property is defined as an array only for convenience of specifying
+     * default value. Only one {@link Script Script} is required and only the first
+     * element is used to generate the implementation.
+     * <p>
+     * Compilation of the script is done during initial parsing process and any
+     * syntax error will result in exceptions thrown. Even the annotated property is
+     * never processed during actual serialization/deserialization.
+     * <p>
+     * If both {@link #value() value} and this property are assigned
+     * {@link #value() value} takes precedence.
+     * <p>
+     * For more information on how to write the script, please refer to comments on
+     * {@link Script Script} and the README file under
+     * <tt>io.github.zhtmf.script</tt> package.
+     * 
+     * @return an array of {@link Script Script} annotations. However only the first
+     *         one is used to generate handler implementation.
+     */
+    Script[] scripts() default {};
 }

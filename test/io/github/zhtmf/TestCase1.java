@@ -2,6 +2,8 @@ package io.github.zhtmf;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -71,45 +73,48 @@ public class TestCase1 {
     }
     
     @Test
-    public void testPerformance() throws ConversionException {
-        
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    public void testPerformance() throws ConversionException, IOException {
         {
-            long st = System.currentTimeMillis();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             for(int i=0;i<100000;++i) {
+                entity.serialize(baos);
                 baos.reset();
-                entity.serialize(baos);
             }
-            long elapsed = System.currentTimeMillis() - st;
-            System.out.println("time elapsed:"+elapsed);
-            Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
         }
-        
         {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
             long st = System.currentTimeMillis();
-            byte[] bts = baos.toByteArray();
-            ByteArrayInputStream bais = new ByteArrayInputStream(bts);
-            bais.mark(Integer.MAX_VALUE);
-            MyEntity entity2 = null;
             for(int i=0;i<100000;++i) {
-                bais.reset();
-                entity2 = new MyEntity();
-                entity2.deserialize(bais);
+                entity.serialize(baos);
+                baos.reset();
             }
             long elapsed = System.currentTimeMillis() - st;
             System.out.println("time elapsed:"+elapsed);
-            Assert.assertTrue(TestUtils.equalsOrderFields(entity, entity2));
             Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
         }
-        
         {
-            baos = new ByteArrayOutputStream();
-            for(int i=0;i<1500;++i) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            entity.serialize(baos);
+            byte[] arr = baos.toByteArray();
+            InputStream src = TestUtils.newInputStream(arr);
+            src.mark(Integer.MAX_VALUE);
+            long st = System.currentTimeMillis();
+            for(int i=0;i<100000;++i) {
+                new MyEntity().deserialize(src);
+                src.reset();
+            }
+            long elapsed = System.currentTimeMillis() - st;
+            System.out.println("time elapsed:"+elapsed);
+            Assert.assertTrue("time elapsed:"+elapsed, elapsed<4000);
+        }
+        {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            for(int i=0;i<31;++i) {
                 entity.serialize(baos);
             }
             byte[] bts = baos.toByteArray();
             ByteArrayInputStream bais = new ByteArrayInputStream(bts);
-            for(int i=0;i<1500;++i) {
+            for(int i=0;i<31;++i) {
                 MyEntity entity2 = new MyEntity();
                 entity2.deserialize(bais);
                 Assert.assertTrue(TestUtils.equalsOrderFields(entity, entity2));
@@ -128,11 +133,5 @@ public class TestCase1 {
         entity2.deserialize(new ByteArrayInputStream(bts));
         Assert.assertTrue(TestUtils.equalsOrderFields(entity,entity2));
         Assert.assertEquals(entity2.subEntityList.get(0).carryOver, entity2.a);
-    }
-    
-    public static void main(String[] args) throws ConversionException {
-        TestCase1 tc1 = new TestCase1();
-        tc1.setValues();
-        tc1.testEntity1();
     }
 }

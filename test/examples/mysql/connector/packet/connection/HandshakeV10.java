@@ -1,23 +1,20 @@
 package examples.mysql.connector.packet.connection;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 
-import examples.mysql.connector.packet.ClientCapabilities;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
-import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 @Unsigned
 @LittleEndian
@@ -76,48 +73,21 @@ public class HandshakeV10 extends DataPacket{
     public int authPluginDataLen;
 
     @Order(10)
-    @RAW(10)
+    @RAW(10) 
     public byte[] reserved;
     
     @Order(11)
     @RAW
-    @Length(handler=RestPluginLength.class)
+    @Length(scripts = @Script("a=entity.authPluginDataLen-8;a<13 ? 13 : a;"))
     public byte[] restPluginProvidedData;
     
     @Order(12)
     @CHAR
     @EndsWith({'\0'})
-    @Conditional(PluginName.class)
+    @Conditional(scripts = @Script("((entity.capFlags2 << 16 | entity.capFlags1) & "
+            +ClientCapabilities.CLIENT_PLUGIN_AUTH+") != 0"))
     public String authPluginName;
     
-    public static class RestPluginLength extends ModifierHandler<Integer>{
-        @Override
-        public Integer handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            HandshakeV10 v10 = (HandshakeV10)entity;
-            return Math.max(13, v10.authPluginDataLen-8);
-        }
-
-        @Override
-        public Integer handleSerialize0(String fieldName, Object entity) {
-            HandshakeV10 v10 = (HandshakeV10)entity;
-            return Math.max(13, v10.authPluginDataLen-8);
-        }
-    }
-    
-    public static class PluginName extends ModifierHandler<Boolean>{
-        @Override
-        public Boolean handleDeserialize0(String fieldName, Object entity, InputStream is) throws IOException {
-            HandshakeV10 v10 = (HandshakeV10)entity;
-            return ((v10.capFlags2 << 16 | v10.capFlags1) & (ClientCapabilities.CLIENT_PLUGIN_AUTH) )!=0;
-        }
-
-        @Override
-        public Boolean handleSerialize0(String fieldName, Object entity) {
-            HandshakeV10 v10 = (HandshakeV10)entity;
-            return ((v10.capFlags2 << 16 | v10.capFlags1) & (ClientCapabilities.CLIENT_PLUGIN_AUTH) )!=0;
-        }
-    }
-
     @Override
     public String toString() {
         return super.toString()+"HandshakeV10 [version=" + version + ", serverVersion=" + serverVersion + ", threadId=" + threadId

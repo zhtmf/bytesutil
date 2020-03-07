@@ -30,10 +30,10 @@
 	</scm>
 
 	<properties>
-		<jdk.version>1.7</jdk.version>
+		<jdk.version>1.8</jdk.version>
 		<junit.version>4.11</junit.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<jacoco.version>0.7.5.201505241946</jacoco.version>
+		<jacoco.version>0.8.5</jacoco.version>
 	</properties>
 
 	<dependencies>
@@ -69,6 +69,8 @@
 				<configuration>
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
+					<testSource>1.8</testSource>
+                    <testTarget>1.8</testTarget>
 				</configuration>
 			</plugin>
 			<plugin>

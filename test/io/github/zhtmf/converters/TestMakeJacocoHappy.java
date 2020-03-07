@@ -1,5 +1,7 @@
 package io.github.zhtmf.converters;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
@@ -17,60 +19,6 @@ import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 public class TestMakeJacocoHappy {
-    @Test
-    public void testMakeJacocoHappy() throws Exception {
-        {
-            class MySub extends EntityHandler{
-                
-                @Override
-                public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-                    return null;
-                }
-            }
-            try {
-                new MySub().handleSerialize0(null,null);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-        }
-        {
-            try {
-                Method mtd = DataTypeOperations.class.getDeclaredMethod("mappedEnumFieldClass");
-                mtd.setAccessible(true);
-                mtd.invoke(DataTypeOperations.USER_DEFINED);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                Method mtd = DataTypeOperations.class.getDeclaredMethod("size");
-                mtd.setAccessible(true);
-                mtd.invoke(DataTypeOperations.USER_DEFINED);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                Method mtd = DataTypeOperations.class.getDeclaredMethod("checkRange",long.class,boolean.class);
-                mtd.setAccessible(true);
-                mtd.invoke(DataTypeOperations.USER_DEFINED,0L,Boolean.FALSE);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                Method mtd = DataTypeOperations.class.getDeclaredMethod("checkRange",BigInteger.class,boolean.class);
-                mtd.setAccessible(true);
-                mtd.invoke(DataTypeOperations.USER_DEFINED,BigInteger.ZERO,Boolean.TRUE);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-            try {
-                Method mtd = DataTypeOperations.class.getDeclaredMethod("checkRange",long.class,int.class);
-                mtd.setAccessible(true);
-                mtd.invoke(DataTypeOperations.USER_DEFINED,0L,0);
-            } catch (Exception e) {
-                TestUtils.assertException(e, UnsupportedOperationException.class);
-            }
-        }
-    }
     
     @Test
     public void test0() throws Exception {
@@ -79,9 +27,6 @@ public class TestMakeJacocoHappy {
             Constructor c = Converters.class.getDeclaredConstructor();
             c.setAccessible(true);
             c.newInstance();
-        }
-        {
-            new StreamUtils();
         }
     }
     
@@ -171,6 +116,71 @@ public class TestMakeJacocoHappy {
             .handleSerialize0(null, null);
             Assert.fail();
         } catch (UnsupportedOperationException e) {
+        }
+    }
+    
+    @Test
+    public void testMakeJacocoHappy() throws Exception {
+        {
+            class MySub extends EntityHandler{
+                
+                @Override
+                public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
+                    return null;
+                }
+            }
+            try {
+                new MySub().handleSerialize0(null,null);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+        }
+        {
+            try {
+                Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("mappedEnumFieldClass");
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+            try {
+                Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("size");
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+            try {
+                Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("checkRange",long.class,boolean.class);
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED,0L,Boolean.FALSE);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+            try {
+                Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("checkRange",BigInteger.class,boolean.class);
+                mtd.setAccessible(true);
+                mtd.invoke(DataTypeOperations.USER_DEFINED,BigInteger.ZERO,Boolean.TRUE);
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+        }
+        {
+            Constructor<StreamUtils> cons = StreamUtils.class.getDeclaredConstructor();
+            cons.setAccessible(true);
+            cons.newInstance();
+        }
+        {
+            try {
+                StreamUtils.writeIntegerOfType(null, DataType.INT3, 3, true);
+            } catch (Throwable e) {
+                assertTrue(e instanceof Error);
+            }
+            try {
+                StreamUtils.readIntegerOfType(null, DataType.INT3, true);
+            } catch (Throwable e) {
+                assertTrue(e instanceof Error);
+            }
         }
     }
     
