@@ -13,6 +13,11 @@ import javax.script.ScriptException;
 
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
+/**
+ * Implementation of script-based {@link ModifierHandler}s.
+ * 
+ * @author dzh
+ */
 class ScriptModifierHandler<E> extends ModifierHandler<E>{
     
     private final CompiledScript scriptSerialize;
@@ -39,7 +44,7 @@ class ScriptModifierHandler<E> extends ModifierHandler<E>{
         bindings.put("entity", entity);
         bindings.put("handler", this);
         try {
-            return (E) convertIfNeeded(scriptDeserialize.eval(bindings));
+            return (E) convertIfNeeded(scriptDeserialize.eval(bindings), this.handlerClass);
         } catch (ScriptException e) {
             throw new UnsatisfiedConstraintException("", e)
                 .withSiteAndOrdinal(ScriptModifierHandler.class, 0);
@@ -58,18 +63,17 @@ class ScriptModifierHandler<E> extends ModifierHandler<E>{
         bindings.put("entity", entity);
         bindings.put("handler", this);
         try {
-            return (E) convertIfNeeded(scriptSerialize.eval(bindings));
+            return (E) convertIfNeeded(scriptSerialize.eval(bindings), this.handlerClass);
         } catch (ScriptException e) {
             throw new UnsatisfiedConstraintException("", e)
                 .withSiteAndOrdinal(ScriptModifierHandler.class, 1);
         }
     }
     
-    private Object convertIfNeeded(Object obj) {
+    private Object convertIfNeeded(Object obj, Class<?> handlerClass) {
         if(obj == null)
             return obj;
         Class<?> resultClass = obj.getClass();
-        Class<?> handlerClass = this.handlerClass;
         if(resultClass == handlerClass)
             return obj;
         if(handlerClass == Integer.class

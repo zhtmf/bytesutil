@@ -41,10 +41,10 @@ Before setting values, comparing values or calling methods, the internal represe
 
 Following operators are defined in this script language, which are not necessary a subset of Java's, grouped and listed in descent order from the hightest precedence:
 ##### Level 17
-* ``**`` : exponentation, right operand is rounded down to an integer and left operator is raised to power of it.
-##### Level 16
 * ``[]`` : access array element / object property by name. Object property access using this operator is not available in Java but valid in Javascript. Dereferencing ``null`` and setting property on ``null`` both will raise exception.
 * ``.`` : object property access, same as above except that the right operand must be Identifier.
+##### Level 16
+* ``**`` : exponentation, right operand is rounded down to an integer and left operator is raised to power of it.
 ##### Level 15
 * ``++`` :  unary post-increment
 * ````--```` : unary post-decrement
