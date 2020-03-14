@@ -286,15 +286,51 @@ abstract class Identifier {
                 return (obj,s)->getter.invoke(obj);
             }
             
+            /*
+             * field in this class
+             * protected / package private / public field in super class(es)
+             */
             Field field = null;
             try {
-                field = clazz.getDeclaredField(property.name);
-                field.setAccessible(true);
-                final Field tmp = field;
-                return (obj,s)->tmp.get(obj);
-            } catch (Exception e) {
+                Class<?> current = clazz;
+                String propertyName = property.name;
+                field = getDeclaredField(current, propertyName);
+                if(field == null) {
+                    current = current.getSuperclass();
+                    while(current != Object.class) {
+                        field = getDeclaredField(current, propertyName);
+                        if(field == null) {
+                            current = current.getSuperclass();
+                            continue;
+                        }
+                        int mod = field.getModifiers();
+                        if(Modifier.isPublic(mod) || Modifier.isProtected(mod)) {
+                            break;
+                        }
+                        if(!(Modifier.isPublic(mod)
+                          || Modifier.isProtected(mod)
+                          || Modifier.isPrivate(mod))) {
+                            break;
+                        }
+                    }
+                }
+                if(field != null) {
+                    field.setAccessible(true);
+                    final Field tmp = field;
+                    return (obj,s)->tmp.get(obj);
+                }
+                return null;
+            } catch (SecurityException  e) {
                 return null;
             }
+        }
+    }
+    
+    private static Field getDeclaredField(Class<?> clazz, String name) {
+        try {
+            return clazz.getDeclaredField(name);
+        } catch (NoSuchFieldException | SecurityException e) {
+            return null;
         }
     }
     
