@@ -4,7 +4,9 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -598,6 +600,7 @@ class StreamUtils {
         return ret;
     }
     
+    //TODO:
     public static final BigInteger deserializeAsBigCHAR(
             InputStream in, FieldInfo ctx, Object self, DataType type)
             throws IOException, ConversionException {
@@ -717,5 +720,126 @@ class StreamUtils {
             ret |= ((src >> count--) & 1) << pos++;
         }
         return ret;
+    }
+    
+    private static final BigDecimal TWO = new BigDecimal("2");
+    
+    static double fixedFloatBytesToDouble(byte[] src, int intLimit, int fractionLimit, boolean unsigned) {
+        return fixedFloatBytesToBigdecimal(src, intLimit, fractionLimit, unsigned).doubleValue();
+    }
+    
+    static BigDecimal fixedFloatBytesToBigdecimal(byte[] src, int intLimit, int fractionLimit, boolean unsigned) {
+        byte[] integer = Arrays.copyOf(src, intLimit);
+        boolean positive = true;
+        if(!unsigned && (integer[0] & 0x80) > 0){
+            positive = false;
+            integer[0] &= 0x7F;
+        }
+        
+        BigInteger integralPart = new BigInteger(1, integer);
+        
+        int to = src.length - 1;
+        while(to >= intLimit && src[to] == 0)--to;
+        if(to < intLimit) {
+            if(positive) {
+                return new BigDecimal(integralPart);
+            }
+            return new BigDecimal(integralPart).negate();
+        }
+        
+        BigInteger peseudoFractionalPart = new BigInteger(1, Arrays.copyOfRange(src, intLimit, to + 1));
+        BigDecimal fractionalPart = new BigDecimal(peseudoFractionalPart).divide(
+                                            TWO.pow((to - intLimit + 1)*8), MathContext.DECIMAL128);
+        
+        BigDecimal result = new BigDecimal(integralPart)
+                                .add(fractionalPart, MathContext.DECIMAL128);
+        if(positive) {
+            return result;
+        }
+        return result.negate();
+    }
+    
+    static byte[] bigDecimalToFixedFloatBytes(BigDecimal d, int intLimit, int fractionLimit) {
+        return doubleToFixedFloatBytes(d.doubleValue(), intLimit, fractionLimit);
+    }
+    
+    static byte[] doubleToFixedFloatBytes(double d, int intLimit, int fractionLimit) {
+        if(Double.isNaN(d))
+            throw new UnsatisfiedConstraintException("NaN is not supported")
+                    .withSiteAndOrdinal(StreamUtils.class, 21);
+        if(Double.isInfinite(d))
+            throw new UnsatisfiedConstraintException("Infinites are not supported")
+                    .withSiteAndOrdinal(StreamUtils.class, 22);
+        
+        byte[] ret = new byte[intLimit + fractionLimit];
+        
+        if(Double.compare(d, -0.0d) == 0) {
+            ret[0] |= 0x80;
+            return ret;
+        }
+        
+        /*
+         * BigDecimal(double) fails for cases like 0.1 when double literal introduces slight error in fractional part.
+         * but calling BigDecimal(String) by converting the double value to String using toString also 
+         * fails for cases like 2^-25 when the toString method cuts off trailing digits, introducing error in the final result
+         * for an double value that should be represented accurately in binary format.
+         */
+        String s = new BigDecimal(d).toPlainString();
+        int idx = s.indexOf('.');
+        
+        integerToBinary(s, idx, intLimit, ret);
+        fractionToBinary(s, idx, fractionLimit, ret);
+        
+        return ret;
+    }
+    
+    private static void integerToBinary(String s, int idx, int limit, byte[] out) {
+        boolean negative = s.charAt(0) == '-';
+        s = s.substring(negative ? 1 : 0, idx < 0 ? s.length() : idx);
+        byte[] binary = new BigInteger(s).toByteArray();
+        if(binary.length > limit)
+            throw new UnsatisfiedConstraintException(
+                    "integral part of this number cannot fit in "+limit+" bytes")
+                    .withSiteAndOrdinal(StreamUtils.class, 23);
+        System.arraycopy(binary, 0, out, limit - binary.length, binary.length);
+        if(negative)
+            out[0] |= 0x80;
+    }
+    
+    private static void fractionToBinary(String s, int idx, int limit, byte[] out){
+        if(idx < 0)
+            return;
+        int count = 0;
+        int start = out.length - limit;
+        limit *= 8;
+        char[] num = s.substring(idx + 1).toCharArray();
+        int to = num.length;
+        while(!(to == 1 && num[to - 1] == '0') && count < limit) {
+            to = multiplyBy2(num, to);
+            if(to == (to = Math.abs(to))) {
+                out[start + count/8] |= (1L << (7 - count % 8));
+            }
+            ++count;
+        }
+    }
+    
+    private static int multiplyBy2(char[] array, int to) {
+        int carryover = 0;
+        int k = to - 1;
+        while( k >=0 && array[k] == '0')--k;
+        to = k + 1;
+        if(k < 0)
+            return to;
+        for(; k >= 0; --k) {
+            int num = (array[k]-'0') * 2 + carryover;
+            if(num >= 10) {
+                carryover = 1;
+                array[k] = (char) (num - 10 + '0');
+            }else {
+                carryover = 0;
+                array[k] = (char) (num + '0');
+            }
+        }
+        return carryover > 0 ? to : -to;
     }
 }

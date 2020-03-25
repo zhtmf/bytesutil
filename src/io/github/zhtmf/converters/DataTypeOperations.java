@@ -347,6 +347,21 @@ enum DataTypeOperations{
             return null;
         }
     }
+    ,FIXED{
+
+        @Override
+        Class<? extends Annotation> annotationClassOfThisType() {
+            return io.github.zhtmf.annotations.types.FIXED.class;
+        }
+
+        @Override
+        boolean supports(Class<?> javaType) {
+           return javaType == double.class
+                || javaType == Double.class
+                ;
+        }
+        
+    }
     ;
     
     Class<?> mappedEnumFieldClass(){throw new UnsupportedOperationException();}

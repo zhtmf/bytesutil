@@ -29,4 +29,5 @@ public enum DataType{
     ,BIT
     ,VARINT
     ,NUMBER
+    ,FIXED
 }

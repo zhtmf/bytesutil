@@ -11,30 +11,45 @@ import org.junit.Test;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.converters.TestUtils;
 
-public class TestNTP {
+/**
+ * <p>
+ * An example that queries several NTP servers and print their responses.
+ * <p>
+ * Mainly for demonstrating usage of the {@link Fixed} annotation.
+ * 
+ * @author dzh
+ */
+public class NTPTest {
     
-    /*
-     * .支持>8个的bit
-     * .支持通用二进制浮点数表示和转换
-     * .支持bit转换到bitset, byte[]
-     */
-
     @Test
-    public void testNTP() throws IllegalArgumentException, ConversionException, IOException {
-        
-        NTPPacket packet = new NTPPacket();
-        packet.LI = LeapIndicator.CLOCK_UNSYNCHRONIZED;
-        packet.mode = Mode.CLIENT;
-        packet.Stratum = 16;
-        packet.ReferenceIdentifier = new byte[4];
-        packet.ReferenceTimestamp = new NTPTimestamp();
-        packet.OriginateTimestamp = new NTPTimestamp();
+    public void testNTP() throws Exception {
+        queryServer("ntp.jst.mfeed.ad.jp");
+        queryServer("jp.pool.ntp.org");
+        queryServer("ntp.nict.jp");
+        queryServer("centos.pool.ntp.org");
+    }
+    
+    private void queryServer(String host) throws Exception{
+        NTPPacket request = new NTPPacket();
+        request.LI = LeapIndicator.CLOCK_UNSYNCHRONIZED;
+        request.mode = Mode.CLIENT;
+        request.Stratum = 16;
+        request.ReferenceIdentifier = new byte[4];
+        request.OriginateTimestamp = System.currentTimeMillis()*1.0/1000;
         
         DatagramSocket ds = new DatagramSocket(11451);
-        send(ds, packet, "ntp.jst.mfeed.ad.jp");
-        packet = receive(ds);
+        send(ds, request, "ntp.jst.mfeed.ad.jp");
+        NTPPacket response = receive(ds);
         
-        System.out.println(packet);
+        double t4 = System.currentTimeMillis()*1.0/1000;
+        double t1 = request.OriginateTimestamp;
+        double t2 = response.ReceiveTimestamp;
+        double t3 = response.TransmitTimestamp;
+        
+        System.out.println("result from server: "+host);
+        System.out.println("response: " + response);
+        System.out.println("offset: " + (((t2 - t1) + (t3 - t4)) / 2));
+        System.out.println("delay: " + ((t4 - t1) - (t3 - t2)));
         
         ds.close();
     }

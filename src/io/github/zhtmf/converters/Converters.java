@@ -32,6 +32,8 @@ class Converters {
         tmp.put(BigInteger.class, new BigIntegerConverter());
         tmp.put(Boolean.class, new BooleanConverter());
         tmp.put(boolean.class, tmp.get(Boolean.class));
+        tmp.put(Double.class, new DoubleConverter());
+        tmp.put(double.class, tmp.get(Double.class));
         converters = Collections.unmodifiableMap(tmp);
     }
 }

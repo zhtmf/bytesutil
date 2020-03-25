@@ -1,11 +1,16 @@
 package examples.ntp;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.Bit;
+import io.github.zhtmf.annotations.types.FIXED;
 import io.github.zhtmf.annotations.types.RAW;
 
 public class NTPPacket extends DataPacket{
@@ -64,13 +69,15 @@ public class NTPPacket extends DataPacket{
      * The total round-trip delay from the server to the primary reference sourced
      */
     @Order(6)
-    public NTPShort RootDelay = new NTPShort();
+    @FIXED({16,16})
+    public double RootDelay;
     
     /**
      * The maximum error due to clock frequency tolerance.
      */
     @Order(7)
-    public NTPShort RootDispersion = new NTPShort();
+    @FIXED({16,16})
+    public double RootDispersion;
     
     /**
      * For stratum 1 servers this value is a four-character ASCII code that
@@ -87,22 +94,26 @@ public class NTPPacket extends DataPacket{
      * his field is the time the system clock was last set or corrected, in 64-bit time-stamp format.
      */
     @Order(9)
-    public NTPTimestamp ReferenceTimestamp;
+    @FIXED({32,32})
+    public double ReferenceTimestamp;
     /**
      * This value is the time at which the request departed the client for the server, in 64-bit time-stamp format.
      */
     @Order(10)
-    public NTPTimestamp OriginateTimestamp;
+    @FIXED({32,32})
+    public double OriginateTimestamp;
     /**
      * This value is the time at which the client request arrived at the server in 64-bit time-stamp format.
      */
     @Order(11)
-    public NTPTimestamp ReceiveTimestamp = new NTPTimestamp();
+    @FIXED({32,32})
+    public double ReceiveTimestamp;
     /**
      * This value is the time at which the server reply departed the server, in 64-bit time-stamp format.
      */
     @Order(12)
-    public NTPTimestamp TransmitTimestamp = new NTPTimestamp();
+    @FIXED({32,32})
+    public double TransmitTimestamp;
     
     public String getReferenceIdentifier() {
         if(this.Stratum == 1) {
@@ -129,8 +140,17 @@ public class NTPPacket extends DataPacket{
     public String toString() {
         return "NTPPacket [LI=" + LI + ", VN=" + VN + ", mode=" + mode + ", Stratum=" + Stratum + ", Poll=" + Poll
                 + ", Precision=" + Precision + ", RootDelay=" + RootDelay + ", RootDispersion=" + RootDispersion
-                + ", ReferenceIdentifier=" + getReferenceIdentifier() + ", ReferenceTimestamp="
-                + ReferenceTimestamp + ", OriginateTimestamp=" + OriginateTimestamp + ", ReceiveTimestamp="
-                + ReceiveTimestamp + ", TransmitTimestamp=" + TransmitTimestamp + "]";
+                + ", ReferenceIdentifier=" + Arrays.toString(ReferenceIdentifier)
+                + ", ReferenceTimestamp="+ convertTimestamp(ReferenceTimestamp)
+                + ", OriginateTimestamp=" + convertTimestamp(OriginateTimestamp)
+                + ", ReceiveTimestamp="+ convertTimestamp(ReceiveTimestamp)
+                + ", TransmitTimestamp=" + convertTimestamp(TransmitTimestamp) + "]";
+    }
+    
+    //epoch is 1 January 1900
+    private static final LocalDateTime EPOCH = LocalDateTime.of(1900, 1, 1, 0, 0, 0);
+    
+    private String convertTimestamp(double d) {
+        return EPOCH.plus((long)(d*1000), ChronoUnit.MILLIS).toString();
     }
 }

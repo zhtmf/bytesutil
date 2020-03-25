@@ -40,6 +40,7 @@ import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.Bit;
 import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.FIXED;
 import io.github.zhtmf.annotations.types.NUMBER;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
@@ -146,6 +147,8 @@ class FieldInfo{
      * value of {@link Bit} annotation
      */
     final int bitCount;
+    
+    final int[] fixedNumberLengths;
     
     @SuppressWarnings("unchecked")
     FieldInfo(Field field, DataType dataType, ClassInfo base) {
@@ -430,6 +433,38 @@ class FieldInfo{
             }
         }else {
             this.conditionalHandler = null;
+        }
+        
+        {
+            if(this.dataType == DataType.FIXED) {
+                int[] lengths = this.localAnnotation(FIXED.class).value();
+                if(lengths.length < 2) {
+                    throw forContext(base.entityClass, name, "Fixed point number requires definition of lengths for integral and franctional parts")
+                    .withSiteAndOrdinal(FieldInfo.class, 27);
+                }
+                int integralLength = lengths[0];
+                int fractionalLength = lengths[1];
+                if((integralLength % 8) != 0 || (fractionalLength % 8) != 0) {
+                    throw forContext(base.entityClass, name, "Lengths of integral and fractional parts should be multiple of 8")
+                        .withSiteAndOrdinal(FieldInfo.class, 28);
+                }
+                
+                int max = 0;
+                if(this.fieldClass == float.class || this.fieldClass == Float.class) {
+                    max = 32;
+                }else if(this.fieldClass == double.class || this.fieldClass == Double.class) {
+                    max = 64;
+                }
+                if(integralLength + fractionalLength > max) {
+                    throw forContext(base.entityClass, name, "Sum of lengths of integral and fractional parts exceeds max length "+max+" of java type")
+                        .withSiteAndOrdinal(FieldInfo.class, 29);
+                }
+                lengths[0] >>>= 3;
+                lengths[1] >>>= 3;
+                fixedNumberLengths = lengths;
+            }else {
+                fixedNumberLengths = null;
+            }
         }
         
         Converter<?> converter = null;
@@ -777,6 +812,10 @@ class FieldInfo{
         case INT6:
         case INT7:
             ret += DataTypeOperations.of(type).size() * length;
+            break;
+        case FIXED:
+            int[] lengths = this.localAnnotation(FIXED.class).value();
+            ret += (lengths[0] / 8 + lengths[1] / 8) * length;
             break;
         case VARINT:
             ret += StreamUtils.getUnsignedVarintLength((BigInteger) value);
