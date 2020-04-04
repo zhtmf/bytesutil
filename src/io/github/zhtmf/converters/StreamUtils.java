@@ -731,7 +731,7 @@ class StreamUtils {
         BigDecimal result = fixedPointBytesToBigdecimal(src, intLimit, fractionLimit, signed);
         if(result.compareTo(MAX)>0) 
             throw new UnsatisfiedConstraintException(
-                    "number is out of range of a Java double")
+                    "number overflows a Java double")
                     .withSiteAndOrdinal(StreamUtils.class, 24);
         return result.doubleValue();
     }
@@ -776,9 +776,6 @@ class StreamUtils {
                     carryover = 0;
                 }
             }
-            if(carryover == 1)
-                throw new UnsatisfiedConstraintException("integral part negative overflow")
-                    .withSiteAndOrdinal(StreamUtils.class, 25);
         }
         
         return ret;
@@ -848,10 +845,10 @@ class StreamUtils {
     private static int multiplyBy2(char[] array, int to) {
         int carryover = 0;
         int k = to - 1;
-        while( k >=0 && array[k] == '0')--k;
+        //toPlainString will eliminate trailing zero
+        //so theoretically k will not be reduced to less than zero
+        while(k >=0 && array[k] == '0')--k;
         to = k + 1;
-        if(k < 0)
-            return to;
         for(; k >= 0; --k) {
             int num = (array[k]-'0') * 2 + carryover;
             if(num >= 10) {

@@ -6,9 +6,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
-import org.junit.Test;
-
 import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.annotations.types.Fixed;
 import io.github.zhtmf.converters.TestUtils;
 
 /**
@@ -21,15 +20,14 @@ import io.github.zhtmf.converters.TestUtils;
  */
 public class NTPTest {
     
-    @Test
-    public void testNTP() throws Exception {
+    public static void main(String[] args) throws Exception {
         queryServer("ntp.jst.mfeed.ad.jp");
         queryServer("jp.pool.ntp.org");
         queryServer("ntp.nict.jp");
         queryServer("centos.pool.ntp.org");
     }
     
-    private void queryServer(String host) throws Exception{
+    private static void queryServer(String host) throws Exception{
         NTPPacket request = new NTPPacket();
         request.LI = LeapIndicator.CLOCK_UNSYNCHRONIZED;
         request.mode = Mode.CLIENT;
@@ -54,13 +52,13 @@ public class NTPTest {
         ds.close();
     }
 
-    private void send(DatagramSocket socket, NTPPacket packet, String addr) throws IllegalArgumentException, ConversionException, IOException {
+    private static void send(DatagramSocket socket, NTPPacket packet, String addr) throws IllegalArgumentException, ConversionException, IOException {
         byte[] bytes = TestUtils.serializeAndGetBytes(packet);
         DatagramPacket out = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(addr), 123);
         socket.send(out);
     }
     
-    private NTPPacket receive(DatagramSocket socket) throws IllegalArgumentException, ConversionException, IOException {
+    private static NTPPacket receive(DatagramSocket socket) throws IllegalArgumentException, ConversionException, IOException {
         ByteArrayOutputStream received = new ByteArrayOutputStream();
         DatagramPacket in = new DatagramPacket(new byte[1024], 1024);
         for(;;) {

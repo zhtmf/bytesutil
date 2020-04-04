@@ -32,17 +32,7 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({-1,13})
-                public double d1;
-            }
-            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
-            fail();
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 29);
-        }
-        try {
-            class Entity1 extends DataPacket{
-                @Order(0)
-                @Fixed({0,13})
+                @Signed
                 public double d1;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
@@ -54,6 +44,7 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({13})
+                @Signed
                 public double d1;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
@@ -65,6 +56,7 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({7,8})
+                @Signed
                 public double d1;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
@@ -76,6 +68,7 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({8,7})
+                @Signed
                 public double d1;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
@@ -87,6 +80,7 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({8,16})
+                @Signed
                 public double d1 = Double.POSITIVE_INFINITY;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
@@ -98,6 +92,7 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({8,16})
+                @Signed
                 public double d1 = Double.NEGATIVE_INFINITY;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
@@ -109,6 +104,7 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({8,16})
+                @Signed
                 public double d1 = Double.NaN;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
@@ -120,12 +116,46 @@ public class TestFixed {
             class Entity1 extends DataPacket{
                 @Order(0)
                 @Fixed({16,16})
+                @Signed
                 public double d1 = -32768.345d;
             }
             new Entity1().serialize(TestUtils.newByteArrayOutputStream());
             fail();
         } catch (Exception e) {
             TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 26);
+        }
+        
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({16,16})
+                @Signed
+                public double d1 = 32768.345d;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 26);
+        }
+        
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({1600,24})
+                @Signed
+                public BigDecimal d1 = new BigDecimal(Double.MAX_VALUE).add(BigDecimal.ONE);
+            }
+            class Entity2 extends DataPacket{
+                @Order(0)
+                @Fixed({1600,24})
+                @Signed
+                public double d1;
+            }
+            new Entity2().deserialize(TestUtils.newInputStream(
+                    TestUtils.serializeAndGetBytes(new Entity1())));
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 24);
         }
     }
     
@@ -200,8 +230,26 @@ public class TestFixed {
         @Signed
         @LittleEndian
         @Fixed({16,16})
-        @Order(11)
+        @Order(10)
         public double d8 = 32767.125;
+        
+        @Unsigned
+        @LittleEndian
+        @Fixed({16,0})
+        @Order(11)
+        public double d9 = 65534;
+        
+        @Signed
+        @LittleEndian
+        @Fixed({16,0})
+        @Order(12)
+        public double d100 = Short.MAX_VALUE;
+        
+        @Signed
+        @LittleEndian
+        @Fixed({16,0})
+        @Order(13)
+        public double d111 = Short.MIN_VALUE;
     }
     
     @Test
@@ -210,7 +258,8 @@ public class TestFixed {
     }
     
     @Test
-    public void testMinusAndBoundary() throws Exception{
+    public void testNumbersGreaterThanZero() throws Exception{
+        compare(34.0);
         compare(255.12334);
         compare(477.129);
         compare(1.3);
@@ -417,26 +466,6 @@ public class TestFixed {
             str = str.substring(str.length()-8, str.length());
         return str; 
     }
-    
-    /*
-     * 序列化：
-     * 整数位数 I，小数位数 F，是否无符号unsigned
-     * 如果数字是负数，negative = true，并转换为正数
-     * 使用new BigDecimal(d).toPlainString()转换为字符串形式并拆分为整数部分和小数部分
-     * 整数部分转换为字节数组，
-     * 如果最高一位为1，且unsigned = false，报错overflow
-     * 转换完毕之后，整数字节数组拼接小数字节数组，
-     * 如果negative = true：
-     * 对每个字节取反
-     * 从最后一位开始对每个字节+1，
-     * 如果加到第一个字节时依然有溢出，报错overflow
-     * 
-     * 反序列化：
-     * 如果数组第一位是1，negative = true
-     * 如果negative = false，求得整数 R = new BigInteger(1，数组)
-     * 如果negative = true，求得整数 R = new BigInteger(数组).add(BigInteger.ONE)
-     * 求得new BigDecimal(R).divide(new BigDecimal(2).pow(F)))
-     */
     
     public static void main(String[] args) {
 //        {

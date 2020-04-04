@@ -444,7 +444,7 @@ class FieldInfo{
                 }
                 int integralLength = lengths[0];
                 int fractionalLength = lengths[1];
-                if(integralLength <=0 || fractionalLength <=0)
+                if(integralLength <0 || fractionalLength <0)
                     throw forContext(base.entityClass, name, "Lengths of integral and fractional parts should be greater than zero")
                     .withSiteAndOrdinal(FieldInfo.class, 29);
                 if((integralLength % 8) != 0 || (fractionalLength % 8) != 0)
