@@ -1,6 +1,7 @@
 package io.github.zhtmf.converters;
 
 import java.lang.annotation.Annotation;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import io.github.zhtmf.annotations.types.UserDefined;
@@ -351,13 +352,14 @@ enum DataTypeOperations{
 
         @Override
         Class<? extends Annotation> annotationClassOfThisType() {
-            return io.github.zhtmf.annotations.types.FIXED.class;
+            return io.github.zhtmf.annotations.types.Fixed.class;
         }
 
         @Override
         boolean supports(Class<?> javaType) {
            return javaType == double.class
                 || javaType == Double.class
+                || javaType == BigDecimal.class
                 ;
         }
         

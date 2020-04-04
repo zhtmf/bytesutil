@@ -10,7 +10,7 @@ import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.Bit;
-import io.github.zhtmf.annotations.types.FIXED;
+import io.github.zhtmf.annotations.types.Fixed;
 import io.github.zhtmf.annotations.types.RAW;
 
 public class NTPPacket extends DataPacket{
@@ -69,14 +69,14 @@ public class NTPPacket extends DataPacket{
      * The total round-trip delay from the server to the primary reference sourced
      */
     @Order(6)
-    @FIXED({16,16})
+    @Fixed({16,16})
     public double RootDelay;
     
     /**
      * The maximum error due to clock frequency tolerance.
      */
     @Order(7)
-    @FIXED({16,16})
+    @Fixed({16,16})
     public double RootDispersion;
     
     /**
@@ -94,25 +94,25 @@ public class NTPPacket extends DataPacket{
      * his field is the time the system clock was last set or corrected, in 64-bit time-stamp format.
      */
     @Order(9)
-    @FIXED({32,32})
+    @Fixed({32,32})
     public double ReferenceTimestamp;
     /**
      * This value is the time at which the request departed the client for the server, in 64-bit time-stamp format.
      */
     @Order(10)
-    @FIXED({32,32})
+    @Fixed({32,32})
     public double OriginateTimestamp;
     /**
      * This value is the time at which the client request arrived at the server in 64-bit time-stamp format.
      */
     @Order(11)
-    @FIXED({32,32})
+    @Fixed({32,32})
     public double ReceiveTimestamp;
     /**
      * This value is the time at which the server reply departed the server, in 64-bit time-stamp format.
      */
     @Order(12)
-    @FIXED({32,32})
+    @Fixed({32,32})
     public double TransmitTimestamp;
     
     public String getReferenceIdentifier() {

@@ -1,5 +1,6 @@
 package io.github.zhtmf.converters;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ class Converters {
         tmp.put(boolean.class, tmp.get(Boolean.class));
         tmp.put(Double.class, new DoubleConverter());
         tmp.put(double.class, tmp.get(Double.class));
+        tmp.put(BigDecimal.class, new BigDecimalConverter());
         converters = Collections.unmodifiableMap(tmp);
     }
 }

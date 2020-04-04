@@ -62,8 +62,13 @@ public class TestUtils {
                 return true;
             }
         }
-        throw new IllegalArgumentException(
-                original+" "+((ExactException)original).getSite()+" "+((ExactException)original).getOrdinal()+" not expected",original);
+        if(original instanceof ExactException) {
+            throw new IllegalArgumentException(
+                    original+" "+((ExactException)original).getSite()+" "+((ExactException)original).getOrdinal()+" not expected",original);
+        }else {
+            throw new IllegalArgumentException(original+" not expected",original);
+
+        }
     }
     public static ByteArrayOutputStream newByteArrayOutputStream() {
         return new ByteArrayOutputStream();
@@ -131,7 +136,7 @@ public class TestUtils {
         for(int i=0;i<times;++i) {
             DataPacket restored = entity.getClass().newInstance();
             restored.deserialize(is);
-            Assert.assertTrue(equalsOrderFields(entity, restored));
+            Assert.assertTrue("failed on iteration "+i, equalsOrderFields(entity, restored));
         }
     }
     public static byte[] pseudoRandomArray(int size) {

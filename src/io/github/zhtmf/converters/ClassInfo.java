@@ -353,9 +353,14 @@ class ClassInfo {
                 @SuppressWarnings("unchecked")
                 Converter<Object> cv = (Converter<Object>)ctx.converter;
                 cv.serialize(value, dest, ctx, self);
-            } catch(ConversionException | UnsatisfiedConstraintException e) {
+            } catch(ConversionException e) {
                 //drop unnecessary stack frames
                 throw e;
+            } catch (UnsatisfiedConstraintException e) {
+                ConversionException ex = new ExtendedConversionException(ci.entityClass, ctx.name, e.getMessage())
+                        .withSiteAndOrdinal(e.getSite(), e.getOrdinal());
+                ex.initCause(e);
+                throw ex;
             } catch (Exception e) {
                 throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                 .withSiteAndOrdinal(DataPacket.class, 4);

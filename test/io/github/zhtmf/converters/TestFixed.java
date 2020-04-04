@@ -2,6 +2,11 @@ package io.github.zhtmf.converters;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Arrays;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -9,45 +14,223 @@ import javax.script.ScriptException;
 
 import org.junit.Test;
 
+import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.LittleEndian;
+import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Signed;
+import io.github.zhtmf.annotations.modifiers.Unsigned;
+import io.github.zhtmf.annotations.types.Fixed;
+
 public class TestFixed {
     
     private ScriptEngine nashorn = new ScriptEngineManager().getEngineByName("nashorn");
     
     @Test
-    public void testSpecialValue() throws Exception{
-        compare(Double.MIN_EXPONENT);
-        compare(Double.MAX_VALUE);
-        compare(Double.MIN_NORMAL);
-        compare(Double.MAX_EXPONENT);
+    public void testExceptions() throws Exception{
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({-1,13})
+                public double d1;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 29);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({0,13})
+                public double d1;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 29);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({13})
+                public double d1;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 27);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({7,8})
+                public double d1;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 28);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({8,7})
+                public double d1;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 28);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({8,16})
+                public double d1 = Double.POSITIVE_INFINITY;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 22);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({8,16})
+                public double d1 = Double.NEGATIVE_INFINITY;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 22);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({8,16})
+                public double d1 = Double.NaN;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 21);
+        }
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({16,16})
+                public double d1 = -32768.345d;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 26);
+        }
+    }
+    
+    public static class FixedEntity extends DataPacket{
+        
+        @Signed
+        @LittleEndian
+        @Fixed({16,16})
+        @Order(-1)
+        public double d7 = -32768;
+        
+        @Signed
+        @BigEndian
+        @Fixed({32,56})
+        @Order(0)
+        public double d1 = -477.129;
+        
+        @Unsigned
+        @BigEndian
+        @Fixed({32,56})
+        @Order(1)
+        public double d2 = 1477.876;
+        
+        @Signed
+        @LittleEndian
+        @Fixed({32,56})
+        @Order(2)
+        public double d3 = -477.129;
+        
+        @Unsigned
+        @LittleEndian
+        @Fixed({32,56})
+        @Order(3)
+        public double d4 = 1477.876;
+        
+        @Signed
+        @BigEndian
+        @Fixed({32,56})
+        @Order(4)
+        public BigDecimal d11 = new BigDecimal("-14777.1295");
+        
+        @Unsigned
+        @BigEndian
+        @Fixed({32,56})
+        @Order(5)
+        public BigDecimal d12 = new BigDecimal("24777.295");
+        
+        @Signed
+        @LittleEndian
+        @Fixed({32,56})
+        @Order(6)
+        public BigDecimal d13 = new BigDecimal("-14777.1295");
+        
+        @Unsigned
+        @LittleEndian
+        @Fixed({32,56})
+        @Order(7)
+        public BigDecimal d14 = new BigDecimal("24777.295");
+        
+        @Unsigned
+        @LittleEndian
+        @Fixed({8,8})
+        @Order(8)
+        public double d5 = 255.125;
+        
+        @Unsigned
+        @LittleEndian
+        @Fixed({16,16})
+        @Order(9)
+        public double d6 = 65535.125d;
+        
+        @Signed
+        @LittleEndian
+        @Fixed({16,16})
+        @Order(11)
+        public double d8 = 32767.125;
+    }
+    
+    @Test
+    public void testEntity() throws Exception{
+        TestUtils.serializeMultipleTimesAndRestore(new FixedEntity(), 5);
     }
     
     @Test
     public void testMinusAndBoundary() throws Exception{
-        compare(-1.3);
+        compare(255.12334);
+        compare(477.129);
+        compare(1.3);
         compare(256.12334);
-        compare(-1.125);
-        compare(-1.1255);
-        compare(-13456345.1255);
-        compare(-13456.12334);
-        compare(-128.125556);
-        compare(-255.12334);
+        compare(1.1255);
+        compare(13456345.1255);
+        compare(13456.12334);
+        compare(128.125556);
         compare(127.125556);
         compare(128.12334);
         compare(255.125556);
         compare(32767.125556);
-        compare(-32767.12334);
-        compare(-32768.125556);
+        compare(32767.12334);
+        compare(32768.125556);
         compare(65535.12334);
-        compare(-65535.12334);
+        compare(-477.129, 32, 56);
     }
     
     @Test
     public void testFractional() throws Exception{
-        /*
-         * JavaScript outputs "0" for (-0.0).toString(2)
-         * So does nashorn engine
-         */
-        assertEquals("-0", convertToString(StreamUtils.doubleToFixedFloatBytes(-0.0d, limit1, limit2)));
         compare(Math.pow(2, -25));
         compare(Math.pow(2, -1));
         compare(Math.pow(2, -2));
@@ -151,48 +334,70 @@ public class TestFixed {
         compare(0.1990000);
     }
     
-    private final int limit1 = 200;
-    private final int limit2 = 200;
+    private final int limit1 = 20;
+    private final int limit2 = 25;
     
-    private void compare(double d) throws ScriptException {
+    private void compare(double d, int limit1, int limit2) throws ScriptException {
+
         String nas = nashorn.eval("("+d+").toString(2);")+"";
-        byte[] array = StreamUtils.doubleToFixedFloatBytes(d, limit1, limit2);
         
-        assertEquals(nas, convertToString(array));
-        
-        double restored = StreamUtils.fixedFloatBytesToDouble(array, limit1, limit2, false);
-        assertTrue(restored+" "+d, Double.compare(restored, d) == 0);
+        if(d >= 0) {
+            byte[] array = StreamUtils.doubleToFixedPointBytes(d, limit1, limit2, false);
+            double restored = StreamUtils.fixedPointBytesToDouble(array, limit1, limit2, false);
+            assertTrue(restored+" "+d, Double.compare(restored, d) == 0);
+            
+            byte[] integer = Arrays.copyOf(array, limit1);
+            byte[] fraction = Arrays.copyOfRange(array, limit1, array.length);
+            assertEquals(nas, convertToString(integer, fraction));
+            
+            if(d != 0.0d) {
+                /*
+                 * JavaScript outputs "0" for (-0.0).toString(2)
+                 * So does nashorn engine
+                 */
+                compare(-d);
+            }
+        }else {
+            byte[] array = StreamUtils.doubleToFixedPointBytes(d, limit1, limit2, true);
+            double restored = StreamUtils.fixedPointBytesToDouble(array, limit1, limit2, true);
+            assertTrue(restored+" "+d, Double.compare(restored, d) == 0);
+            
+            for(int k = 0; k < array.length; ++k) {
+                array[k] = (byte) ~array[k];
+            }
+            
+            int carryover = 1;
+            for(int p = array.length - 1; p >= 0; --p) {
+                if(array[p] == (byte)-1 && carryover == 1) {
+                    array[p] = 0;
+                }else {
+                    array[p] += carryover;
+                    carryover = 0;
+                }
+            }
+            
+            byte[] integer = Arrays.copyOf(array, limit1);
+            byte[] fraction = Arrays.copyOfRange(array, limit1, array.length);
+            assertEquals(nas, "-"+convertToString(integer, fraction));
+        }
     }
     
-    private String convertToString(byte[] array) {
+    private void compare(double d) throws ScriptException {
+        compare(d, limit1, limit2);
+    }
+    
+    private String convertToString(byte[] integer, byte[] fraction) {
         StringBuilder sb = new StringBuilder();
         
-        boolean negative = array[0] == (byte)0x80;
-        boolean zero = false;
-        int i = 0;
-        if(array[0] == (byte)0x80) {
-            negative = true;
-            i = 1;
-        }
+        BigInteger integerPart = new BigInteger(integer);
+        sb.append(integerPart.toString(2));
         
-        boolean nonZeroMet = false;
-        for(;i<limit1;++i) {
-            byte b = array[i];
-            if(!nonZeroMet && b == 0)
-                continue;
-            nonZeroMet = true;
-            int num = b >= 0 ? (int)b : ((int)(b & 0x7F) | 0x80);
-            sb.append(toBinaryString(num));
-        }
-        
-        zero = sb.length() == 0;
-        
-        int m = array.length - 1;
-        for(; m >= 0 && array[m] == 0; --m);
-        if(m >= limit1){
+        int m = fraction.length - 1;
+        for(; m >= 0 && fraction[m] == 0; --m);
+        if(m >= 0){
             sb.append('.');
-            for(int k=limit1;k<=m;++k) {
-                byte b = array[k];
+            for(int k=0;k<=m;++k) {
+                byte b = fraction[k];
                 int num = b >= 0 ? (int)b : ((int)(b & 0x7F) | 0x80);
                 sb.append(toBinaryString(num));
             } 
@@ -201,31 +406,50 @@ public class TestFixed {
             sb.delete(until+1, sb.length());
         }
         
-        if(sb.length() > 0) {
-            m = 0;
-            for(; m < limit1 && sb.charAt(m) == '0'; ++m);
-            sb.delete(0, m);
-        }
-        
-        if(zero) {
-            sb.insert(0, '0');
-        }
-        if(negative) {
-            sb.insert(0, '-');
-        }
-        
         return sb.toString();
     }
     
-    private String toBinaryString(int b) {
+    private static String toBinaryString(int b) {
         String str = Integer.toBinaryString(b);
         while(str.length() < 8)
             str = "0" + str;
         if(str.length() > 8)
             str = str.substring(str.length()-8, str.length());
-        return str;
+        return str; 
     }
     
+    /*
+     * 序列化：
+     * 整数位数 I，小数位数 F，是否无符号unsigned
+     * 如果数字是负数，negative = true，并转换为正数
+     * 使用new BigDecimal(d).toPlainString()转换为字符串形式并拆分为整数部分和小数部分
+     * 整数部分转换为字节数组，
+     * 如果最高一位为1，且unsigned = false，报错overflow
+     * 转换完毕之后，整数字节数组拼接小数字节数组，
+     * 如果negative = true：
+     * 对每个字节取反
+     * 从最后一位开始对每个字节+1，
+     * 如果加到第一个字节时依然有溢出，报错overflow
+     * 
+     * 反序列化：
+     * 如果数组第一位是1，negative = true
+     * 如果negative = false，求得整数 R = new BigInteger(1，数组)
+     * 如果negative = true，求得整数 R = new BigInteger(数组).add(BigInteger.ONE)
+     * 求得new BigDecimal(R).divide(new BigDecimal(2).pow(F)))
+     */
+    
     public static void main(String[] args) {
+//        {
+//            StringBuilder sb = new StringBuilder();
+//            byte[] array = StreamUtils.doubleToFixedPointBytes(0.125, 1, 1, true);
+//            for(int k = 0;k<array.length; ++k){
+//                System.out.println(toBinaryString(array[k]));
+//                array[k] = (byte) ~array[k];
+//                sb.append(toBinaryString(array[k]));
+//                System.out.println(toBinaryString(array[k]));
+//            }
+//            System.out.println(new BigDecimal(new BigInteger(array).add(BigInteger.ONE)).divide(new BigDecimal(2).pow(8)));
+//        }
+        System.out.println(Integer.toBinaryString(-32767  ));
     }
 }
