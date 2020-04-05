@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -813,7 +814,29 @@ class FieldInfo{
             }
             break;
         }
-        case RAW:
+        case RAW:{
+            int size = this.lengthForSerializingRAW(self);
+            if(size>=0) {
+                ret += size * length;
+            }else {
+                size = 0;
+                DataTypeOperations lengthType = DataTypeOperations.of(this.annotation(Length.class).type());
+                if(value instanceof List) {
+                    @SuppressWarnings("rawtypes")
+                    List lst = (List)value;
+                    for(int i=0;i<lst.size();++i) {
+                        value = lst.get(i);
+                        size += lengthType.size();
+                        size += Array.getLength(value);
+                    }
+                }else {
+                    size += lengthType.size();
+                    size += Array.getLength(value);
+                }
+                ret += size;
+            }
+            break;
+        }
         case USER_DEFINED:
             int size = this.lengthForSerializingUserDefinedType(self);
             ret += size * length;
@@ -1098,44 +1121,5 @@ class FieldInfo{
             }
             super.set(self, mapped);
         }
-    }
-    
-    //constructor used by test cases
-    FieldInfo(boolean dummy){
-        this.field = null;
-        this.base = null;
-        this.annotations = null;
-        this.fieldClass = null;
-        this.converter = null;
-        this.innerConverter = null;
-        this.name = null;
-        this.dataType = null;
-        this.isEntity = false;
-        this.isEntityList = false;
-        this.listComponentClass = null;
-        this.entityCreator = null;
-        this.endsWith = null;
-        this.endingArrayAux = null;
-        this.enclosingEntityClass = null;
-        this.littleEndian = false;
-        this.bigEndian = false;
-        this.signed = false;
-        this.unsigned = false;
-        this.length = 0;
-        this.listLength = 0;
-        this.lengthType = null;
-        this.listLengthType = null;
-        this.lengthHandler = null;
-        this.listLengthHandler = null;
-        this.userDefinedConverter = null;
-        this.conditionalHandler = null;
-        this.conditionalResult = null;
-        this.charset = null;
-        this.charsetHandler = null;
-        this.datePattern = null;
-        this.lengthDefined = false;
-        this.customLengthDefined = false;
-        this.bitCount = 0;
-        this.fixedNumberLengths = null;
     }
 }

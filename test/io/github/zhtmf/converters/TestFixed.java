@@ -23,6 +23,7 @@ import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.Fixed;
+import io.github.zhtmf.annotations.types.SHORT;
 
 public class TestFixed {
     
@@ -165,7 +166,7 @@ public class TestFixed {
                 @Order(0)
                 @Fixed({1600,24})
                 @Signed
-                public BigDecimal d1 = new BigDecimal(Double.MIN_VALUE).subtract(BigDecimal.ONE);
+                public BigDecimal d1 = new BigDecimal(-Double.MAX_VALUE).subtract(BigDecimal.ONE);
             }
             class Entity2 extends DataPacket{
                 @Order(0)
@@ -416,13 +417,20 @@ public class TestFixed {
     private final int limit1 = 20;
     private final int limit2 = 25;
     
+    public static class DummyEntity extends DataPacket{
+        @Order(0)
+        @SHORT
+        public int f1;
+    }
+    
     private void compare(double d, int limit1, int limit2) throws Exception {
 
         String nas = nashorn.eval("("+d+").toString(2);")+"";
         
+        ClassInfo ci = new ClassInfo(DummyEntity.class);
         if(d >= 0) {
             
-            FieldInfo dummy = new FieldInfo(true);
+            FieldInfo dummy = ci.fieldInfoList.get(0);
             {
                 Field field = FieldInfo.class.getDeclaredField("fixedNumberLengths");
                 field.setAccessible(true);
@@ -456,7 +464,7 @@ public class TestFixed {
             }
         }else {
             
-            FieldInfo dummy = new FieldInfo(true);
+            FieldInfo dummy = ci.fieldInfoList.get(0);
             {
                 Field field = FieldInfo.class.getDeclaredField("fixedNumberLengths");
                 field.setAccessible(true);
@@ -531,20 +539,5 @@ public class TestFixed {
         if(str.length() > 8)
             str = str.substring(str.length()-8, str.length());
         return str; 
-    }
-    
-    public static void main(String[] args) {
-//        {
-//            StringBuilder sb = new StringBuilder();
-//            byte[] array = StreamUtils.doubleToFixedPointBytes(0.125, 1, 1, true);
-//            for(int k = 0;k<array.length; ++k){
-//                System.out.println(toBinaryString(array[k]));
-//                array[k] = (byte) ~array[k];
-//                sb.append(toBinaryString(array[k]));
-//                System.out.println(toBinaryString(array[k]));
-//            }
-//            System.out.println(new BigDecimal(new BigInteger(array).add(BigInteger.ONE)).divide(new BigDecimal(2).pow(8)));
-//        }
-        System.out.println(Integer.toBinaryString(-32767  ));
     }
 }

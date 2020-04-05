@@ -725,7 +725,7 @@ class StreamUtils {
     
     private static final BigDecimal TWO = new BigDecimal("2");
     private static final BigDecimal MAX = new BigDecimal(Double.MAX_VALUE);
-    private static final BigDecimal MIN = new BigDecimal(Double.MIN_VALUE);
+    private static final BigDecimal MIN = new BigDecimal(-Double.MAX_VALUE);
     
     //---------- deserialize fixed point number ----------------
     
