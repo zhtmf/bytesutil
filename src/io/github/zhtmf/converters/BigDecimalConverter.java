@@ -14,8 +14,7 @@ public class BigDecimalConverter implements Converter<BigDecimal>{
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case FIXED:
-            int[] lengths = ctx.fixedNumberLengths;
-            byte[] data = StreamUtils.bigDecimalToFixedPointBytes(value, lengths[0], lengths[1], ctx.signed);
+            byte[] data = StreamUtils.bigDecimalToFixedPointBytes(value, ctx);
             if(!ctx.bigEndian)
                 StreamUtils.reverse(data);
             dest.write(data);
@@ -35,7 +34,7 @@ public class BigDecimalConverter implements Converter<BigDecimal>{
             in.read(src);
             if(!ctx.bigEndian)
                 StreamUtils.reverse(src);
-            return StreamUtils.fixedPointBytesToBigdecimal(src, intLimit, fractionLimit, ctx.signed);
+            return StreamUtils.fixedPointBytesToBigdecimal(src, ctx);
         default:throw new Error("should not reach here");
         }
     }

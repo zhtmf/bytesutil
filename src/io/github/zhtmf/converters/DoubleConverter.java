@@ -13,8 +13,7 @@ public class DoubleConverter implements Converter<Double>{
             throws IOException, ConversionException {
         switch(ctx.dataType) {
         case FIXED:
-            int[] lengths = ctx.fixedNumberLengths;
-            byte[] data = StreamUtils.doubleToFixedPointBytes(value, lengths[0], lengths[1], ctx.signed);
+            byte[] data = StreamUtils.doubleToFixedPointBytes(value, ctx);
             if(ctx.littleEndian)
                 StreamUtils.reverse(data);
             dest.write(data);
@@ -34,7 +33,7 @@ public class DoubleConverter implements Converter<Double>{
             in.read(src);
             if(ctx.littleEndian)
                 StreamUtils.reverse(src);
-            return StreamUtils.fixedPointBytesToDouble(src, intLimit, fractionLimit, ctx.signed);
+            return StreamUtils.fixedPointBytesToDouble(src, ctx);
         default:throw new Error("should not reach here");
         }
     }

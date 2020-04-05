@@ -18,7 +18,7 @@ abstract class AbstractListConverter {
         if(length<0) {
             length = listValue.size();
             try {
-                StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), listValue.size(), ctx.bigEndian);
+                StreamUtils.writeIntegerOfType(dest, listValue.size(), ctx);
             } catch (IOException e) {
                 throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                     .withSiteAndOrdinal(AbstractListConverter.class, 1);
@@ -43,7 +43,7 @@ abstract class AbstractListConverter {
         }
         if(length<0) {
             try {
-                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
+                length = StreamUtils.readIntegerOfType(in, ctx);
             } catch (IOException e) {
                 throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                         .withSiteAndOrdinal(AbstractListConverter.class, 12);

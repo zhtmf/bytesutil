@@ -19,7 +19,7 @@ class ByteArrayConverter implements Converter<byte[]>{
         case RAW:
             int length = ctx.lengthForSerializingRAW(self);
             if(length<0) {
-                StreamUtils.writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
+                StreamUtils.writeIntegerOfType(dest, value.length, ctx);
             }else if(length!=value.length) {
                 throw new ExtendedConversionException(ctx.enclosingEntityClass,ctx.name,
                         "defined length "+length+" is not the same as length "+value.length+" of the array")
@@ -40,7 +40,7 @@ class ByteArrayConverter implements Converter<byte[]>{
         case RAW:
             int length = ctx.lengthForDeserializingRAW(self, in);
             if(length<0) {
-                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
+                length = StreamUtils.readIntegerOfType(in, ctx);
             }
             return StreamUtils.readBytes(in, length);
         default:throw new Error("should not reach here");

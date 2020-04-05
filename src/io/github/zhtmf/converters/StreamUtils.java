@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.MathContext;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
@@ -150,7 +149,9 @@ class StreamUtils {
         os.write(raw, from, raw.length - from);
     }
     
-    public static void writeIntegerOfType(OutputStream os, DataType type, int val, boolean bigEndian) throws IOException{
+    public static void writeIntegerOfType(OutputStream os, int val, FieldInfo ctx) throws IOException{
+        DataType type = ctx.lengthType();
+        boolean bigEndian = ctx.bigEndian;
         String error;
         if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
             throw new UnsatisfiedIOException(error)
@@ -252,7 +253,7 @@ class StreamUtils {
                     break;
                 }
             }
-        }else {
+        } else {
             int count = 0;
             for(;;) {
                 byte flag = os.readBits(1);
@@ -467,9 +468,10 @@ class StreamUtils {
         return arr;
     }
     
-    public static int readIntegerOfType(InputStream in, DataType type, boolean bigEndian) throws IOException{
+    public static int readIntegerOfType(InputStream in, FieldInfo ctx) throws IOException{
         int length = 0;
-        switch(type) {
+        boolean bigEndian = ctx.bigEndian;
+        switch(ctx.lengthType()) {
         case BYTE:
             length = readByte(in, false);
             break;
@@ -526,7 +528,7 @@ class StreamUtils {
         if(length<0) {
             if(ending==null) {
                 length = bytes.length;
-                writeIntegerOfType(dest, ctx.lengthType(), length, ctx.bigEndian);
+                writeIntegerOfType(dest, length, ctx);
                 writeBytes(dest, bytes);
             }else {
                 writeBytes(dest, bytes);
@@ -600,8 +602,7 @@ class StreamUtils {
         return ret;
     }
     
-    //TODO: delete BIG
-    public static final BigInteger deserializeAsBigCHAR(
+    public static final BigInteger deserializeBigIntegerAsCHAR(
             InputStream in, FieldInfo ctx, Object self, DataType type)
             throws IOException, ConversionException {
         long ret = 0;
@@ -659,7 +660,7 @@ class StreamUtils {
     
     public static final void checkRangeInContext(DataType type,long val,FieldInfo ctx) throws ConversionException {
         String error;
-        if((error = DataTypeOperations.of(type).checkRange(val, ctx.unsigned))!=null) {
+        if((error = DataTypeOperations.of(type).checkRange(val, ctx))!=null) {
             throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, error)
                         .withSiteAndOrdinal(StreamUtils.class, 11);
         }
@@ -669,7 +670,7 @@ class StreamUtils {
             InputStream in, FieldInfo ctx, Object self, DataType type) throws IOException, ConversionException {
         int length = ctx.lengthForDeserializingCHAR(self, in);
         if(length<0) {
-            length = readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
+            length = readIntegerOfType(in, ctx);
         }
         byte[] numChars = readBytes(in, length);
         /*
@@ -727,8 +728,8 @@ class StreamUtils {
     
     //---------- deserialize fixed point number ----------------
     
-    static double fixedPointBytesToDouble(byte[] src, int intLimit, int fractionLimit, boolean signed) {
-        BigDecimal result = fixedPointBytesToBigdecimal(src, intLimit, fractionLimit, signed);
+    static double fixedPointBytesToDouble(byte[] src, FieldInfo ctx) {
+        BigDecimal result = fixedPointBytesToBigdecimal(src, ctx);
         if(result.compareTo(MAX)>0) 
             throw new UnsatisfiedConstraintException(
                     "number overflows a Java double")
@@ -736,20 +737,28 @@ class StreamUtils {
         return result.doubleValue();
     }
     
-    static BigDecimal fixedPointBytesToBigdecimal(byte[] src, int intLimit, int fractionLimit, boolean signed) {
+    static BigDecimal fixedPointBytesToBigdecimal(byte[] src, FieldInfo ctx) {
         
-        boolean negative = signed && (src[0] & 0x80) > 0;
+        boolean negative = ctx.signed && (src[0] & 0x80) > 0;
         
         BigInteger pseudoInteger = negative ? new BigInteger(src) : new BigInteger(1 ,src);
+        int fractionLimit = ctx.fixedNumberLengths[1];
         
         return fractionLimit > 0 ? new BigDecimal(pseudoInteger).divide(TWO.pow(fractionLimit * 8)) : new BigDecimal(pseudoInteger);
     }
     
     //---------- serialize fixed point number ----------------
     
-    static byte[] bigDecimalToFixedPointBytes(BigDecimal d, int intLimit, int fractionLimit, boolean signed) {
+    static byte[] bigDecimalToFixedPointBytes(BigDecimal d, FieldInfo ctx) {
         
-        checkRange(d, intLimit * 8, fractionLimit * 8, signed);
+        int[] limits = ctx.fixedNumberLengths;
+        int intLimit = limits[0];
+        int fractionLimit = limits[1];
+        
+        String error = DataTypeOperations.FIXED.checkRange(d, ctx);
+        if(error != null)
+            throw new UnsatisfiedConstraintException(error)
+                        .withSiteAndOrdinal(StreamUtils.class, 26);
         
         boolean negative = d.compareTo(BigDecimal.ZERO) < 0;
         d = d.abs();
@@ -759,7 +768,7 @@ class StreamUtils {
         String s = d.toPlainString();
         int idx = s.indexOf('.');
         
-        integerToBinary(s, idx, intLimit, ret, signed);
+        integerToBinary(s, idx, intLimit, ret, ctx.signed);
         fractionToBinary(s, idx, fractionLimit, ret);
         
         if(negative) {
@@ -781,7 +790,7 @@ class StreamUtils {
         return ret;
     }
     
-    static byte[] doubleToFixedPointBytes(double d, int intLimit, int fractionLimit, boolean signed) {
+    static byte[] doubleToFixedPointBytes(double d, FieldInfo ctx) {
         if(Double.isNaN(d))
             throw new UnsatisfiedConstraintException("NaN is not supported")
                     .withSiteAndOrdinal(StreamUtils.class, 21);
@@ -795,20 +804,7 @@ class StreamUtils {
          * fails for cases like 2^-25 when the toString method cuts off trailing digits, introducing error in the final result
          * for an double value that originally can be represented accurately in binary format.
          */
-        return bigDecimalToFixedPointBytes(new BigDecimal(d), intLimit, fractionLimit, signed);
-    }
-    
-    //TODO: make a universal check range routine in DataTypeOperations
-    
-    private static void checkRange(BigDecimal d, int m, int n, boolean signed) {
-        BigDecimal min = signed ? TWO.pow(m - 1).negate() : BigDecimal.ZERO;
-        BigDecimal max = signed ? TWO.pow(m - 1).subtract(BigDecimal.ONE.divide(TWO.pow(n), MathContext.DECIMAL128), MathContext.DECIMAL128) 
-                                : TWO.pow(m).subtract(BigDecimal.ONE.divide(TWO.pow(n), MathContext.DECIMAL128), MathContext.DECIMAL128) ;
-        if(d.compareTo(min) < 0 || d.compareTo(max) > 0) {
-            throw new UnsatisfiedConstraintException(
-                    "this number overflows valid fixed point range [" + min + ", " + max + "]")
-                        .withSiteAndOrdinal(StreamUtils.class, 26);
-        }
+        return bigDecimalToFixedPointBytes(new BigDecimal(d), ctx);
     }
     
     private static void integerToBinary(String s, int idx, int limit, byte[] out, boolean signed) {

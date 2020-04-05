@@ -17,7 +17,7 @@ class BigIntegerConverter implements Converter<BigInteger>{
         switch(ctx.dataType) {
         case LONG:
             String error = null;
-            if((error = DataTypeOperations.LONG.checkRange(value, ctx.unsigned))!=null) {
+            if((error = DataTypeOperations.LONG.checkRange(value, ctx))!=null) {
                 throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, error)
                         .withSiteAndOrdinal(BigIntegerConverter.class, 1);
             }
@@ -77,13 +77,13 @@ class BigIntegerConverter implements Converter<BigInteger>{
                 ret = StreamUtils.readUnsignedLong(in, ctx.bigEndian);
             }
             String error = null;
-            if((error = DataTypeOperations.LONG.checkRange(ret, ctx.unsigned))!=null) {
+            if((error = DataTypeOperations.LONG.checkRange(ret, ctx))!=null) {
                 throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, error)
                         .withSiteAndOrdinal(BigIntegerConverter.class, 2);
             }
             return ret;
         case CHAR:
-            return deserializeAsBigCHAR(in, ctx, self, ctx.dataType);
+            return deserializeBigIntegerAsCHAR(in, ctx, self, ctx.dataType);
         case VARINT:
             return readVarint((MarkableInputStream)in, ctx.bigEndian);
         case NUMBER:

@@ -4,13 +4,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import org.junit.Test;
 
@@ -386,13 +386,32 @@ public class TestFixed {
     private final int limit1 = 20;
     private final int limit2 = 25;
     
-    private void compare(double d, int limit1, int limit2) throws ScriptException {
+    private void compare(double d, int limit1, int limit2) throws Exception {
 
         String nas = nashorn.eval("("+d+").toString(2);")+"";
         
+        
         if(d >= 0) {
-            byte[] array = StreamUtils.doubleToFixedPointBytes(d, limit1, limit2, false);
-            double restored = StreamUtils.fixedPointBytesToDouble(array, limit1, limit2, false);
+            
+            FieldInfo dummy = new FieldInfo(true);
+            {
+                Field field = FieldInfo.class.getDeclaredField("fixedNumberLengths");
+                field.setAccessible(true);
+                field.set(dummy, new int[] {limit1, limit2});
+            }
+            {
+                Field field = FieldInfo.class.getDeclaredField("unsigned");
+                field.setAccessible(true);
+                field.set(dummy, true);
+            }
+            {
+                Field field = FieldInfo.class.getDeclaredField("signed");
+                field.setAccessible(true);
+                field.set(dummy, false);
+            }
+            
+            byte[] array = StreamUtils.doubleToFixedPointBytes(d, dummy);
+            double restored = StreamUtils.fixedPointBytesToDouble(array, dummy);
             assertTrue(restored+" "+d, Double.compare(restored, d) == 0);
             
             byte[] integer = Arrays.copyOf(array, limit1);
@@ -407,8 +426,26 @@ public class TestFixed {
                 compare(-d);
             }
         }else {
-            byte[] array = StreamUtils.doubleToFixedPointBytes(d, limit1, limit2, true);
-            double restored = StreamUtils.fixedPointBytesToDouble(array, limit1, limit2, true);
+            
+            FieldInfo dummy = new FieldInfo(true);
+            {
+                Field field = FieldInfo.class.getDeclaredField("fixedNumberLengths");
+                field.setAccessible(true);
+                field.set(dummy, new int[] {limit1, limit2});
+            }
+            {
+                Field field = FieldInfo.class.getDeclaredField("unsigned");
+                field.setAccessible(true);
+                field.set(dummy, false);
+            }
+            {
+                Field field = FieldInfo.class.getDeclaredField("signed");
+                field.setAccessible(true);
+                field.set(dummy, true);
+            }
+            
+            byte[] array = StreamUtils.doubleToFixedPointBytes(d, dummy);
+            double restored = StreamUtils.fixedPointBytesToDouble(array, dummy);
             assertTrue(restored+" "+d, Double.compare(restored, d) == 0);
             
             for(int k = 0; k < array.length; ++k) {
@@ -431,7 +468,7 @@ public class TestFixed {
         }
     }
     
-    private void compare(double d) throws ScriptException {
+    private void compare(double d) throws Exception {
         compare(d, limit1, limit2);
     }
     

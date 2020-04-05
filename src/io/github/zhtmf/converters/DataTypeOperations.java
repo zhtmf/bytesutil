@@ -3,6 +3,7 @@ package io.github.zhtmf.converters;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.MathContext;
 
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.annotations.types.Varint;
@@ -265,14 +266,14 @@ enum DataTypeOperations{
             return Long.class;
         }
         @Override
-        public String checkRange(long val, boolean unsigned) {
+        public String checkRange(long val, FieldInfo ctx) {
             //always expect no error
             //as java long dataType cannot store an unsigned 64-bit value
             return null;
         }
         @Override
-        public String checkRange(BigInteger val, boolean unsigned) {
-            if(unsigned) {
+        public String checkRange(BigInteger val, FieldInfo ctx) {
+            if(ctx.unsigned) {
                 return (val.compareTo(BigInteger.ZERO)>=0 && val.compareTo(UNSIGNED_LONG_MAX)<=0) ? null : 
                     String.format("value [%s] cannot be stored as unsigned 8-byte integer value",val.toString());
             }
@@ -320,9 +321,9 @@ enum DataTypeOperations{
         }
         
         @Override
-        public String checkRange(long val, int bits) {
-            return (val >=0 && val <= BITS_INT_MAXIMUMS[bits]) ? null : 
-                String.format("value [%s] cannot be stored as signed %s-bit integer value",val, bits);
+        public String checkRange(long val, FieldInfo ctx) {
+            return (val >=0 && val <= BITS_INT_MAXIMUMS[ctx.bitCount]) ? null : 
+                String.format("value [%s] cannot be stored as signed %s-bit integer value",val, ctx.bitCount);
         }
     }
     ,VARINT{
@@ -344,7 +345,7 @@ enum DataTypeOperations{
         }
         
         @Override
-        public String checkRange(long val, boolean unsigned) {
+        public String checkRange(long val, FieldInfo ctx) {
             return null;
         }
     }
@@ -363,6 +364,23 @@ enum DataTypeOperations{
                 ;
         }
         
+        @Override
+        public String checkRange(BigDecimal d, FieldInfo ctx) {
+            boolean signed = ctx.signed;
+            int m = ctx.fixedNumberLengths[0] * 8;
+            int n = ctx.fixedNumberLengths[1] * 8;
+            BigDecimal min = signed ? TWO.pow(m - 1).negate() : BigDecimal.ZERO;
+            BigDecimal subtrahend = n > BASE2_NEGATIVE_EXPONENT.length 
+                            ? BigDecimal.ONE.divide(TWO.pow(n), MathContext.DECIMAL128)
+                            : BASE2_NEGATIVE_EXPONENT[n];
+            BigDecimal max = signed ? TWO.pow(m - 1).subtract(subtrahend, MathContext.DECIMAL128) 
+                                    : TWO.pow(m).subtract(subtrahend, MathContext.DECIMAL128) ;
+            if(d.compareTo(min) < 0 || d.compareTo(max) > 0) {
+                return "this number overflows valid fixed point range [" + min + ", " + max + "]";
+            }
+            
+            return null;
+        }
     }
     ;
     
@@ -371,6 +389,12 @@ enum DataTypeOperations{
     abstract boolean supports(Class<?> javaType);
     
     public int size() {throw new UnsupportedOperationException();}
+    
+    public String checkRange(long val, FieldInfo ctx) {
+        return checkRange(val, ctx.unsigned);
+    }
+    
+    //this method is solely used by checking length values
     public String checkRange(long val, boolean unsigned) {
         int sz = size()-1;
         if(unsigned) {
@@ -384,13 +408,18 @@ enum DataTypeOperations{
         }
         return null;
     }
-    public String checkRange(BigInteger val, boolean unsigned) {throw new UnsupportedOperationException();}
-    public String checkRange(long val, int bits) {throw new UnsupportedOperationException();}
+    
+    public String checkRange(BigDecimal val, FieldInfo ctx) {throw new UnsupportedOperationException();}
+    
+    public String checkRange(BigInteger val, FieldInfo ctx) {throw new UnsupportedOperationException();}
+    
     public static DataTypeOperations of(DataType type) {
         return DataTypeOperations.valueOf(type.name());
     }
     
     //###########number limits###########
+    
+    private static final BigDecimal TWO = new BigDecimal("2");
     
     private static final long[] SIGNED_MAXIMUMS = {
        Byte.MAX_VALUE,
@@ -432,7 +461,16 @@ enum DataTypeOperations{
             pow(2,6)-1,
             pow(2,7)-1,
             pow(2,8)-1,
-       };
+    };
+    
+    private static final BigDecimal[] BASE2_NEGATIVE_EXPONENT = new BigDecimal[64];
+    static {
+        BASE2_NEGATIVE_EXPONENT[0] = BigDecimal.ONE;
+        for(int p = 1;p<BASE2_NEGATIVE_EXPONENT.length;++p) {
+            BASE2_NEGATIVE_EXPONENT[p] = BigDecimal.ONE.divide(
+                    TWO.pow(p), MathContext.DECIMAL128);
+        }
+    }
     
     private static long pow(long base ,int power) {
         long tmp = base;

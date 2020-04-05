@@ -36,7 +36,7 @@ class StringConverter implements Converter<String> {
             Charset cs = ctx.charsetForDeserializingCHAR(self, in);
             int length = ctx.lengthForDeserializingCHAR(self, in);
             if(length<0 && ctx.endsWith==null) {
-                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
+                length = StreamUtils.readIntegerOfType(in, ctx);
                 return new String(StreamUtils.readBytes(in, length),cs);
             }
             if(length>=0) {

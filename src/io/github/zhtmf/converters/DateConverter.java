@@ -46,7 +46,7 @@ class DateConverter implements Converter<Date>{
             case CHAR:{
                 int length = ctx.lengthForDeserializingCHAR(self, in);
                 if(length<0) {
-                    length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
+                    length = StreamUtils.readIntegerOfType(in, ctx);
                 }
                 return FieldInfo.getThreadLocalDateFormatter(ctx.datePattern)
                         .parse(new String(

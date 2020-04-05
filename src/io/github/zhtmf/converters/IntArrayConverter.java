@@ -23,7 +23,7 @@ class IntArrayConverter implements Converter<int[]>{
         case RAW:
             int length = ctx.lengthForSerializingRAW(self);
             if(length<0) {
-                writeIntegerOfType(dest, ctx.lengthType(), value.length, ctx.bigEndian);
+                writeIntegerOfType(dest, value.length, ctx);
             }else if(length!=value.length) {
                 throw new ExtendedConversionException(
                         ctx.enclosingEntityClass,ctx.name,
@@ -45,7 +45,7 @@ class IntArrayConverter implements Converter<int[]>{
         case RAW:
             int length = ctx.lengthForDeserializingRAW(self, in);
             if(length<0) {
-                length = StreamUtils.readIntegerOfType(in, ctx.lengthType(), ctx.bigEndian);
+                length = StreamUtils.readIntegerOfType(in, ctx);
             }
             byte[] raw = StreamUtils.readBytes(in, length);
             int[] ret = new int[length];

@@ -1,8 +1,10 @@
 package examples.ntp;
 
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Order;
@@ -140,7 +142,7 @@ public class NTPPacket extends DataPacket{
     public String toString() {
         return "NTPPacket [LI=" + LI + ", VN=" + VN + ", mode=" + mode + ", Stratum=" + Stratum + ", Poll=" + Poll
                 + ", Precision=" + Precision + ", RootDelay=" + RootDelay + ", RootDispersion=" + RootDispersion
-                + ", ReferenceIdentifier=" + Arrays.toString(ReferenceIdentifier)
+                + ", ReferenceIdentifier=" + getReferenceIdentifier()
                 + ", ReferenceTimestamp="+ convertTimestamp(ReferenceTimestamp)
                 + ", OriginateTimestamp=" + convertTimestamp(OriginateTimestamp)
                 + ", ReceiveTimestamp="+ convertTimestamp(ReceiveTimestamp)
@@ -148,9 +150,10 @@ public class NTPPacket extends DataPacket{
     }
     
     //epoch is 1 January 1900
-    private static final LocalDateTime EPOCH = LocalDateTime.of(1900, 1, 1, 0, 0, 0);
+    private static final ZonedDateTime EPOCH = ZonedDateTime.of(1900, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+    private static final DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss:SSS");
     
     private String convertTimestamp(double d) {
-        return EPOCH.plus((long)(d*1000), ChronoUnit.MILLIS).toString();
+        return EPOCH.plus((long)(d*1000), ChronoUnit.MILLIS).withZoneSameInstant(ZoneId.systemDefault()).format(fmt);
     }
 }

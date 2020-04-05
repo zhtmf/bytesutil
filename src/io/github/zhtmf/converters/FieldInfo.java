@@ -1086,13 +1086,13 @@ class FieldInfo{
                     String error;
                     Object key;
                     if(type == DataType.BIT) {
-                        if((error = DataTypeOperations.of(type).checkRange(val, super.bitCount))!=null) {
+                        if((error = DataTypeOperations.of(type).checkRange(val, this))!=null) {
                             throw forContext(base.entityClass, name, error)
                             .withSiteAndOrdinal(EnumFieldInfo.class, 8);
                         }
                         key = Byte.valueOf((byte) val);
                     }else {
-                        if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
+                        if((error = DataTypeOperations.of(type).checkRange(val, this))!=null) {
                             throw forContext(base.entityClass, name, error)
                             .withSiteAndOrdinal(EnumFieldInfo.class, 7);
                         }
@@ -1159,5 +1159,43 @@ class FieldInfo{
             }
             super.set(self, mapped);
         }
+    }
+    
+    FieldInfo(boolean dummy){
+        this.field = null;
+        this.base = null;
+        this.annotations = null;
+        this.fieldClass = null;
+        this.converter = null;
+        this.innerConverter = null;
+        this.name = null;
+        this.dataType = null;
+        this.isEntity = false;
+        this.isEntityList = false;
+        this.listComponentClass = null;
+        this.entityCreator = null;
+        this.endsWith = null;
+        this.endingArrayAux = null;
+        this.enclosingEntityClass = null;
+        this.littleEndian = false;
+        this.bigEndian = false;
+        this.signed = false;
+        this.unsigned = false;
+        this.length = 0;
+        this.listLength = 0;
+        this.lengthType = null;
+        this.listLengthType = null;
+        this.lengthHandler = null;
+        this.listLengthHandler = null;
+        this.userDefinedConverter = null;
+        this.conditionalHandler = null;
+        this.conditionalResult = null;
+        this.charset = null;
+        this.charsetHandler = null;
+        this.datePattern = null;
+        this.lengthDefined = false;
+        this.customLengthDefined = false;
+        this.bitCount = 0;
+        this.fixedNumberLengths = null;
     }
 }
