@@ -26,41 +26,6 @@ class BigIntegerConverter implements Converter<BigInteger>{
         case CHAR:
             serializeAsCHAR(value, dest, ctx, self);
             return;
-        case VARINT:
-            StreamUtils.writeUnsignedVarint(dest, value, ctx.bigEndian);
-            return;
-        case NUMBER:
-            if(value.compareTo(BigInteger.ZERO) < 0) {
-                throw new ExtendedConversionException(ctx.enclosingEntityClass, ctx.name, "NUMBER type can only encode unsigned values")
-                    .withSiteAndOrdinal(BigIntegerConverter.class, 3);
-            }
-            int length = ctx.lengthForSerializingNUMBER(self);
-            if(length == 0) {
-                return;
-            }
-            byte[] raw = value.toByteArray();
-            int from = 0;
-            if(raw.length > 1) {
-                while(raw[from] == 0)++from;
-                if(ctx.littleEndian) {
-                    StreamUtils.reverse(raw, from, raw.length);
-                }
-            }
-            //in such encoding, the sender can use more bytes than minimum necessary to represent a number,
-            //so the defined length value should be respected and the actual byte sequence be padded if needed.
-            int gap = length - raw.length + from;
-            if(ctx.bigEndian) {
-                for(int i=0;i<gap;++i) {
-                    StreamUtils.writeBYTE(dest, (byte)0);
-                }
-            }
-            StreamUtils.writeBytes(dest, raw, from);
-            if(ctx.littleEndian) {
-                for(int i=0;i<gap;++i) {
-                    StreamUtils.writeBYTE(dest, (byte)0);
-                }
-            }
-            return;
         default: throw new Error("should not reach here");
         }
     }
@@ -84,17 +49,6 @@ class BigIntegerConverter implements Converter<BigInteger>{
             return ret;
         case CHAR:
             return deserializeBigIntegerAsCHAR(in, ctx, self, ctx.dataType);
-        case VARINT:
-            return readVarint((MarkableInputStream)in, ctx.bigEndian);
-        case NUMBER:
-            byte[] raw = StreamUtils.readBytes(in, ctx.lengthForDeserializingNUMBER(self, in));
-            if(raw.length == 0) {
-                return null;
-            }
-            if(ctx.littleEndian) {
-                StreamUtils.reverse(raw);
-            }
-            return new BigInteger(1, raw);
         default: throw new Error("should not reach here");
         }
     }

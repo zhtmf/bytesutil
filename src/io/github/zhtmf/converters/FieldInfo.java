@@ -4,9 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -41,7 +39,6 @@ import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.Bit;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.Fixed;
-import io.github.zhtmf.annotations.types.NUMBER;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.auxiliary.DataType;
@@ -375,22 +372,6 @@ class FieldInfo{
                 this.bitCount = 0;
             }
         }
-        {
-            if(this.dataType == DataType.VARINT) {
-                if(this.signed) {
-                    throw FieldInfo.forContext(base.entityClass, name, "only unsigned varint is supported")
-                        .withSiteAndOrdinal(FieldInfo.class, 15);
-                }
-            }
-        }
-        {
-            if(this.dataType == DataType.NUMBER) {
-                if(this.signed) {
-                    throw FieldInfo.forContext(base.entityClass, name, "NUMBER only support unsigned values")
-                        .withSiteAndOrdinal(FieldInfo.class, 16);
-                }
-            }
-        }
         
         TypeConverter<?> typeConverter = null;
         UserDefined userDefined = annotation(UserDefined.class);
@@ -652,22 +633,6 @@ class FieldInfo{
         return length;
     }
     
-    final int lengthForSerializingNUMBER(Object self) {
-        int length = this.annotation(NUMBER.class).value();
-        if(length<0) {
-            length = lengthForSerializingLength(self);
-        }
-        return length;
-    }
-    
-    final int lengthForDeserializingNUMBER(Object self, InputStream bis) {
-        int length = this.annotation(NUMBER.class).value();
-        if(length<0) {
-            length = lengthForDeserializingLength(self,bis);
-        }
-        return length;
-    }
-    
     final int lengthForSerializingLength(Object self) throws IllegalArgumentException {
         Integer length = this.length;
         if(length<0 && this.lengthHandler!=null) {
@@ -806,11 +771,8 @@ class FieldInfo{
             ret += DataTypeOperations.of(type).size() * length;
             break;
         case FIXED:
-            int[] lengths = this.localAnnotation(Fixed.class).value();
-            ret += (lengths[0] / 8 + lengths[1] / 8) * length;
-            break;
-        case VARINT:
-            ret += StreamUtils.getUnsignedVarintLength((BigInteger) value);
+            int[] lengths = this.fixedNumberLengths;
+            ret += (lengths[0] + lengths[1]) * length;
             break;
         case CHAR:{
             int size = this.lengthForSerializingCHAR(self);
@@ -852,29 +814,6 @@ class FieldInfo{
             break;
         }
         case RAW:
-        case NUMBER:{
-            int size = type == DataType.RAW ? this.lengthForSerializingRAW(self) : this.lengthForSerializingNUMBER(self);
-            if(size>=0) {
-                ret += size * length;
-            }else {
-                size = 0;
-                DataTypeOperations lengthType = DataTypeOperations.of(this.annotation(Length.class).type());
-                if(value instanceof List) {
-                    @SuppressWarnings("rawtypes")
-                    List lst = (List)value;
-                    for(int i=0;i<lst.size();++i) {
-                        value = lst.get(i);
-                        size += lengthType.size();
-                        size += Array.getLength(value);
-                    }
-                }else {
-                    size += lengthType.size();
-                    size += Array.getLength(value);
-                }
-                ret += size;
-            }
-            break;
-        }
         case USER_DEFINED:
             int size = this.lengthForSerializingUserDefinedType(self);
             ret += size * length;
@@ -1161,6 +1100,7 @@ class FieldInfo{
         }
     }
     
+    //constructor used by test cases
     FieldInfo(boolean dummy){
         this.field = null;
         this.base = null;

@@ -31,14 +31,21 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
  * <li><code>java.math.BigDecimal</code></li>
  * </ul>
  * <p>
- * Exceptions will be thrown if the number are out of range of a Java double or
- * integer part of the java value cannot be stored in such many bytes as
- * specified by {@link #value() value}. But for the fraction part this library
- * will silently ignore extra digits.
+ * Exceptions will be thrown if the number overflows or underflows the defined
+ * range or, when the field type is <tt>double</tt> or
+ * <tt>java.lang.Double</tt>, the range of a Java double.
  * <p>
- * Due to inaccurate nature of float numbers insufficient fraction bits may
- * cause difference between the original number and the one restored from the
- * stream as considered by {@link Double#compare(double, double)}.
+ * Due to inaccurate nature of float numbers, the value restored from the stream
+ * may be different from the original one. But still can be considered equal by
+ * {@link Double#compare(double, double) Double.compare} if enough fractional
+ * bits are used. <br/>
+ * For example, consider the value <tt>255.12334</tt>. If it is serialized as a
+ * signed number and then deserialized as another double value <tt>d</tt> using
+ * 16 bits integer part and 16 bits fraction part, though its decimal value is
+ * perfectly within that range, however <tt>Double.compare(255.12334, d)</tt>
+ * will return <tt>1</tt>. But if the number of bits used are increased to 64
+ * bits for fraction part, <tt>Double.compare(255.12334, d)</tt> will return
+ * <tt>0</tt>, which means they are considered equal by this method.
  * 
  * @author dzh
  */

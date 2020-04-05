@@ -231,6 +231,12 @@ public class TestUtils {
         if(c1!=c2) {
             return false;
         }
+        if(c1 == Double.class) {
+            return Double.compare(((Double)o1), ((Double)o2)) == 0;
+        }
+        if(c1 == double.class) {
+            return Double.compare(((Double)o1), ((Double)o2)) == 0;
+        }
         if(Number.class.isAssignableFrom(c1)) {
             return ((Number)o1).longValue() == ((Number)o2).longValue() 
                     && ((Number)o1).doubleValue() == ((Number)o2).doubleValue();

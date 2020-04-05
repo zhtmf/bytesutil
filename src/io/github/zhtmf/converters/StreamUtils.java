@@ -725,15 +725,20 @@ class StreamUtils {
     
     private static final BigDecimal TWO = new BigDecimal("2");
     private static final BigDecimal MAX = new BigDecimal(Double.MAX_VALUE);
+    private static final BigDecimal MIN = new BigDecimal(Double.MIN_VALUE);
     
     //---------- deserialize fixed point number ----------------
     
     static double fixedPointBytesToDouble(byte[] src, FieldInfo ctx) {
         BigDecimal result = fixedPointBytesToBigdecimal(src, ctx);
-        if(result.compareTo(MAX)>0) 
+        if(result.compareTo(MAX) > 0) 
             throw new UnsatisfiedConstraintException(
                     "number overflows a Java double")
                     .withSiteAndOrdinal(StreamUtils.class, 24);
+        if(result.compareTo(MIN) < 0) 
+            throw new UnsatisfiedConstraintException(
+                    "number underflows a Java double")
+                    .withSiteAndOrdinal(StreamUtils.class, 25);
         return result.doubleValue();
     }
     

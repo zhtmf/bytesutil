@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -16,6 +17,7 @@ import org.junit.Test;
 
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
+import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Signed;
@@ -157,9 +159,37 @@ public class TestFixed {
         } catch (Exception e) {
             TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 24);
         }
+        
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({1600,24})
+                @Signed
+                public BigDecimal d1 = new BigDecimal(Double.MIN_VALUE).subtract(BigDecimal.ONE);
+            }
+            class Entity2 extends DataPacket{
+                @Order(0)
+                @Fixed({1600,24})
+                @Signed
+                public double d1;
+            }
+            new Entity2().deserialize(TestUtils.newInputStream(
+                    TestUtils.serializeAndGetBytes(new Entity1())));
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, StreamUtils.class, 25);
+        }
     }
     
     public static class FixedEntity extends DataPacket{
+        
+        @Signed
+        @LittleEndian
+        @Fixed({64,64})
+        @Order(-2)
+        @Length(4)
+        public List<Double> dList1 = 
+            Arrays.asList(255.125,255.12334,128.12334,-477.129);
         
         @Signed
         @LittleEndian
@@ -389,7 +419,6 @@ public class TestFixed {
     private void compare(double d, int limit1, int limit2) throws Exception {
 
         String nas = nashorn.eval("("+d+").toString(2);")+"";
-        
         
         if(d >= 0) {
             

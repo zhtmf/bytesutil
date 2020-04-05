@@ -6,7 +6,6 @@ import java.math.BigInteger;
 import java.math.MathContext;
 
 import io.github.zhtmf.annotations.types.UserDefined;
-import io.github.zhtmf.annotations.types.Varint;
 import io.github.zhtmf.converters.auxiliary.DataType;
 
 enum DataTypeOperations{
@@ -199,19 +198,6 @@ enum DataTypeOperations{
                 ;
         }
     },
-    NUMBER{
-
-        @Override
-        Class<? extends Annotation> annotationClassOfThisType() {
-            return io.github.zhtmf.annotations.types.NUMBER.class;
-        }
-
-        @Override
-        boolean supports(Class<?> javaType) {
-            return javaType == BigInteger.class;
-        }
-        
-    },
     CHAR{
 
         @Override
@@ -326,29 +312,6 @@ enum DataTypeOperations{
                 String.format("value [%s] cannot be stored as signed %s-bit integer value",val, ctx.bitCount);
         }
     }
-    ,VARINT{
-
-        @Override
-        Class<? extends Annotation> annotationClassOfThisType() {
-            return Varint.class;
-        }
-
-        @Override
-        boolean supports(Class<?> javaType) {
-            return javaType == byte.class
-                    || javaType == short.class
-                    || javaType == int.class
-                    || javaType == long.class
-                    || javaType == BigInteger.class
-                    || javaType.isEnum()
-                    ;
-        }
-        
-        @Override
-        public String checkRange(long val, FieldInfo ctx) {
-            return null;
-        }
-    }
     ,FIXED{
 
         @Override
@@ -370,7 +333,7 @@ enum DataTypeOperations{
             int m = ctx.fixedNumberLengths[0] * 8;
             int n = ctx.fixedNumberLengths[1] * 8;
             BigDecimal min = signed ? TWO.pow(m - 1).negate() : BigDecimal.ZERO;
-            BigDecimal subtrahend = n > BASE2_NEGATIVE_EXPONENT.length 
+            BigDecimal subtrahend = n >= BASE2_NEGATIVE_EXPONENT.length 
                             ? BigDecimal.ONE.divide(TWO.pow(n), MathContext.DECIMAL128)
                             : BASE2_NEGATIVE_EXPONENT[n];
             BigDecimal max = signed ? TWO.pow(m - 1).subtract(subtrahend, MathContext.DECIMAL128) 
