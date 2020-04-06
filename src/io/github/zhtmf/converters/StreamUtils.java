@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import io.github.zhtmf.ConversionException;
-import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.converters.auxiliary.DataType;
 
 class StreamUtils {
@@ -426,7 +425,12 @@ class StreamUtils {
     
     public static final void serializeBCD(String str, OutputStream dest, FieldInfo ctx, Object self) 
             throws ConversionException, IOException {
-        checkBCDLength(str, ctx.annotation(BCD.class).value());
+        if((str.length()>>1) != ctx.bcdLength) {
+            throw new UnsatisfiedConstraintException(String.format(
+                    "length of string should be [%d] (double long as declared BCD value), but it was [%d]"
+                        , ctx.bcdLength*2, str.length()))
+                        .withSiteAndOrdinal(StreamUtils.class, 17);
+        }
         int len = str.length();
         int[] values = new int[len];
         for(int i=0;i<len;++i) {
@@ -440,14 +444,6 @@ class StreamUtils {
             values[i] = c-'0';
         }
         writeBCD(dest, values);
-    }
-    
-    private static final void checkBCDLength(String src, int length) {
-        if((src.length()>>1)!=length) {
-            throw new UnsatisfiedConstraintException(String.format(
-                    "length of string should be [%d] (double long as declared BCD value), but it was [%d]", length*2, src.length()))
-                        .withSiteAndOrdinal(StreamUtils.class, 17);
-        }
     }
     
     public static final void serializeAsCHAR(String str, OutputStream dest, FieldInfo ctx, Object self)

@@ -1,4 +1,4 @@
-package io.github.zhtmf.converters;
+    package io.github.zhtmf.converters;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -21,7 +21,6 @@ import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
-import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.CHAR;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
@@ -129,12 +128,6 @@ class ClassInfo {
                         || ! DataPacket.class.isAssignableFrom(componentClass))) {
                     throw FieldInfo.forContext(cls, name, "field not marked with a DataType")
                     .withSiteAndOrdinal(ClassInfo.class, 2);
-                }
-            }else if(type == DataType.BCD) {
-                BCD anno = f.getAnnotation(BCD.class);
-                if(anno.value()<0) {
-                    throw FieldInfo.forContext(cls, name, "BCD length should not be negative")
-                    .withSiteAndOrdinal(ClassInfo.class, 3);
                 }
             }
             

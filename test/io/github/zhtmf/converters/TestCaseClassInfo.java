@@ -103,7 +103,18 @@ public class TestCaseClassInfo {
             new Entity().serialize(new ByteArrayOutputStream());
             Assert.fail();
         } catch (Exception e) {
-            TestUtils.assertExactException(e, ClassInfo.class, 3);
+            TestUtils.assertExactException(e, FieldInfo.class, 30);
+        }
+        class Entity1 extends DataPacket{
+            @Order(0)
+            @BCD(0)
+            public byte b;
+        }
+        try {
+            new Entity1().serialize(new ByteArrayOutputStream());
+            Assert.fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 30);
         }
     }
     @Test

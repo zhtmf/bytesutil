@@ -100,6 +100,10 @@ class FieldInfo{
     public final int length;
     public final int listLength;
     /**
+     * value property of BCD annotation
+     */
+    public final int bcdLength;
+    /**
      * Type of the {@link Length} value in the stream. For example some protocol
      * defines length as unsigned byte, while others defines it as unsigned short
      * etc.
@@ -214,6 +218,18 @@ class FieldInfo{
             Annotation ret = mutualExclusive(Unsigned.class,Signed.class);
             this.signed = ret!=null && ret instanceof Signed;
             this.unsigned = !signed;
+        }
+        {
+            BCD bcd = localAnnotation(BCD.class);
+            if(bcd != null) {
+                this.bcdLength = bcd.value();
+                if(bcd.value() <= 0 ) {
+                    throw FieldInfo.forContext(this.base.entityClass, name, "BCD length should be greater than zero")
+                    .withSiteAndOrdinal(FieldInfo.class, 30);
+                }
+            }else {
+                this.bcdLength = 0;
+            }
         }
         {
             CHARSET cs = annotation(CHARSET.class);
