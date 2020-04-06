@@ -3,9 +3,9 @@
 # Bytes-Util
 
 ## What's this
-A Java library that enables easing parsing of arbitrary binary encoding schemes from / into Java objects.
+A Java library that enables easing parsing of binary encoding schemes from / to Java objects.
 ## Motivation
-Nowadays there are still a lot of systems which communicates by non-standard home-grown binary protocols. Implementing such protocols is always a **pain** as I feel during my daily work, due to data structures or data types not natively supported or hard to implement in Java, like unsigned integral types, little-endian numbers or binary coded decimals, just to name a few. So I make this library to ease the process of parsing and make programmers focus more on their real work.
+Nowadays there are still a lot of systems which communicates by non-standard home-grown binary protocols. Implementing such protocols is always a **pain** as I feel during my daily work, due to data structures or types not natively supported or hard to implement in Java, like unsigned integral types, little-endian numbers or binary coded decimals, just to name a few. So I make this library to ease the process of parsing and make programmers focus more on their real work.
 
 ## Quick Start
 Consider the following definition of a data packet:
@@ -359,9 +359,9 @@ If the encoding scheme only defines ``0`` and ``1`` for this field and they are 
 
 ## Script
 
-Admittedly, writing handlers is cumbersome and making the code unncessarily lengthy. So this library introduces a script engine which can be used to simply writing handlers. 
+Admittedly, writing handlers is cumbersome and making the code unnecessarily lengthy. So this library introduces a script engine which is used to simplify handlers. 
 
-For example the following handler definition ( and excerpt from mysql connector example):
+For example the following handler definition ( an excerpt from MySQL connector example):
 ```
     @Order(11)
     @RAW
@@ -394,7 +394,7 @@ Using script sacrifices some performance and script cannot be used for Entity Ha
 
 Scripts does not have its own annotation like other modifiers but associates with existing modifier annotations through their ``scripts`` property, check java doc of these annotations and the marker annotation ``io.github.zhtmf.annotations.modifiers.Script`` for more information.
 
-As for syntax and grammar of this script, please refer to another document <a href='src/io/github/zhtmf/script'>here</a>.
+Refer to another document <a href='src/io/github/zhtmf/script'>here</a> for syntax of this script.
 
 ## Length Calculation
 
@@ -428,7 +428,11 @@ public static class Converter1 extends TypeConverter<Timestamp>{
 ``io.github.zhtmf.TypeConverter`` is a dedicated base class for custom conversion. ````Output```` and ````Input```` are utility classes which serves as an abstraction over the underlying stream and many other functions this library provides.
 
 ## Examples
+
 <a href='test/examples/javaclass'>parsing Java class file</a>
-<a href='test/examples/mysql/connector'>simple Mysql connector</a>
+
+<a href='test/examples/mysql/connector'>simple MySQL connector</a>
+
 <a href='test/examples/websocket'>simple Websocket server</a>
+
 <a href='test/examples/ntp'>Network Time Protocol client</a>
