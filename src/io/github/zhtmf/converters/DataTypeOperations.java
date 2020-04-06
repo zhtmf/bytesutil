@@ -257,6 +257,9 @@ enum DataTypeOperations{
             //as java long dataType cannot store an unsigned 64-bit value
             return null;
         }
+        public String checkRange(long val, boolean unsigned) {
+            return null;
+        }
         @Override
         public String checkRange(BigInteger val, FieldInfo ctx) {
             if(ctx.unsigned) {
@@ -358,6 +361,7 @@ enum DataTypeOperations{
     }
     
     //this method is solely used by checking length values
+    //which directly checking an unsigned/signed value regardless of signed-ness of the original FieldInfo
     public String checkRange(long val, boolean unsigned) {
         int sz = size()-1;
         if(unsigned) {

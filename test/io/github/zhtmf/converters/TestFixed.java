@@ -8,6 +8,7 @@ import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import javax.script.ScriptEngine;
@@ -31,6 +32,18 @@ public class TestFixed {
     
     @Test
     public void testExceptions() throws Exception{
+        try {
+            class Entity1 extends DataPacket{
+                @Order(0)
+                @Fixed({1,13})
+                @Signed
+                public Date d1;
+            }
+            new Entity1().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 1);
+        }
         try {
             class Entity1 extends DataPacket{
                 @Order(0)

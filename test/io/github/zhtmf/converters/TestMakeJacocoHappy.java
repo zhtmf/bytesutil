@@ -1,10 +1,14 @@
 package io.github.zhtmf.converters;
 
+import static org.junit.Assert.fail;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -60,6 +64,9 @@ public class TestMakeJacocoHappy {
         doTest(new LongConverter(),fieldA,dummy,1L);
         doTest(new ShortConverter(),fieldA,dummy,Short.MIN_VALUE);
         doTest(new StringConverter(),fieldA,dummy,"");
+        doTest(new BigDecimalConverter(), fieldA, dummy);
+        doTest(new BigIntegerConverter(), fieldA, dummy);
+        doTest(new DoubleConverter(), fieldA, dummy, 1.0d);
         
         try {
             fieldA.get(new Object());
@@ -72,19 +79,6 @@ public class TestMakeJacocoHappy {
             Assert.fail();
         } catch (Throwable e) {
         }
-        //TODO: check coverage
-//        try {
-//            StreamUtils.writeIntegerOfType(TestUtils.newThrowOnlyOutputStream(), DataType.LONG, 3, false);
-//            Assert.fail();
-//        } catch (Throwable e) {
-//            TestUtils.assertException(e, Error.class);
-//        }
-//        try {
-//            StreamUtils.readIntegerOfType(TestUtils.newZeroLengthInputStream(), DataType.LONG, false);
-//            Assert.fail();
-//        } catch (Throwable e) {
-//            TestUtils.assertException(e, Error.class);
-//        }
     }
     
     @Test
@@ -99,11 +93,6 @@ public class TestMakeJacocoHappy {
             Assert.fail();
         } catch (UnsupportedOperationException e) {
         }
-//        try {
-//            DataTypeOperations.CHAR.checkRange(null, false);
-//            Assert.fail();
-//        } catch (UnsupportedOperationException e) {
-//        }
         try {
             new EntityHandler() {
                 @Override
@@ -147,38 +136,55 @@ public class TestMakeJacocoHappy {
             } catch (Exception e) {
                 TestUtils.assertException(e, UnsupportedOperationException.class);
             }
-//            try {
-//                Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("checkRange",long.class,boolean.class);
-//                mtd.setAccessible(true);
-//                mtd.invoke(DataTypeOperations.USER_DEFINED,0L,Boolean.FALSE);
-//            } catch (Exception e) {
-//                TestUtils.assertException(e, UnsupportedOperationException.class);
-//            }
-//            try {
-//                Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("checkRange",BigInteger.class,boolean.class);
-//                mtd.setAccessible(true);
-//                mtd.invoke(DataTypeOperations.USER_DEFINED,BigInteger.ZERO,Boolean.TRUE);
-//            } catch (Exception e) {
-//                TestUtils.assertException(e, UnsupportedOperationException.class);
-//            }
         }
         {
             Constructor<StreamUtils> cons = StreamUtils.class.getDeclaredConstructor();
             cons.setAccessible(true);
             cons.newInstance();
         }
-//        {
-//            try {
-//                StreamUtils.writeIntegerOfType(null, DataType.INT3, 3, true);
-//            } catch (Throwable e) {
-//                assertTrue(e instanceof Error);
-//            }
-//            try {
-//                StreamUtils.readIntegerOfType(null, DataType.INT3, true);
-//            } catch (Throwable e) {
-//                assertTrue(e instanceof Error);
-//            }
-//        }
+        {
+            ClassInfo info = new ClassInfo(Dummy.class);
+            FieldInfo fieldInfo = info.fieldInfoList.get(0);
+            {
+                Field field = FieldInfo.class.getDeclaredField("lengthType");
+                field.setAccessible(true);
+                field.set(fieldInfo, DataType.LONG);
+            }
+            try {
+                StreamUtils.writeIntegerOfType(TestUtils.newThrowOnlyOutputStream(), 3, fieldInfo);
+                fail();
+            } catch (Error e) {
+            }
+            try {
+                StreamUtils.readIntegerOfType(TestUtils.newZeroLengthInputStream(), fieldInfo);
+                fail();
+            } catch (Error e) {
+            }
+        }
+        {
+            ClassInfo info = new ClassInfo(Dummy.class);
+            FieldInfo fieldInfo = info.fieldInfoList.get(0);
+            Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("checkRange", BigDecimal.class, FieldInfo.class);
+            mtd.setAccessible(true);
+            try {
+                mtd.invoke(DataTypeOperations.USER_DEFINED, BigDecimal.ONE, fieldInfo);
+                fail();
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+        }
+        {
+            ClassInfo info = new ClassInfo(Dummy.class);
+            FieldInfo fieldInfo = info.fieldInfoList.get(0);
+            Method mtd = io.github.zhtmf.converters.DataTypeOperations.class.getDeclaredMethod("checkRange", BigInteger.class, FieldInfo.class);
+            mtd.setAccessible(true);
+            try {
+                mtd.invoke(DataTypeOperations.USER_DEFINED, BigInteger.ONE, fieldInfo);
+                fail();
+            } catch (Exception e) {
+                TestUtils.assertException(e, UnsupportedOperationException.class);
+            }
+        }
     }
     
     @SuppressWarnings("unchecked")

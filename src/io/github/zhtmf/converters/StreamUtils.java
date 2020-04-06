@@ -181,49 +181,6 @@ class StreamUtils {
         os.writeBits(value);
     }
     
-    private static final BigInteger BIT7 = BigInteger.valueOf(0b01111111);
-    private static final BigInteger SET_FIRST = BigInteger.valueOf(0b10000000);
-    
-    static void writeUnsignedVarint(
-            OutputStream os
-            , long value
-            , boolean bigEndian) throws IOException {
-        writeUnsignedVarint(os, BigInteger.valueOf(value), bigEndian);
-    }
-    
-    public static int getUnsignedVarintLength(BigInteger value) {
-        int bitLength = value.bitLength();
-        return bitLength / 7 + Integer.signum(bitLength % 7);
-    }
-    
-    public static void writeUnsignedVarint(
-            OutputStream os
-            , BigInteger value
-            , boolean bigEndian) throws IOException {
-        
-        int result = value.compareTo(BigInteger.ZERO);
-        
-        if(result == 0) {
-            //0b000_000_00
-            writeBYTE(os, (byte)0);
-            return;
-        }
-            
-        byte[] array = new byte[getUnsignedVarintLength(value)];
-        int length = array.length;
-        int ptr = length - 1;
-        while(value.compareTo(BigInteger.ZERO) > 0) {
-            array[ptr--] = (byte) value.and(BIT7).or(SET_FIRST).shortValue();
-            value = value.shiftRight(7);
-        }
-        if(!bigEndian) {
-            reverse(array);
-        }
-        
-        array[length-1] &= 0b01111111;
-        writeBytes(os, array);
-    }
-    
     static byte[] reverse(byte[] array) {
         reverse(array, 0, array.length);
         return array;
@@ -240,32 +197,6 @@ class StreamUtils {
     }
     
     //---------------------------------
-    
-    public static BigInteger readVarint(
-            MarkableInputStream os
-            , boolean bigEndian) throws IOException {
-        BigInteger ret = BigInteger.ZERO;
-        if(bigEndian) {
-            for(;;) {
-                byte flag = os.readBits(1);
-                ret = ret.shiftLeft(7).or(BigInteger.valueOf(os.readBits(7)));
-                if(flag == 0) {
-                    break;
-                }
-            }
-        } else {
-            int count = 0;
-            for(;;) {
-                byte flag = os.readBits(1);
-                ret = ret.or(BigInteger.valueOf(os.readBits(7)).shiftLeft(count));
-                if(flag == 0) {
-                    break;
-                }
-                count += 7;
-            }
-        }
-        return ret;
-    }
     
     public static byte readBit(MarkableInputStream in, int num, boolean bigEndian) throws IOException {
         byte ret = in.readBits(num);
