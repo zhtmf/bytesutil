@@ -165,7 +165,6 @@ abstract class Identifier {
      * Common interface for retrieving value of a property, by utilizing
      * {@link Field} or {@link Method} or by any other means.
      */
-    @FunctionalInterface
     private interface Getter{
         /*
          * The second parameter is useless in most cases as it is implied in a Field or
@@ -180,7 +179,6 @@ abstract class Identifier {
      * Common interface for setting value of a property, by utilizing
      * {@link Field} or {@link Method} or by any other means.
      */
-    @FunctionalInterface
     private interface Setter{
         void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception;
     }
@@ -206,9 +204,12 @@ abstract class Identifier {
     
     private static final ConcurrentHashMap<String, MethodObject> METHOD_CALLS = new ConcurrentHashMap<String, MethodObject>();
     private static final ConcurrentHashMap<String, Getter> GETTERS = new ConcurrentHashMap<String, Getter>();
-    private static final Getter DUMMY = (obj,p)->null;
+    private static final Getter DUMMY = new Getter() {
+        @Override
+        public Object get(Object obj, SingleIdentifier propertyName) throws Exception {return null;}
+    };
     private static final ConcurrentHashMap<String, Setter> SETTERS = new ConcurrentHashMap<String, Setter>();
-    private static final Setter DUMMY2 = (o,p,v)->{};
+    private static final Setter DUMMY2 = (o,s,v)->{};
     private static final ConcurrentHashMap<String, Class<?>> classCache = new ConcurrentHashMap<String, Class<?>>();
     private static final ThreadLocal<Integer> NEXT_ID = new ThreadLocal<Integer>() {
         protected Integer initialValue() {return 0;};
@@ -259,31 +260,72 @@ abstract class Identifier {
         int index = property.index;
         if(index>=0) {
             if(clazz.isArray()) {
-                return (obj,s)->Array.get(obj, s.index);
+                return new Getter() {
+                    @Override
+                    public Object get(Object obj, SingleIdentifier s) throws Exception {
+                        return Array.get(obj, s.index);
+                    }
+                };
             }else if(!(root instanceof List)){
                 throw new ParsingException("indexing "+index+" on non-list object "+root)
                     .withSiteAndOrdinal(Identifier.class, 1);
             }else {
-                return (obj,s)->((List<Map<String,Object>>)obj).get(s.index);
+                return new Getter() {
+                    
+                    @Override
+                    public Object get(Object obj, SingleIdentifier s) throws Exception {
+                       return ((List<Map<String,Object>>)obj).get(s.index);
+                    }
+                };
             }
         }else if(root instanceof Map){
             if(property.lengthOrSize)
-                return (obj,s)->new BigDecimal(((Map)obj).size());
+                return new Getter() {
+                    @Override
+                    public Object get(Object obj, SingleIdentifier s) throws Exception {
+                        return new BigDecimal(((Map)obj).size());
+                    }
+                };
             else
-                return (obj,s)->((Map<String,Object>)obj).get(s.name);
+                return new Getter() {
+                    @Override
+                    public Object get(Object obj, SingleIdentifier s) throws Exception {
+                        return ((Map<String,Object>)obj).get(s.name);
+                    }
+                };
         }else {
             //dedicated code path for length and size
             if(property.lengthOrSize)
                 if(root instanceof String)
-                    return (obj,s)->new BigDecimal(((String)obj).length());
+                    return new Getter() {
+                        @Override
+                        public Object get(Object obj, SingleIdentifier s) throws Exception {
+                            return new BigDecimal(((String)obj).length());
+                        }
+                    };
                 else if(root instanceof Collection) 
-                    return (obj,s)->new BigDecimal(((Collection)obj).size());
+                    return new Getter() {
+                        @Override
+                        public Object get(Object obj, SingleIdentifier s) throws Exception {
+                            return new BigDecimal(((Collection)obj).size());
+                        }
+                    };
                 else if(getClassOf(root).isArray()) 
-                    return (obj,s)->new BigDecimal(Array.getLength(obj));
+                    return new Getter() {
+                        @Override
+                        public Object get(Object obj, SingleIdentifier s) throws Exception {
+                            return new BigDecimal(Array.getLength(obj));
+                        }
+                    };
                     
-            Method getter = getGetterMethod(clazz, property);
+            final Method getter = getGetterMethod(clazz, property);
             if(getter != null) {
-                return (obj,s)->getter.invoke(obj);
+                return new Getter() {
+                    @Override
+                    public Object get(Object obj, SingleIdentifier propertyName) throws Exception {
+                        return getter.invoke(obj);
+                    }
+                };
             }
             
             /*
@@ -317,7 +359,12 @@ abstract class Identifier {
                 if(field != null) {
                     field.setAccessible(true);
                     final Field tmp = field;
-                    return (obj,s)->tmp.get(obj);
+                    return new Getter() {
+                        @Override
+                        public Object get(Object obj, SingleIdentifier propertyName) throws Exception {
+                            return tmp.get(obj);
+                        }
+                    };
                 }
                 return null;
             } catch (SecurityException  e) {
@@ -339,25 +386,45 @@ abstract class Identifier {
         int index = property.index;
         if(index>=0) {
             if(clazz.isArray()) {
-                Class<?> componentType = clazz.getComponentType();
-                return (obj,p,value)->Array.set(obj, p.index, convertValueIfNeeded(componentType, value));
+                final Class<?> componentType = clazz.getComponentType();
+                return new Setter() {
+                    @Override
+                    public void set(Object obj, SingleIdentifier p, Object value) throws Exception {
+                         Array.set(obj, p.index, convertValueIfNeeded(componentType, value));
+                    }
+                };
             }else if(root instanceof List){
-                return (obj,p,value)->((List)obj).set(p.index, value);
+                return new Setter() {
+                    @Override
+                    public void set(Object obj, SingleIdentifier p, Object value) throws Exception {
+                        ((List)obj).set(p.index, value);
+                    }
+                };
             }
         }
         
         if(root instanceof Map){
-            return (obj,p,value)->((Map<String,Object>)obj).put(p.name, value);
+            return new Setter() {
+                @Override
+                public void set(Object obj, SingleIdentifier p, Object value) throws Exception {
+                    ((Map<String,Object>)obj).put(p.name, value);
+                }
+            };
         }
         
         if(index >=0 ) {
             throw new ParsingException("indexing"+index+" on object "+root)
                 .withSiteAndOrdinal(Identifier.class, 4);
         }
-        Method setter = getSetterMethod(clazz, property);
+        final Method setter = getSetterMethod(clazz, property);
         if(setter != null) {
-            Class<?> type = setter.getParameterTypes()[0];
-            return (obj,p,value)->setter.invoke(obj, convertValueIfNeeded(type, value));
+            final Class<?> type = setter.getParameterTypes()[0];
+            return new Setter() {
+                @Override
+                public void set(Object obj, SingleIdentifier p, Object value) throws Exception {
+                    setter.invoke(obj, convertValueIfNeeded(type, value));
+                }
+            };
         }
         
         Field field = null;
@@ -369,7 +436,12 @@ abstract class Identifier {
             field.setAccessible(true);
             final Field tmp = field;
             final Class<?> type = tmp.getType();
-            return (obj,p,value)->tmp.set(obj, convertValueIfNeeded(type, value));
+            return new Setter() {
+                @Override
+                public void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception {
+                    tmp.set(obj, convertValueIfNeeded(type, value));
+                }
+            };
         } catch (Exception e) {
             return null;
         }
@@ -412,7 +484,7 @@ abstract class Identifier {
         String methodName = property.setterName;
         for(Method method:cls.getMethods()) {
             if(method.getName().matches(methodName)
-            && method.getParameterCount() == 1 
+            && method.getParameterTypes().length == 1 
             && method.getReturnType() == void.class) {
                 return method;
             }
