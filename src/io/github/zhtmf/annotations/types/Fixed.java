@@ -38,7 +38,7 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
  * Due to inaccurate nature of float numbers, the value restored from the stream
  * may be different from the original one. But still can be considered equal by
  * {@link Double#compare(double, double) Double.compare} if enough fractional
- * bits are used. <br/>
+ * bits are used. <br>
  * For example, consider the value <tt>255.12334</tt>. If it is serialized as a
  * signed number and then deserialized as another double value <tt>d</tt> using
  * 16 bits integer part and 16 bits fraction part, though its decimal value is

@@ -264,7 +264,7 @@ abstract class Identifier {
                 throw new ParsingException("indexing "+index+" on non-list object "+root)
                     .withSiteAndOrdinal(Identifier.class, 1);
             }else {
-                return (obj,s)->((List<Map<String,Object>>)obj).get(s.index);
+                return (obj,s)->((List)obj).get(s.index);
             }
         }else if(root instanceof Map){
             if(property.lengthOrSize)

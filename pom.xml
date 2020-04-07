@@ -71,6 +71,9 @@
 					<target>${jdk.version}</target>
 					<testSource>1.8</testSource>
                     <testTarget>1.8</testTarget>
+					<compilerArgs>
+						<arg>-Xlint:unchecked</arg>
+					</compilerArgs>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -177,6 +180,13 @@
 				</executions>
 			</plugin>
 		</plugins>
+
+		<testResources>
+			<testResource>
+				<directory>${project.basedir}/src/META-INF</directory>
+				<targetPath>${project.basedir}/test/META-INF</targetPath>
+			</testResource>
+		</testResources>
 	</build>
 
 	<distributionManagement>
