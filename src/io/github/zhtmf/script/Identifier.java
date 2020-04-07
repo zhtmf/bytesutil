@@ -274,7 +274,7 @@ abstract class Identifier {
                     
                     @Override
                     public Object get(Object obj, SingleIdentifier s) throws Exception {
-                       return ((List<Map<String,Object>>)obj).get(s.index);
+                       return ((List)obj).get(s.index);
                     }
                 };
             }

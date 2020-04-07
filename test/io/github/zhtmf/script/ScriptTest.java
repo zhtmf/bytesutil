@@ -4434,7 +4434,9 @@ public class ScriptTest {
         return ret;
     }
     
-    public static <T> List<T> asList(@SuppressWarnings("unchecked") T...args){
-        return new ArrayList<T>(Arrays.asList(args));
+    
+    @SafeVarargs
+    public static <T> List<T> asList(T...args){
+        return new ArrayList<>(Arrays.asList(args));
     }
 }

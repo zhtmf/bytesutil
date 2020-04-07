@@ -23,7 +23,6 @@ import io.github.zhtmf.annotations.modifiers.LittleEndian;
  * <li><code>enum</code> types that mapped to numbers</li>
  * </ul>
  * <p>
- * <p>
  * When mapped to boolean flags, the {@link #value()} must be 1. For
  * enumerations, the values enum members mapped to must be in the range of 0 to
  * maximum number representable by this many bits inclusively. For example if

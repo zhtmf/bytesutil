@@ -103,7 +103,7 @@ public class Script {
     /**
      * Constructs a script instance but without instantiating it.
      * 
-     * @param program
+     * @param program the program string to be compiled
      */
     public Script(String program) {
         if(program == null) program = "";
@@ -342,6 +342,8 @@ public class Script {
      * <p>
      * This method can be called concurrently. As the <tt>global</tt> parameter is
      * copied internally it can be reused across different calls.
+     * 
+     * @return result of evaluating this script against specified global context
      * 
      * @param global initial global mappings
      * @throws IllegalStateException if this script has not been compiled in
