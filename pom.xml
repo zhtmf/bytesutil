@@ -208,6 +208,13 @@
 				<targetPath>${project.basedir}/test/META-INF</targetPath>
 			</testResource>
 		</testResources>
+		
+		<resources>
+			<resource>
+			    <directory>${project.basedir}/src/META-INF</directory>
+			    <targetPath>META-INF</targetPath>
+			</resource>
+		</resources>
 	</build>
 
 	<distributionManagement>
