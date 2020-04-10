@@ -1,6 +1,12 @@
 package io.github.zhtmf.script;
 
-import static io.github.zhtmf.script.TokenType.*;
+import static io.github.zhtmf.script.TokenType.BOOL;
+import static io.github.zhtmf.script.TokenType.ID;
+import static io.github.zhtmf.script.TokenType.NULL;
+import static io.github.zhtmf.script.TokenType.NUM;
+import static io.github.zhtmf.script.TokenType.STMT;
+import static io.github.zhtmf.script.TokenType.STR;
+import static io.github.zhtmf.script.TokenType.isTypes;
 
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -625,11 +631,10 @@ abstract class LogicalOperator extends MutualExclusivityOperator {
 interface ArithmeticBinaryOperation{
     BigDecimal invoke(BigDecimal self, BigDecimal right) throws Exception;
 }
-interface ArithmeticIntegralBinaryOperation{
-    BigInteger invoke(BigInteger self, BigInteger right) throws Exception;
-    static ArithmeticIntegralBinaryOperation wrap(Method method) {
+abstract class ArithmeticIntegralBinaryOperation{
+    abstract BigInteger invoke(BigInteger self, BigInteger right) throws Exception;
+    static ArithmeticIntegralBinaryOperation wrap(final Method method) {
         return new ArithmeticIntegralBinaryOperation() {
-            
             @Override
             public BigInteger invoke(BigInteger self, BigInteger right) throws Exception {
                 return (BigInteger) method.invoke(self, right);
@@ -638,9 +643,9 @@ interface ArithmeticIntegralBinaryOperation{
     }
 }
 
-interface ArithmeticUnaryOperation{
-    BigDecimal invoke(BigDecimal self) throws Exception;
-    static ArithmeticUnaryOperation wrap(Method method) {
+abstract class ArithmeticUnaryOperation{
+    abstract BigDecimal invoke(BigDecimal self) throws Exception;
+    static ArithmeticUnaryOperation wrap(final Method method) {
         return new ArithmeticUnaryOperation() {
             
             @Override

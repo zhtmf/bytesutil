@@ -2,7 +2,6 @@ package io.github.zhtmf.script;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.script.AbstractScriptEngine;
@@ -52,7 +51,7 @@ class ZhtmfScriptEngine extends AbstractScriptEngine implements Compilable{
 
     @Override
     public CompiledScript compile(String script) throws ScriptException {
-        Map<String, CompiledScript> compiledScripts = this.compiledScripts;
+        ConcurrentHashMap<String, CompiledScript> compiledScripts = this.compiledScripts;
         CompiledScript scriptObject = compiledScripts.get(script);
         
         if(scriptObject != null) {

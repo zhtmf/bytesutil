@@ -189,6 +189,10 @@ class Operators {
         public List<Operator> next() {
             return stack.get(level--);
         }
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
     }
     
     public static Operator getOperator(String op) {

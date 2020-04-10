@@ -22,7 +22,7 @@ public class TestObject extends TestObjectParent{
     public List<Object> list2 = null;
     public List<Object> list = ScriptTest.asList("abc","def",
             ScriptTest.asList("abc","111",ScriptTest.asList(1,2,3,4,5)));
-    public List<Object> list3 = ScriptTest.asList(1,2,3,4,5);
+    public List<Object> list3 = ScriptTest.<Object>asList(1,2,3,4,5);
     public Object[] array = new Object[] {
             new Object[] {
                 "abcdef",
