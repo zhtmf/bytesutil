@@ -63,16 +63,39 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>3.5.1</version>
 				<configuration>
-					<source>${jdk.version}</source>
-					<target>${jdk.version}</target>
-					<testSource>1.8</testSource>
-                    <testTarget>1.8</testTarget>
-					<compilerArgs>
-						<arg>-Xlint:unchecked</arg>
-					</compilerArgs>
+					<fork>true</fork>
+					<source>1.8</source>
+					<target>1.8</target>
+	                <compilerArgs>
+	                	<arg>-Xlint:unchecked</arg>
+	                </compilerArgs>
 				</configuration>
+				<executions>
+	               <execution>
+	                  <id>default-compile</id>
+	                  <configuration>
+	                     <showDeprecation>true</showDeprecation>
+	                     <showWarnings>true</showWarnings>
+	                     <compilerArguments>
+	                        <source>1.7</source>
+	                        <target>1.7</target>
+	                     </compilerArguments>
+	                  </configuration>
+	               </execution>
+	               <execution>
+	                  <id>default-testCompile</id>
+	                  <configuration>
+	                     <showDeprecation>true</showDeprecation>
+	                     <showWarnings>true</showWarnings>
+	                     <compilerArguments>
+	                        <source>1.8</source>
+	                        <target>1.8</target>
+	                     </compilerArguments>
+	                  </configuration>
+	               </execution>
+	            </executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

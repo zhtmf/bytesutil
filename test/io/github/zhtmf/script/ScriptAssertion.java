@@ -47,7 +47,10 @@ final class ScriptAssertion{
     }
     public String print() {
         StringWriter sw = new StringWriter();
-        script.statements.forEach(s->{sw.write(s.toString());sw.write("\r\n");});
+        for(Statement s:script.statements) {
+            sw.write(s.toString());
+            sw.write("\r\n");
+        }
         System.out.println(sw.toString());
         return sw.toString();
     }

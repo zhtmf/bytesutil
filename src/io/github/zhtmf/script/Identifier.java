@@ -209,7 +209,10 @@ abstract class Identifier {
         public Object get(Object obj, SingleIdentifier propertyName) throws Exception {return null;}
     };
     private static final ConcurrentHashMap<String, Setter> SETTERS = new ConcurrentHashMap<String, Setter>();
-    private static final Setter DUMMY2 = (o,s,v)->{};
+    private static final Setter DUMMY2 = new Setter() {
+        public void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception {
+        }
+    };
     private static final ConcurrentHashMap<String, Class<?>> classCache = new ConcurrentHashMap<String, Class<?>>();
     private static final ThreadLocal<Integer> NEXT_ID = new ThreadLocal<Integer>() {
         protected Integer initialValue() {return 0;};
