@@ -3,7 +3,7 @@
 # Bytes-Util
 
 ## What's this
-A Java library that enables easing parsing of binary encoding schemes from / to Java objects.
+A Java library that enables easing parsing of binary encoding schemes.
 ## Motivation
 Nowadays there are still a lot of systems which communicates by non-standard home-grown binary protocols. Implementing such protocols is always a **pain** as I feel during my daily work, due to data structures or types not natively supported or hard to implement in Java, like unsigned integral types, little-endian numbers or binary coded decimals, just to name a few. So I make this library to ease the process of parsing and make programmers focus more on their real work.
 
