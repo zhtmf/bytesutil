@@ -12,6 +12,8 @@ import static org.junit.Assert.fail;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
@@ -3212,6 +3214,17 @@ public class ScriptTest {
         
     }
     
+    //fields in super class
+    @Test
+    public void testAV3() throws Exception {
+    	//excludes private fields in super class
+    	assertEquals(evaluateMine("abc.parentFieldPrivate", asMap("abc",new TestObject()))+"", "null");
+    	//accessing field in super class
+        assertEquals(evaluateMine("abc.parentFieldPublic", asMap("abc",new TestObject()))+"", "1");
+        assertEquals(evaluateMine("abc.parentFieldProtected", asMap("abc",new TestObject()))+"", "2");
+        assertEquals(evaluateMine("abc.parentFieldPackage", asMap("abc",new TestObject()))+"", "3");
+    }
+    
     @Test
     public void testAW() throws Exception {
         //access object property by .
@@ -4045,6 +4058,22 @@ public class ScriptTest {
         
         Object obj = evaluateMine("java.lang.System.currentTimeMillis",asMap("a",1,"b",2));
         assertTrue(obj instanceof Number);
+        
+        {
+        	Field DUMMY = Identifier.class.getDeclaredField("DUMMY");
+        	DUMMY.setAccessible(true);
+        	Object GETTER = DUMMY.get(null);
+        	Method get = GETTER.getClass().getMethods()[0];
+        	assertEquals(get.invoke(GETTER, null, null), null);
+        }
+        
+        {
+        	Field DUMMY2 = Identifier.class.getDeclaredField("DUMMY2");
+        	DUMMY2.setAccessible(true);
+        	Object SETTER = DUMMY2.get(null);
+        	Method set = SETTER.getClass().getMethods()[0];
+        	assertEquals(set.invoke(SETTER, null, null, null), null);
+        }
     }
     
     //cover impossible branches

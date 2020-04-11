@@ -336,43 +336,36 @@ abstract class Identifier {
              * protected / package private / public field in super class(es)
              */
             Field field = null;
-            try {
-                Class<?> current = clazz;
-                String propertyName = property.name;
-                field = getDeclaredField(current, propertyName);
-                if(field == null) {
-                    current = current.getSuperclass();
-                    while(current != Object.class) {
-                        field = getDeclaredField(current, propertyName);
-                        if(field == null) {
-                            current = current.getSuperclass();
-                            continue;
-                        }
-                        int mod = field.getModifiers();
-                        if(Modifier.isPublic(mod) || Modifier.isProtected(mod)) {
-                            break;
-                        }
-                        if(!(Modifier.isPublic(mod)
-                          || Modifier.isProtected(mod)
-                          || Modifier.isPrivate(mod))) {
-                            break;
-                        }
+            Class<?> current = clazz;
+            String propertyName = property.name;
+            field = getDeclaredField(current, propertyName);
+            if(field == null) {
+                current = current.getSuperclass();
+                while(current != Object.class) {
+                    field = getDeclaredField(current, propertyName);
+                    if(field != null) {
+                    	int mod = field.getModifiers();
+                    	if(Modifier.isPrivate(mod)) {
+                    		field = null;
+                    		current = current.getSuperclass();
+                    		continue;
+                    	}
+                    	break;
                     }
+                    current = current.getSuperclass();
                 }
-                if(field != null) {
-                    field.setAccessible(true);
-                    final Field tmp = field;
-                    return new Getter() {
-                        @Override
-                        public Object get(Object obj, SingleIdentifier propertyName) throws Exception {
-                            return tmp.get(obj);
-                        }
-                    };
-                }
-                return null;
-            } catch (SecurityException  e) {
-                return null;
             }
+            if(field != null) {
+                field.setAccessible(true);
+                final Field tmp = field;
+                return new Getter() {
+                    @Override
+                    public Object get(Object obj, SingleIdentifier propertyName) throws Exception {
+                        return tmp.get(obj);
+                    }
+                };
+            }
+            return null;
         }
     }
     
