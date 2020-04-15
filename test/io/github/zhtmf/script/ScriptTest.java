@@ -2840,37 +2840,37 @@ public class ScriptTest {
         //plain additive
         testEvaluation("aaaa+b+c-3.333*1.2345", 
                 asMap("aaaa",new BigDecimal("3.434")
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         //add by 0
         testEvaluation("aaaa+0+b+0", 
                 asMap("aaaa",new BigDecimal("0")
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         
         //number concatenated with string
         testEvaluation("aaaa+'sdfasdf'+b+'*(&@(#^(*&@*(#@'+c", 
                 asMap("aaaa",new BigDecimal("0")
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         testEvaluation("1.11103+'sdfasdf'+b+'*(&@(#^(*&@*(#@'+3.007", 
                 asMap("aaaa",new BigDecimal("0")
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         testEvaluation("1+2+'abc'+4+5", 
                 asMap("aaaa",new BigDecimal("0")
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         //string concatenation
         testEvaluation("aaaa+'asdfasdf'+aaaa", 
                 asMap("aaaa","abcdef"
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         
         //null concatenated with string
         testEvaluation("null+'asdfasdf'+aaaa", 
                 asMap("aaaa",null
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         
         //boolean values concatenated with string
@@ -2882,7 +2882,7 @@ public class ScriptTest {
         //object(references) concatenated with string
         testEvaluation("aaaa+'sadfsadf'", 
                 asMap("aaaa",new Object()
-                        ,"b",new BigDecimal("1.0")
+                        ,"b",new BigDecimal("1")
                         ,"c",new BigDecimal("17.343")));
         
         //invalid additive operator made valid by string concatenation
