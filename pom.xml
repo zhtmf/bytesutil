@@ -23,7 +23,7 @@
 		<connection>scm:git:https://github.com/zhtmf/bytesutil.git</connection>
 		<developerConnection>scm:git:https://github.com/zhtmf/bytesutil.git</developerConnection>
 		<url>https://github.com/zhtmf/bytesutil</url>
-		<tag>bytes-util-1.2</tag>
+		<tag>1.21</tag>
 	</scm>
 
 	<properties>
