@@ -359,7 +359,7 @@ If the encoding scheme only defines ``0`` and ``1`` for this field and they are 
 
 ## Script
 
-Admittedly, writing handlers is cumbersome and making the code unnecessarily lengthy. So this library introduces a script engine which is used to simplify handlers. 
+Admittedly, writing handlers is cumbersome and making the code unnecessarily lengthy. So this library introduces a script engine to simplify handlers. 
 
 For example the following handler definition ( an excerpt from MySQL connector example):
 ```
@@ -392,7 +392,7 @@ can be simplified as
 ```
 Using script sacrifices some performance and script cannot be used for Entity Handlers as this script engine does not aim to be a full-fledged programming language and users should write a real handler when expressing complex logic.
 
-Scripts does not have its own annotation like other modifiers but associates with existing modifier annotations through their ``scripts`` property, check java doc of these annotations and the marker annotation ``io.github.zhtmf.annotations.modifiers.Script`` for more information.
+The script does not possess its own annotation but associates with existing modifier annotations through their ``scripts`` property, check java doc of these annotations and the marker annotation ``io.github.zhtmf.annotations.modifiers.Script`` for more information.
 
 Refer to another document <a href='src/io/github/zhtmf/script'>here</a> for syntax of this script.
 

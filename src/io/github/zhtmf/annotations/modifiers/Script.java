@@ -18,7 +18,7 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
  * {@link ModifierHandler#handleSerialize0(String, Object) handleSerialize0} and
  * {@link ModifierHandler#handleDeserialize0(String, Object, java.io.InputStream)
  * handleDeserialize0}. And {@link #deserialize() deserialize} can be used to
- * override the deserialization part if logic do differ for these two
+ * override the deserialization part if logic does differ for these two
  * procedures.
  * <p>
  * Empty string has special meaning in this annotation. It means the only

@@ -53,7 +53,7 @@ public @interface CHARSET {
      * element is used to generate the implementation.
      * <p>
      * Compilation of the script is done during initial parsing process and any
-     * syntax error will result in exceptions thrown. Even the annotated property is
+     * syntax error will result in exceptions. Even the annotated property is
      * never processed during actual serialization/deserialization.
      * <p>
      * If both {@link #value() value} and this property are assigned

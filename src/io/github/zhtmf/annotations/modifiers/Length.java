@@ -67,26 +67,26 @@ public @interface Length {
     Class<? extends ModifierHandler<Integer>> handler() default PlaceHolderHandler.DefaultLengthHandler.class;
     
     /**
-     * Use a {@link Script Script} to generate implementation of {@link #handler()
-     * handler}.
-     * <p>
-     * This property is defined as an array only for convenience of specifying
-     * default value. Only one {@link Script Script} is required and only the first
-     * element is used to generate the implementation.
-     * <p>
-     * Compilation of the script is done during initial parsing process and any
-     * syntax error will result in exceptions thrown. Even the annotated property is
-     * never processed during actual serialization/deserialization.
-     * <p>
-     * If both {@link #handler() handler} and this property are assigned
-     * {@link #handler() handler} takes precedence.
-     * <p>
-     * For more information on how to write the script, please refer to comments on
-     * {@link Script Script} and the README file under
-     * <tt>io.github.zhtmf.script</tt> package.
-     * 
-     * @return an array of {@link Script Script} annotations. However only the first
-     *         one is used to generate handler implementation.
-     */
+	 * Use a {@link Script Script} to generate implementation of {@link #handler()
+	 * handler}.
+	 * <p>
+	 * This property is defined as an array only for convenience of specifying
+	 * default value. Only one {@link Script Script} is required and only the first
+	 * element is used to generate the implementation.
+	 * <p>
+	 * Compilation of the script is done during initial parsing process and any
+	 * syntax error will result in exceptions. Even the annotated
+	 * property is never processed during actual serialization/deserialization.
+	 * <p>
+	 * If both {@link #handler() handler} and this property are assigned
+	 * {@link #handler() handler} takes precedence.
+	 * <p>
+	 * For more information on how to write the script, please refer to comments on
+	 * {@link Script Script} and the README file under
+	 * <tt>io.github.zhtmf.script</tt> package.
+	 * 
+	 * @return an array of {@link Script Script} annotations. However only the first
+	 *         one is used to generate handler implementation.
+	 */
     Script[] scripts() default {};
 }
