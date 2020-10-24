@@ -130,7 +130,7 @@ class FieldInfo{
      * for this field, null if it is not defined in the {@link CHARSET}
      * annotation.
      */
-    public final ModifierHandler<Charset> charsetHandler;
+    public final DelegateModifierHandler<Charset> charsetHandler;
     /**
      * Pattern string defined in {@link DatePattern} annotation, null if not present.
      */
