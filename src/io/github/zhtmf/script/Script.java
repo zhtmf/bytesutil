@@ -43,7 +43,7 @@ import io.github.zhtmf.script.TokenType.Temporary.Null;
  * 
  * @author dzh
  */
-public class Script {
+class Script {
     
     private static TokenType[] TOKENS = {ID, STMT, NUM, STR, BOOL, NULL, OP};
     private static final char[] DECIMAL_CHARS = "0123456789".toCharArray();
