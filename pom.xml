@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>io.github.zhtmf</groupId>
 	<artifactId>bytes-util</artifactId>
-	<version>1.2.1-SNAPSHOT</version>
+	<version>1.2.1</version>
 	<name>bytes-util</name>
 	<description>A Java library that enables easing parsing of binary encoding schemes</description>
 	<url>https://github.com/zhtmf/bytesutil</url>
@@ -23,7 +23,7 @@
 		<connection>scm:git:https://github.com/zhtmf/bytesutil.git</connection>
 		<developerConnection>scm:git:https://github.com/zhtmf/bytesutil.git</developerConnection>
 		<url>https://github.com/zhtmf/bytesutil</url>
-		<tag>bytes-util-1.2</tag>
+		<tag>1.2.1</tag>
 	</scm>
 
 	<properties>
