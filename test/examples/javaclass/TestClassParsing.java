@@ -15,10 +15,19 @@ import io.github.zhtmf.converters.TestUtils;
 public class TestClassParsing {
 
     @Test
-    public void testParsing() throws Exception {
+    public void testParsing2() throws Exception {
+        testParsing("TestLongFieldClass.classfile");
+    }
+
+    @Test
+    public void testParsing1() throws Exception {
+        testParsing("DataPacket.classfile");
+    }
+
+    public void testParsing(String name) throws Exception {
         byte[] original = null;
         {
-            InputStream inputStream = getInputStream();
+            InputStream inputStream = getInputStream(name);
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
             int read = -1;
@@ -29,16 +38,17 @@ public class TestClassParsing {
         }
         byte[] deserialized = null;
         {
-            InputStream inputStream = getInputStream();
+            InputStream inputStream = getInputStream(name);
             JavaClass clazz = new JavaClass();
             try {
                 clazz.deserialize(inputStream);
-//                System.out.println(clazz);
+                System.out.println(clazz);
             } catch (Exception e) {
                 e.printStackTrace();
                 try {
-//                    System.out.println(clazz);
+                    System.out.println(clazz);
                 } catch (Exception e1) {
+                    System.out.println("print error"+e1.getMessage());
                 }
                 Assert.fail();
             }
@@ -53,10 +63,10 @@ public class TestClassParsing {
         Assert.assertArrayEquals(original, deserialized);
     }
     
-    private InputStream getInputStream() throws FileNotFoundException {
-        File f = new File("DataPacket.classfile");
+    private InputStream getInputStream(String name) throws FileNotFoundException {
+        File f = new File(name);
         if( ! f.exists()) {
-            String path = "test/"+this.getClass().getPackage().getName().replace('.', '/')+"/DataPacket.classfile";
+            String path = "test/" + this.getClass().getPackage().getName().replace('.', '/') + "/" + name;
             f = new File(path);
         }
         return new FileInputStream(f);

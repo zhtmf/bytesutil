@@ -1,8 +1,11 @@
 package io.github.zhtmf.annotations.modifiers;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.List;
 
+import io.github.zhtmf.converters.auxiliary.ListTerminationHandler;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 /**
@@ -24,4 +27,11 @@ class PlaceHolderHandler<E> extends ModifierHandler<E> {
     static class DefaultCharsetHandler extends PlaceHolderHandler<Charset>{}
     static class DefaultLengthHandler extends PlaceHolderHandler<Integer>{}
     static class DefaultConditionalHandler extends PlaceHolderHandler<Boolean>{}
+    static class DefaultListTerminationHandler extends ListTerminationHandler{
+        @Override
+        public boolean handleDeserialize0(String fieldName, Object entity, InputStream in, List<Object> list)
+                throws IOException {
+            return false;
+        }
+    }
 }

@@ -46,10 +46,6 @@ public class TestBIT {
         Assert.assertEquals(Integer.toBinaryString(ret), ret, expected);
     }
     
-    /*
-     * TODO: Exceptions
-     */
-    
     //General BIT fields conversion
     //more than one group of BIT fields in the same class
     @LittleEndian
@@ -561,7 +557,7 @@ public class TestBIT {
             entity.deserialize(TestUtils.newInputStream(new byte[] {4}));
             Assert.fail();
         } catch (Throwable e) {
-            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 14);
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 15);
         }
     }
     

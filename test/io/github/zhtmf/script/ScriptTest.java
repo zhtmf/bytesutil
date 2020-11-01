@@ -1,13 +1,7 @@
 package io.github.zhtmf.script;
 
-import static io.github.zhtmf.script.TokenType.BOOL;
-import static io.github.zhtmf.script.TokenType.ID;
-import static io.github.zhtmf.script.TokenType.NUM;
-import static io.github.zhtmf.script.TokenType.OP;
-import static io.github.zhtmf.script.TokenType.STR;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static io.github.zhtmf.script.TokenType.*;
+import static org.junit.Assert.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -20,7 +14,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -3244,8 +3237,9 @@ public class ScriptTest {
         Assert.assertEquals(evaluateMine("java.lang.Byte.MIN_VALUE*2"
                 , Collections.emptyMap())+"", "-256");
         //access static member of a class which full qualified name 
-        //is implicit by another global object
-        Assert.assertEquals(evaluateMine("Constants.constant1"
+        //implicit package feature removed
+        Assert.assertEquals(evaluateMine(
+                "io.github.zhtmf.script.test.test1.Constants.constant1"
                 , asMap("abc",new TestObject()))+"", "11111");
     }
     
@@ -3816,9 +3810,10 @@ public class ScriptTest {
     
     @Test
     public void testBQ() throws Exception{
-        //refer to a class with implicit full qualified name
+        //refer to a class member with full qualified name
+        //implicit package feature removed
         Object obj = new Script(
-                "a+b+c+Constants.constant1")
+                "a+b+c+io.github.zhtmf.script.test.test1.Constants.constant1")
                 .compile()
                 .evaluate(asMap("a",3,"b",4,"c",5,"vvvv",new TestObjectV()))+"";
         Assert.assertEquals(obj, "11123");
@@ -4019,15 +4014,6 @@ public class ScriptTest {
             Context ctx = new Context(asMap("a",3,"b",4));
             Set<Map.Entry<String,Object>> str = ctx.entrySet();
             Assert.assertTrue(str.size() == 2);
-        }
-        {
-            Context ctx = new Context(asMap("a",new TestObject(),"b",new Date(),"c",null,"d"
-                    ,Class.forName("TestDefaultObject").newInstance()));
-            List<String> names = ctx.getImplicitPackageNames();
-            Assert.assertTrue(names == ctx.getImplicitPackageNames());
-            //io.github.zhtmf.script.ScriptTest.
-            Assert.assertEquals(names.size(), 1);
-            Assert.assertTrue(names.contains("io.github.zhtmf.script.test.test1"));
         }
         {
             Object ret = Identifier.of("a")
@@ -4301,6 +4287,28 @@ public class ScriptTest {
         assertEvaluationException("a=3;obj[a](3)"
                 , asMap("obj",asList(1,2,3,4,5))
                 , Identifier.class, 12);
+        
+        //refer to class member by FQN
+        assertEquals(((Number)evaluateMine("io.github.zhtmf.script.test.test1.TestObject.static3", new HashMap<String, Object>())).intValue()
+                ,io.github.zhtmf.script.test.test1.TestObject.static3);
+        //invoke instance method of an object which is a class member in another class by FQN
+        assertEquals(((Number)evaluateMine("io.github.zhtmf.script.test.test1.Enum1.A.getValue()", new HashMap<String, Object>())).intValue()
+                , io.github.zhtmf.script.test.test1.Enum1.A.value);
+        assertEquals(((Number)evaluateMine("io.github.zhtmf.script.test.test1.Enum1.A.value", new HashMap<String, Object>())).intValue()
+                , io.github.zhtmf.script.test.test1.Enum1.A.value);
+        //invoke static method by FQN
+        assertEquals(((Number)evaluateMine("io.github.zhtmf.script.test.test1.Enum1.staticMethod1()", new HashMap<String, Object>())).intValue()
+                , io.github.zhtmf.script.test.test1.Enum1.staticMethod1());
+        //longer reference chain
+        assertEquals(((Number)evaluateMine("io.github.zhtmf.script.test.test1.Enum1.A.getStr().length", new HashMap<String, Object>())).intValue()
+                , io.github.zhtmf.script.test.test1.Enum1.A.getStr().length());
+    }
+    
+    @Test
+    public void testBV4() throws Exception{
+        //invoke instance method of an object which is a class member in another class by FQN
+        assertEquals(((Number)evaluateMine("io.github.zhtmf.script.test.test1.Enum1.A.getValue()", new HashMap<String, Object>())).intValue()
+                , io.github.zhtmf.script.test.test1.Enum1.A.value);
     }
     
     private void testEvaluation2(String script, Map<String,Object> context) {

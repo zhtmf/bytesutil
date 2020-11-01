@@ -314,7 +314,7 @@ abstract class SuffixOperator extends UnaryOperator {
     }
 }
 
-//suffix operators whose string representation are not unique
+//suffix operators whose string representation is not unique
 abstract class ChainingSuffixOperator extends SuffixOperator{
     
     public ChainingSuffixOperator(String name, String op, TokenType[] operandTypes) {

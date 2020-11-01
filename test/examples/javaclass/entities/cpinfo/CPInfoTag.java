@@ -3,6 +3,7 @@ package examples.javaclass.entities.cpinfo;
 import io.github.zhtmf.annotations.enums.NumericEnum;
 
 public enum CPInfoTag implements NumericEnum{
+    PLACEHOLDER(255),
     CONSTANT_Class(7),
     CONSTANT_Fieldref(9),
     CONSTANT_Methodref(10),

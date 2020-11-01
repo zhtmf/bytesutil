@@ -17,11 +17,15 @@ abstract class AbstractListConverter {
         int length = ctx.lengthForList(self);
         if(length<0) {
             length = listValue.size();
-            try {
-                StreamUtils.writeIntegerOfType(dest, listValue.size(), ctx);
-            } catch (IOException e) {
-                throw new ExtendedConversionException(self.getClass(),ctx.name,e)
+            //in case of a list terminator
+            //there is no write ahead length
+            if(ctx.listTerminationHandler == null) {
+                try {
+                    StreamUtils.writeIntegerOfType(dest, listValue.size(), ctx);
+                } catch (IOException e) {
+                    throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                     .withSiteAndOrdinal(AbstractListConverter.class, 1);
+                }
             }
         }
         //do not use the actual length of the list but the length obtained above
@@ -42,6 +46,9 @@ abstract class AbstractListConverter {
             length = ctx.lengthForDeserializingLength(self, in);
         }
         if(length<0) {
+            if(ctx.listTerminationHandler != null) {
+                return -1;
+            }
             try {
                 length = StreamUtils.readIntegerOfType(in, ctx);
             } catch (IOException e) {

@@ -19,7 +19,9 @@ import examples.javaclass.entities.cpinfo.info.CONSTANT_String_info;
 import examples.javaclass.entities.cpinfo.info.CONSTANT_Utf8_info;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
+import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.Order;
+import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.BYTE;
@@ -30,9 +32,11 @@ import io.github.zhtmf.converters.auxiliary.EntityHandler;
 public class CpInfo extends DataPacket{
     @Order(0)
     @BYTE
+    @Conditional(scripts = @Script(value= "entity.tag.value != examples.javaclass.entities.cpinfo.CPInfoTag.PLACEHOLDER.value", deserialize = "true"))
     public CPInfoTag tag;
     @Order(1)
     @Variant(CpInfoHandler.class)
+    @Conditional(scripts = @Script(value= "entity.tag.value != examples.javaclass.entities.cpinfo.CPInfoTag.PLACEHOLDER.value", deserialize = "true"))
     public DataPacket info;
     
     public static final class CpInfoHandler extends EntityHandler{
@@ -69,6 +73,9 @@ public class CpInfo extends DataPacket{
                 return new CONSTANT_MethodType_info();
             case CONSTANT_InvokeDynamic:
                 return new CONSTANT_InvokeDynamic_info();
+            case PLACEHOLDER:
+                return new DataPacket() {
+                };
             }
             return null;
         }

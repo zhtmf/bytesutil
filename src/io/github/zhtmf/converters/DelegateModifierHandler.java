@@ -16,6 +16,8 @@ class DelegateModifierHandler<T> extends ModifierHandler<T>{
     boolean checkLength = false;
     
     static final ThreadLocal<Integer> offset = new ThreadLocal<Integer>();
+    //solely used by ListEndsWith
+    static final ThreadLocal<Object> context = new ThreadLocal<Object>();
     
     @Override
     public T handleDeserialize0(String fieldName, Object entity, InputStream in) {

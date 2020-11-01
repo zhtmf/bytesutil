@@ -1,11 +1,8 @@
 package io.github.zhtmf.script;
 
 import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,13 +28,6 @@ class Context extends AbstractMap<String, Object> {
      * Actual map holding mappings of values
      */
     private Map<String,Object> values = new HashMap<String, Object>();
-    
-    /**
-     * package names derived from classes in values which are used in implicit class
-     * member access. This one is lazily initialized.
-     */
-    private boolean implicitPakageNamesFilled = false;
-    private List<String> implicitPackageNames;
     
     private Map<Integer,Object> cachedIdentifierValues = new HashMap<Integer, Object>();
     
@@ -111,40 +101,4 @@ class Context extends AbstractMap<String, Object> {
         return values.entrySet();
     }
     
-    /**
-     * Returns implicit package names derived from current set of values. Initialize
-     * the list if necessary.
-     * <p>
-     * Objects in current {@link #values} are iterated and checked for their
-     * packages, if a package name does not start with "java" then it is valid.
-     * <p>
-     * As this script does not permit object creation and implicit objects created
-     * by this script are all under java package, which is considered invalid, so it
-     * is OK to lazily initialize the list using "current" set of values.
-     * 
-     * @return <tt>immutable</tt> list of implicit package names.
-     */
-    List<String> getImplicitPackageNames() {
-        if(!implicitPakageNamesFilled) {
-            fillImplicitPackageNames(this.values);
-        }
-        return implicitPackageNames;
-    }
-    
-    private void fillImplicitPackageNames(Map<String, Object> objects) {
-        List<String> implicitPackageNames = new ArrayList<String>();
-        for(Object obj:objects.values()) {
-            if(obj == null)
-                continue;
-            Package package1 = obj.getClass().getPackage();
-            if(package1 == null)
-                continue;
-            String name = package1.getName();
-            if(!name.startsWith("java")) {
-                implicitPackageNames.add(name);
-            }
-        }
-        implicitPakageNamesFilled = true;
-        this.implicitPackageNames = Collections.unmodifiableList(implicitPackageNames);
-    }
 }

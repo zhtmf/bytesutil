@@ -14,6 +14,11 @@ public class TestMakeJacocoHappy {
             public int offset() {
                 return 1;
             }
+
+            @Override
+            public Object context() {
+                return null;
+            }
         };
         if(ModifierHandler.access!=null) {
             ModifierHandler.setAccess(access);
@@ -26,6 +31,11 @@ public class TestMakeJacocoHappy {
                 @Override
                 public int offset() {
                     return 0;
+                }
+
+                @Override
+                public Object context() {
+                    return null;
                 }
             });
             Assert.assertTrue(access == ModifierHandler.access);

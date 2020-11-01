@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.ListEndsWith;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.types.CHAR;
@@ -141,14 +142,22 @@ class ClassInfo {
             
             if(fieldInfo.listComponentClass!=null) {
                 if(fieldInfo.localAnnotation(Length.class)==null
-                        && fieldInfo.localAnnotation(ListLength.class)==null) {
-                    throw FieldInfo.forContext(cls, name, "neither Length nor ListLength annotation are present")
+                        && fieldInfo.localAnnotation(ListLength.class) == null
+                        && fieldInfo.localAnnotation(ListEndsWith.class) == null) {
+                    throw FieldInfo.forContext(cls, name, "There is no Length, ListLength or EndsWith presents on this field")
                         .withSiteAndOrdinal(ClassInfo.class, 4);
                 }
+                if((fieldInfo.localAnnotation(Length.class) != null || fieldInfo.localAnnotation(ListLength.class) != null)
+                        && fieldInfo.localAnnotation(ListEndsWith.class) != null) {
+                    throw FieldInfo.forContext(cls, name, "Only one of Length/ListLength/EndsWith should be used to specify length of this field.")
+                        .withSiteAndOrdinal(ClassInfo.class, 14);
+                }
+                    
                 if(((fieldInfo.dataType == DataType.RAW && fieldInfo.localAnnotation(RAW.class).value()<0)
                 || (fieldInfo.dataType == DataType.CHAR && fieldInfo.localAnnotation(CHAR.class).value()<0)
                 || (fieldInfo.dataType == DataType.USER_DEFINED && fieldInfo.localAnnotation(UserDefined.class).length()<0)
                 || (fieldInfo.dataType == DataType.BIT /* default value of bit is 1 */))
+                        && fieldInfo.localAnnotation(Length.class) != null 
                         && fieldInfo.localAnnotation(ListLength.class)==null) {
                     throw FieldInfo.forContext(cls, name, "this field is a list of type that utilizes @Length, "
                             + "to avoid ambiguity, use @ListLength but not @Length to specify the list length")
@@ -163,7 +172,7 @@ class ClassInfo {
                 if(ch!=null) {
                     if(ch.value()<0 &&  ! fieldInfo.lengthDefined && fieldInfo.endsWith==null) {
                         throw FieldInfo.forContext(cls, name, "this field is defined as CHAR, but its value property is negative"
-                                + " and a Length annotation is not present on it")
+                                                + " and neither Length nor EndsWith is not present on it")
                         .withSiteAndOrdinal(ClassInfo.class, 6);
                     }
                     if(fieldInfo.endsWith!=null) {
@@ -412,6 +421,11 @@ class ClassInfo {
             public int offset() {
                 return DelegateModifierHandler.offset.get();
             }
+
+			@Override
+			public Object context() {
+				return DelegateModifierHandler.context.get();
+			}
         });
     }
 }

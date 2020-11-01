@@ -30,6 +30,7 @@ import io.github.zhtmf.annotations.modifiers.Conditional;
 import io.github.zhtmf.annotations.modifiers.DatePattern;
 import io.github.zhtmf.annotations.modifiers.EndsWith;
 import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.ListEndsWith;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
 import io.github.zhtmf.annotations.modifiers.Script;
@@ -44,6 +45,7 @@ import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.UserDefined;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.ListTerminationHandler;
 import io.github.zhtmf.converters.auxiliary.ModifierHandler;
 
 /**
@@ -117,6 +119,9 @@ class FieldInfo{
      */
     public final DelegateModifierHandler<Integer> lengthHandler;
     public final DelegateModifierHandler<Integer> listLengthHandler;
+    //TODO:
+    public final byte[] listEndsWithArray;
+    public final DelegateModifierHandler<Boolean> listTerminationHandler; 
     @SuppressWarnings("rawtypes")
     public final TypeConverter userDefinedConverter;
     public final DelegateModifierHandler<Boolean> conditionalHandler;
@@ -352,6 +357,32 @@ class FieldInfo{
             }
         }
         {
+            ListEndsWith ew = localAnnotation(ListEndsWith.class);
+            if(ew==null) {
+                listTerminationHandler = null;
+                listEndsWithArray = null;
+            }else {
+                ListTerminationHandler tmp = null;
+                if(ew.value().length > 0) {
+                    tmp = new MarkerSequenceTerminator(ew.value());
+                    listEndsWithArray = ew.value();
+                }else if( ! isDummy(ew.handler())) {
+                    listEndsWithArray = null;
+                    try {
+                        tmp = ew.handler().newInstance();
+                    } catch (Exception e) {
+                        throw forContext(base.entityClass, name, "ListLength handler cannot be initialized by no-arg contructor", e)
+                        .withSiteAndOrdinal(FieldInfo.class, 32);
+                    }
+                }else {
+                    throw forContext(base.entityClass, name, "EndsWith should be used with a non-default handler or non-empty value")
+                        .withSiteAndOrdinal(FieldInfo.class, 31);
+                }
+                DelegateModifierHandler<Boolean> _tmp = new DelegateModifierHandler<>(tmp);
+                listTerminationHandler = _tmp;
+            }
+        }
+        {
             DatePattern df = localAnnotation(DatePattern.class);
             if(df==null) {
                 if(fieldClass == java.util.Date.class && dataType!=DataType.INT && dataType!=DataType.LONG) {
@@ -382,7 +413,7 @@ class FieldInfo{
                 if((fieldClass == Boolean.class || fieldClass == boolean.class)
                     && value != 1){
                     throw FieldInfo.forContext(base.entityClass, name, "boolean fields can only be mapped with 1 bit (0 or 1)")
-                    .withSiteAndOrdinal(FieldInfo.class, 14);
+                    .withSiteAndOrdinal(FieldInfo.class, 15);
                 }
                 this.bitCount = value;
             }else {
@@ -751,12 +782,17 @@ class FieldInfo{
             @SuppressWarnings("rawtypes")
             List lst = (List)value;
             if(length<0) {
-                //write ahead
-                //size of the write-ahead length should be considered
-                //even the list itself is null or empty
-                ret += DataTypeOperations.of(this.lengthType()).size();
+                if(listTerminationHandler == null) {
+                    //write ahead
+                    //size of the write-ahead length should be considered
+                    //even the list itself is null or empty
+                    ret += DataTypeOperations.of(this.lengthType()).size();
+                }
                 //use the defined length rather than the actual list size
                 length = lst.size();
+                if(listEndsWithArray != null) {
+                    ret += listEndsWithArray.length;
+                }
             }
             if(this.isEntityList) {
                 for(int i=0;i<length;++i) {
@@ -1008,6 +1044,24 @@ class FieldInfo{
     }
     
     //--------------dedicated subclasses--------------------
+    
+    static class MarkerSequenceTerminator extends ListTerminationHandler{
+        
+        private byte[] sequence;
+
+        public MarkerSequenceTerminator(byte[] sequence) {
+            this.sequence = sequence;
+        }
+        
+        @Override
+        public boolean handleDeserialize0(String fieldName, Object entity, InputStream in, List<Object> list)
+                throws IOException {
+            int ptr = 0;
+            while(ptr < sequence.length && (byte)(in.read()) == sequence[ptr])++ptr;
+            return ptr == sequence.length;
+        }
+        
+    }
     
     /**
      * Dedicated subclass used to eliminate the branches in {@link #get(Object)} and

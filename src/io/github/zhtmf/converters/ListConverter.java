@@ -8,8 +8,7 @@ import java.util.List;
 import io.github.zhtmf.ConversionException;
 
 /**
- * Wrapper class for eliminating branches in {@link io.github.zhtmf.DataPacket} when converting
- * List values
+ * Wrapper class for eliminating branches when converting List values
  * 
  * @author dzh
  */
@@ -23,7 +22,7 @@ class ListConverter extends AbstractListConverter implements Converter<List> {
         List<Object> listValue = (List<Object>)value;
         //validity check is done in ClassInfo
         int length = lengthForSerialize(listValue, dest, ctx, self);
-        
+        byte[] markerArray = ctx.listEndsWithArray;
         try {
             for(int i=0;i<length;++i) {
                 Object elem = listValue.get(i);
@@ -36,6 +35,9 @@ class ListConverter extends AbstractListConverter implements Converter<List> {
                 @SuppressWarnings("unchecked")
                 Converter<Object> cv = (Converter<Object>)ctx.innerConverter;
                 cv.serialize(elem, dest, ctx, self);
+            }
+            if(markerArray != null) {
+                StreamUtils.writeBytes(dest, markerArray);
             }
         } catch(ConversionException e) {
             throw e;
@@ -54,15 +56,26 @@ class ListConverter extends AbstractListConverter implements Converter<List> {
         @SuppressWarnings("unchecked")
         Converter<Object> cv = (Converter<Object>)ctx.innerConverter;
         try {
-            tmp = new ArrayList<>(length);
-            while(length-->0) {
-                tmp.add(cv.deserialize(in, ctx, self));
-            }
+            if (length >= 0) {
+        		tmp = new ArrayList<>(length);
+        		while(length-->0) {
+        			tmp.add(cv.deserialize(in, ctx, self));
+        		}
+        	}else {
+        		tmp = new ArrayList<Object>();
+        		DelegateModifierHandler<Boolean> listTerminationHandler = ctx.listTerminationHandler;
+        		DelegateModifierHandler.context.set(tmp);
+        		while(listTerminationHandler.handleDeserialize0(ctx.name, self, in) == false){
+        			tmp.add(cv.deserialize(in, ctx, self));
+        		}
+        	}
         } catch(ConversionException e) {
             throw e;
         } catch (Exception e) {
             throw new ExtendedConversionException(self.getClass(),ctx.name,e)
                     .withSiteAndOrdinal(ListConverter.class, 14);
+        } finally {
+        	DelegateModifierHandler.context.remove();
         }
         return tmp;
     }

@@ -1,7 +1,7 @@
 package io.github.zhtmf.annotations.modifiers;
 
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.*;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -30,11 +30,13 @@ public @interface Conditional {
     /**
      * <code>ModifierHandler&lt;Boolean&gt;</code> class whose instance will always
      * be called in prior to and in addition to other conversions that normally
-     * would apply
+     * would apply.
+     * <p>
+     * This is incompatible with previous versions, as previously there is only one 
+     * <tt>value</tt> property in this annotation and it is marked as required.
      * 
      * @return whether this field should be omitted
      */
-    //TODO: incompatible with previous versions
     Class<? extends ModifierHandler<Boolean>> value() default DefaultConditionalHandler.class;
 
     /**

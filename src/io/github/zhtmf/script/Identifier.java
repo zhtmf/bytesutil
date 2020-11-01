@@ -82,7 +82,7 @@ abstract class Identifier {
      * so it does not interfere with existing property looking up logic.
      * <p>
      * Obviously this feature only supports calling method with parameters of a set
-     * of limited java types with corresponding types in this script.However
+     * of limited java types with corresponding types in this script. However
      * <tt>null</tt> literal can be used to call any methods with parameters with
      * non-primitive types.
      * <p>
@@ -213,7 +213,6 @@ abstract class Identifier {
         public void set(Object obj, SingleIdentifier propertyName, Object value) throws Exception {
         }
     };
-    private static final ConcurrentHashMap<String, Class<?>> classCache = new ConcurrentHashMap<String, Class<?>>();
     private static final ThreadLocal<Integer> NEXT_ID = new ThreadLocal<Integer>() {
         protected Integer initialValue() {return 0;};
     };
@@ -814,6 +813,8 @@ abstract class Identifier {
     
     private static final class IdentifierList extends Identifier{
         
+        private static final ConcurrentHashMap<String, Class<?>> classCache = new ConcurrentHashMap<String, Class<?>>();
+        
         private String name;
         private final List<Identifier> list = new ArrayList<Identifier>();
         private final int id;
@@ -909,11 +910,26 @@ abstract class Identifier {
             return name1.substring(1);
         }
         
+        private static final Class<?> classFromCache(String name){
+            Class<?> result = classCache.get(name);
+            if(result == null) {
+                try {
+                    result = Class.forName(name);
+                    classCache.put(name, result);
+                    return result;
+                } catch (ClassNotFoundException e) {
+                    classCache.put(name, Identifier.class);
+                    return null;
+                }
+            }
+            return result == Identifier.class ? null : result;
+        }
+        
         private Object dereference0(Object root) {
             Object result = root;
             List<Identifier> list = this.list;
-            int k = 0, to = list.size()-1;
-            for(;k<to;++k) {
+            int listSize = list.size();
+            for(int k = 0, to = listSize-1;k<to;++k) {
                 Identifier id = list.get(k);
                 result = id.dereference(result);
                 if(result == null)
@@ -921,33 +937,32 @@ abstract class Identifier {
             }
             if(result == null){
                 //support class member reference
+                //$ is used by this feature for inner class reference
                 String fastName = this.name;
-                Class<?> found = classCache.get(fastName);
-                if(found == Identifier.class)
-                    return null;
-                if(found == null) {
-                    try {
-                        found = Class.forName(fastName);
-                    } catch (ClassNotFoundException e) {
-                        if(root instanceof Context) {
-                            List<String> names = ((Context) root).getImplicitPackageNames();
-                            for (int i = 0, len2 = names.size(); i < len2; ++i) {
-                                String packageName = names.get(i);
-                                try {
-                                    found = Class.forName(packageName.concat(".").concat(fastName));
-                                    break;
-                                } catch (ClassNotFoundException e1) {
-                                }
-                            }
-                        }
+                result = classFromCache(fastName);
+                if(result != null)
+                    return result;
+                
+                int k = list.size() - 2;
+                //k == 0 will reduce fastName to empty, which is nonsense.
+outer:          while(k > 0) {
+                    //additional -1 for dot
+                    result = classFromCache((fastName = fastName.substring(
+                            0, fastName.length() - list.get(k).getName().length() - 1)));
+                    if(result == null) {
+                        --k;
+                        continue;
                     }
-                }
-                // $ is occupied by this feature for inner class reference
-                if(found != null) {
-                    classCache.put(fastName, found);
-                    result = found;
-                }else {
-                    classCache.put(fastName, Identifier.class);
+                    for (int to = listSize - 1, m = k; m < to; ++m) {
+                        Identifier id = list.get(m);
+                        result = id.dereference(result);
+                        if (result == null) {
+                            --k;
+                            continue outer;
+                        }
+                    }     
+                    
+                    break;
                 }
             }
             return result;

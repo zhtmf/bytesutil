@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.List;
 
 import examples.javaclass.entities.attributeinfo.AttributeInfo;
+import examples.javaclass.entities.cpinfo.CPInfoTag;
 import examples.javaclass.entities.cpinfo.CpInfo;
 import examples.javaclass.entities.cpinfo.info.CONSTANT_Class_info;
 import examples.javaclass.entities.cpinfo.info.CONSTANT_Utf8_info;
@@ -14,14 +15,15 @@ import io.github.zhtmf.DataPacket;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.Length;
+import io.github.zhtmf.annotations.modifiers.ListEndsWith;
 import io.github.zhtmf.annotations.modifiers.Order;
-import io.github.zhtmf.annotations.modifiers.Script;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.auxiliary.DataType;
 import io.github.zhtmf.converters.auxiliary.EntityHandler;
+import io.github.zhtmf.converters.auxiliary.ListTerminationHandler;
 
 @Unsigned
 @CHARSET("UTF-8")
@@ -41,7 +43,7 @@ public class JavaClass extends DataPacket{
     public int constantPoolCount;
     //The constant_pool table is indexed from 1 to constant_pool_count-1.
     @Order(3)
-    @Length(scripts = @Script("entity.constantPoolCount-1"))
+    @ListEndsWith(handler = CpTermination.class)
     public List<CpInfo> constantPool;
     @Order(4)
     @SHORT
@@ -72,6 +74,25 @@ public class JavaClass extends DataPacket{
     @Length(type=DataType.SHORT)
     @Variant(AttributeInfoHandler3.class)
     public List<AttributeInfo> attributes;
+    
+    public static class CpTermination extends ListTerminationHandler{
+
+        @Override
+        public boolean handleDeserialize0(String fieldName, Object entity, InputStream in, List<Object> list)
+                throws IOException {
+            if(!list.isEmpty()) {
+                CpInfo previous = (CpInfo) list.get(list.size()-1);
+                if(previous.tag == CPInfoTag.CONSTANT_Double 
+                || previous.tag == CPInfoTag.CONSTANT_Long) {
+                    CpInfo placeholder = new CpInfo();
+                    placeholder.tag = CPInfoTag.PLACEHOLDER;
+                    list.add(placeholder);
+                }
+            }
+            return list.size() == ((JavaClass)entity).constantPoolCount - 1;
+        }
+        
+    }
     
     public static class FieldHandler extends EntityHandler{
         @Override
