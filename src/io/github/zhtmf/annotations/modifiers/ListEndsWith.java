@@ -14,6 +14,12 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
  * further that under some situations length of a list is neither static nor
  * calculated but depends on external conditions at runtime.
  * <p>
+ * A typical use of this feature is processing the binary structure of Java
+ * class file. The original length field of the constant pool is not the same as
+ * number of constant pool entries. As CONSTANT_Double_info and
+ * CONSTANT_Long_info entries will produce "holes" after them, making the list
+ * longer than the static value.
+ * <p>
  * It enables using a modified {@link ModifierHandler} to encapsulate additional
  * logic during deserialization of a list. Users can refer to external resources
  * or even modify the list itself within this handler.
@@ -31,10 +37,11 @@ import io.github.zhtmf.converters.auxiliary.ModifierHandler;
  * deserialization process of the field is finished. It should be treated as a
  * temporary object by user codes.
  * <p>
- * Another property {@link #value() value} of this annotation, similar with
+ * Another property {@link #value() value}, similar with
  * {@link EndsWith#value()} represents another typical situation that
- * termination of a list is marked by special sequence of bytes in the stream.
- * It is implemented by a <tt>ListTerminationHandler</tt> under the hood.
+ * termination of a list is marked by special sequence of bytes found in the
+ * stream. It is implemented by a <tt>ListTerminationHandler</tt> under the
+ * hood.
  * <p>
  * {@link #value() Value} and {@link #handler() handler} should not be both left
  * unassigned. And only one of {@link Length}, {@link ListLength} and this
