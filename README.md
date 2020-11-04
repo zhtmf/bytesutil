@@ -119,6 +119,7 @@ DatePattern| Date pattern string for a java.util.Date field.
 ListLength | length of ``java.util.List`` when handling with a list of basic data types.
 Length | length of ``CHAR`` arrays or ``RAW`` arrays.
 EndsWith | Indicates that a ``CHAR`` field is of indeterministic length and its end is marked by a specific sequence of bytes.
+ListEndsWith | Indicates that length of a list is neither static nor calculated but depends on external conditions at runtime. It enables using a ModifierHandler to encapsulate additional logic. Users can refer to external resources or even modify the list itself within this handler. See how this library handles length of the ````ConstantPool```` field in a Java class file in the related example as an example for how to use this modifier.
 
 These annotations can be found under the package ````io.github.zhtmf.annotations.modifiers````. They can be specified both at type level and at field level. And with not surprise, field level annotation overrides same annotation at type level. 
 
