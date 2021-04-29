@@ -6,7 +6,7 @@ import java.io.OutputStream;
 
 import io.github.zhtmf.ConversionException;
 
-public class DoubleConverter implements Converter<Double>{
+class DoubleConverter implements Converter<Double>{
 
     @Override
     public void serialize(Double value, OutputStream dest, FieldInfo ctx, Object self)
