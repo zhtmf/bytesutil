@@ -3,7 +3,6 @@ package examples.javaclass.entities;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import examples.javaclass.entities.attributeinfo.AttributeInfo;
@@ -18,11 +17,9 @@ import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListEndsWith;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
-import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.EntityHandler;
 import io.github.zhtmf.converters.auxiliary.ListTerminationHandler;
 
 @Unsigned
@@ -62,17 +59,14 @@ public class JavaClass extends DataPacket{
     //fields_count implicitly in this declaration
     @Order(8)
     @Length(type=DataType.SHORT)
-    @Variant(FieldHandler.class)
     public List<FieldInfo> fields;
     //methods_count implicitly in this declaration
     @Order(9)
     @Length(type=DataType.SHORT)
-    @Variant(MethodInfoHandler.class)
     public List<MethodInfo> methods;
     //attributes_count implicitly in this declaration
     @Order(10)
     @Length(type=DataType.SHORT)
-    @Variant(AttributeInfoHandler3.class)
     public List<AttributeInfo> attributes;
     
     public static class CpTermination extends ListTerminationHandler{
@@ -90,31 +84,6 @@ public class JavaClass extends DataPacket{
                 }
             }
             return list.size() == ((JavaClass)entity).constantPoolCount - 1;
-        }
-        
-    }
-    
-    public static class FieldHandler extends EntityHandler{
-        @Override
-        public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-            JavaClass parent = (JavaClass)entity;
-            return new FieldInfo(Collections.unmodifiableList(parent.constantPool));
-        }
-    }
-    
-    public static class MethodInfoHandler extends EntityHandler{
-        @Override
-        public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-            JavaClass parent = (JavaClass)entity;
-            return new MethodInfo(Collections.unmodifiableList(parent.constantPool));
-        }
-    }
-    
-    public static class AttributeInfoHandler3 extends EntityHandler{
-        @Override
-        public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-            JavaClass info = (JavaClass)entity;
-            return new AttributeInfo(Collections.unmodifiableList(info.constantPool));
         }
         
     }

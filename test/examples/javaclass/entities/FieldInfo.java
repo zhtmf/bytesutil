@@ -1,21 +1,17 @@
 package examples.javaclass.entities;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 
 import examples.javaclass.entities.attributeinfo.AttributeInfo;
 import examples.javaclass.entities.cpinfo.CpInfo;
 import examples.javaclass.entities.cpinfo.info.CONSTANT_Utf8_info;
 import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Injectable;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
-import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 @Unsigned
 public class FieldInfo extends DataPacket{
@@ -30,22 +26,10 @@ public class FieldInfo extends DataPacket{
     public long descriptorIndex;
     @Order(3)
     @Length(type=DataType.SHORT)
-    @Variant(AttributeInfoHandler.class)
     public List<AttributeInfo> attributes;
     
+    @Injectable
     private List<CpInfo> constantPool;
-    public FieldInfo(List<CpInfo> constantPool) {
-        this.constantPool = constantPool;
-    }
-    
-    public static class AttributeInfoHandler extends EntityHandler{
-        @Override
-        public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-            FieldInfo info = (FieldInfo)entity;
-            return new AttributeInfo(Collections.unmodifiableList(info.constantPool));
-        }
-        
-    }
     
     @Override
     public String toString() {

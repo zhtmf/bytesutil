@@ -16,6 +16,7 @@ import io.github.zhtmf.annotations.enums.NumericEnum;
 import io.github.zhtmf.annotations.modifiers.BigEndian;
 import io.github.zhtmf.annotations.modifiers.CHARSET;
 import io.github.zhtmf.annotations.modifiers.DatePattern;
+import io.github.zhtmf.annotations.modifiers.Injectable;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListLength;
 import io.github.zhtmf.annotations.modifiers.LittleEndian;
@@ -664,6 +665,25 @@ public class TestCase91{
         @BigEndian
         public long int3_long_12 = -(int)(TestUtils.pow(2, 24)/2)+19447;
         
+        @Order(121)
+        @Length(2)
+        public List<Sub> subList = Arrays.asList(new Sub(), new Sub());
+        
+    }
+    
+    public static class Sub extends DataPacket{
+    	@Order(0)
+    	@SHORT
+    	public Integer sub1 = 5;
+    	@Order(1)
+    	@SHORT
+    	public Integer sub2 = 15;
+    	
+    	@Injectable("int3_long_11")
+    	public long additional1;
+    	
+    	@Injectable
+    	public List<byte[]> byteArrayList;
     }
     
     @Test
@@ -676,6 +696,8 @@ public class TestCase91{
         final byte[] arr1 = baos.toByteArray();
         restored.deserialize(new ByteArrayInputStream(arr1));
         Assert.assertTrue(TestUtils.equalsOrderFields(entity, restored));
+        Assert.assertEquals(restored.subList.get(0).byteArrayList, restored.byteArrayList);
+        Assert.assertEquals(restored.subList.get(0).additional1, restored.int3_long_11);
         baos.reset();
         restored.serialize(baos);
         Assert.assertArrayEquals(arr1, baos.toByteArray());

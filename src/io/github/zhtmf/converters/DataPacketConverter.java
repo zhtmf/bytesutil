@@ -35,6 +35,7 @@ class DataPacketConverter implements Converter<DataPacket> {
                             , ctx.isEntityList ? ctx.listComponentClass : ctx.getFieldType()),e)
                     .withSiteAndOrdinal(DataPacketConverter.class, 11);
         }
+        ClassInfo.getClassInfo(object).injectAdditionalFields(self, object);
         object.deserialize(in);
         return object;
     }

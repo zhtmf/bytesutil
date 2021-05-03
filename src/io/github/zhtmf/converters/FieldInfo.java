@@ -204,10 +204,11 @@ class FieldInfo{
         Variant cond = localAnnotation(Variant.class);
         if(cond==null) {
             this.entityCreator =
-                    new DelegateModifierHandler<>(new PlainReflectionEntityHandler(isEntityList ? listComponentClass : fieldClass));
+                    new DelegateModifierHandler<>(
+                    				new PlainReflectionEntityHandler(isEntityList ? listComponentClass : fieldClass));
         }else {
             try {
-                this.entityCreator = new DelegateModifierHandler<>(cond.value().newInstance());
+                this.entityCreator = new DelegateModifierHandler<>((cond.value().newInstance()));
             } catch (Exception e) {
                 throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor")
                     .withSiteAndOrdinal(FieldInfo.class, 5);
