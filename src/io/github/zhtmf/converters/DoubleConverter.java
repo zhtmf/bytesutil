@@ -18,6 +18,17 @@ class DoubleConverter implements Converter<Double>{
                 StreamUtils.reverse(data);
             dest.write(data);
             break;
+        case DOUBLE:
+        	StreamUtils.writeLong(dest, Double.doubleToRawLongBits(value), ctx.bigEndian);
+            break;
+        case FLOAT:
+        	double val = value.doubleValue();
+        	if(Double.compare(val, Float.MAX_VALUE) > 0 || Double.compare(val, -Float.MAX_VALUE) < 0 || (val > 0 && Double.compare(val, Float.MIN_VALUE) < 0))
+        		throw new ExtendedConversionException(
+        				ctx.enclosingEntityClass, ctx.name, "double value " + val +" exceeds range of a float")
+                .			withSiteAndOrdinal(DoubleConverter.class, 1); 
+        	StreamUtils.writeInt(dest, Float.floatToRawIntBits(value.floatValue()), ctx.bigEndian);
+            break;
         default:throw new Error("should not reach here");
         }
     }
@@ -34,6 +45,10 @@ class DoubleConverter implements Converter<Double>{
             if(ctx.littleEndian)
                 StreamUtils.reverse(src);
             return StreamUtils.fixedPointBytesToDouble(src, ctx);
+        case DOUBLE:
+            return Double.longBitsToDouble(StreamUtils.readLong(in, ctx.bigEndian));
+        case FLOAT:
+        	return (double) Float.intBitsToFloat((int) StreamUtils.readInt(in, true, ctx.bigEndian));
         default:throw new Error("should not reach here");
         }
     }

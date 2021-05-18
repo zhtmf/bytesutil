@@ -28,4 +28,6 @@ public enum DataType{
     ,USER_DEFINED
     ,BIT
     ,FIXED
+    ,FLOAT
+    ,DOUBLE
 }

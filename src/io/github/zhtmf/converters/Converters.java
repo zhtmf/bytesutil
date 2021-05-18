@@ -35,6 +35,8 @@ class Converters {
         tmp.put(boolean.class, tmp.get(Boolean.class));
         tmp.put(Double.class, new DoubleConverter());
         tmp.put(double.class, tmp.get(Double.class));
+        tmp.put(Float.class, new FloatConverter());
+        tmp.put(float.class, tmp.get(Float.class));
         tmp.put(BigDecimal.class, new BigDecimalConverter());
         converters = Collections.unmodifiableMap(tmp);
     }

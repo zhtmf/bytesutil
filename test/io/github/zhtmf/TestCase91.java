@@ -26,6 +26,8 @@ import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.annotations.types.BYTE;
 import io.github.zhtmf.annotations.types.CHAR;
+import io.github.zhtmf.annotations.types.DOUBLE;
+import io.github.zhtmf.annotations.types.FLOAT;
 import io.github.zhtmf.annotations.types.INT;
 import io.github.zhtmf.annotations.types.INT3;
 import io.github.zhtmf.annotations.types.INT5;
@@ -668,6 +670,27 @@ public class TestCase91{
         @Order(121)
         @Length(2)
         public List<Sub> subList = Arrays.asList(new Sub(), new Sub());
+        
+        @Order(122)
+        @DOUBLE
+        @Signed
+        @LittleEndian
+        public double d1 = 1.000d;
+        @Order(123)
+        @DOUBLE
+        @Signed
+        @BigEndian
+        public double d2 = Double.NaN;
+        @Order(124)
+        @DOUBLE
+        @Signed
+        @LittleEndian
+        public double d3 = Double.POSITIVE_INFINITY;
+        @Order(125)
+        @FLOAT
+        @Signed
+        @LittleEndian
+        public float d4 = Float.POSITIVE_INFINITY;
         
     }
     

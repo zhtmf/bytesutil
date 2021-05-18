@@ -824,6 +824,12 @@ class FieldInfo{
         case INT7:
             ret += DataTypeOperations.of(type).size() * length;
             break;
+        case FLOAT:
+        	ret += 4 * length;
+        	break;
+        case DOUBLE:
+        	ret += 8 * length;
+        	break;
         case FIXED:
             int[] lengths = this.fixedNumberLengths;
             ret += (lengths[0] + lengths[1]) * length;
