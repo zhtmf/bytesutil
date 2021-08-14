@@ -67,6 +67,7 @@ public class TestMakeJacocoHappy {
         doTest(new BigDecimalConverter(), fieldA, dummy);
         doTest(new BigIntegerConverter(), fieldA, dummy);
         doTest(new DoubleConverter(), fieldA, dummy, 1.0d);
+        doTest(new FloatConverter(), fieldA, dummy, 1.0f);
         
         try {
             fieldA.get(new Object());

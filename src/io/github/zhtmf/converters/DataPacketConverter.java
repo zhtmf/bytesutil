@@ -30,11 +30,11 @@ class DataPacketConverter implements Converter<DataPacket> {
         } catch (Exception e) {
             throw new ExtendedConversionException(
                     self.getClass(),ctx.name,
-                    String.format("field value is null and"
-                            + " entity class [%s] cannot be instantiated"
+                    String.format("entity class [%s] cannot be instantiated"
                             , ctx.isEntityList ? ctx.listComponentClass : ctx.getFieldType()),e)
                     .withSiteAndOrdinal(DataPacketConverter.class, 11);
         }
+        ClassInfo.getClassInfo(object).injectAdditionalFields(self, object);
         object.deserialize(in);
         return object;
     }

@@ -348,6 +348,34 @@ enum DataTypeOperations{
             return null;
         }
     }
+    ,FLOAT{
+    	@Override
+        Class<? extends Annotation> annotationClassOfThisType() {
+            return io.github.zhtmf.annotations.types.FLOAT.class;
+        }
+
+        @Override
+        boolean supports(Class<?> javaType) {
+           return javaType == float.class
+                || javaType == Float.class
+                || javaType == double.class
+                || javaType == Double.class
+                ;
+        }
+    }
+    ,DOUBLE{
+    	@Override
+        Class<? extends Annotation> annotationClassOfThisType() {
+            return io.github.zhtmf.annotations.types.DOUBLE.class;
+        }
+
+        @Override
+        boolean supports(Class<?> javaType) {
+           return  javaType == double.class
+                || javaType == Double.class
+                ;
+        }
+    }
     ;
     
     Class<?> mappedEnumFieldClass(){throw new UnsupportedOperationException();}

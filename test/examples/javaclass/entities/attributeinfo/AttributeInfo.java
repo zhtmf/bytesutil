@@ -2,6 +2,7 @@ package examples.javaclass.entities.attributeinfo;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.List;
 
 import examples.javaclass.entities.attributeinfo.info.AnnotationDefault;
@@ -27,6 +28,7 @@ import examples.javaclass.entities.attributeinfo.info.Synthetic;
 import examples.javaclass.entities.cpinfo.CpInfo;
 import examples.javaclass.entities.cpinfo.info.CONSTANT_Utf8_info;
 import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Injectable;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
 import io.github.zhtmf.annotations.modifiers.Variant;
@@ -47,9 +49,11 @@ public class AttributeInfo extends DataPacket{
     public DataPacket info;
     
     private List<CpInfo> constantPool;
-    public AttributeInfo(List<CpInfo> constantPool) {
-        this.constantPool = constantPool;
-    }
+    
+    @Injectable
+    public void setConstantPool(List<CpInfo> constantPool) {
+		this.constantPool = Collections.unmodifiableList(constantPool);
+	}
     
     public static class InfoHandler extends EntityHandler{
 
@@ -67,7 +71,7 @@ public class AttributeInfo extends DataPacket{
             case "ConstantValue":
                 return new ConstantValue();
             case "Code":
-                return new Code(parent.constantPool);
+                return new Code();
             case "StackMapTable":
                 return new StackMapTable();
             case "Exceptions":

@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
@@ -203,11 +205,27 @@ class FieldInfo{
         
         Variant cond = localAnnotation(Variant.class);
         if(cond==null) {
-            this.entityCreator =
-                    new DelegateModifierHandler<>(new PlainReflectionEntityHandler(isEntityList ? listComponentClass : fieldClass));
+        	if(dataType == null) {
+        		PlainReflectionEntityHandler handler;
+        		Class<?> target = isEntityList ? listComponentClass : fieldClass;
+        		try {
+        			handler = new PlainReflectionEntityHandler(target);
+        		} catch (Exception e) {
+        			throw forContext(
+        					base.entityClass, name, 
+        					String.format(
+        							"no-arg constructor does not exist on entity class [%s] or it is not a top-level one", target)
+        					,(Exception)e.getCause()
+        					).withSiteAndOrdinal(FieldInfo.class, 33);
+        		}
+        		this.entityCreator =
+        				new DelegateModifierHandler<>(handler);
+        	} else {
+        		this.entityCreator = null;
+        	}
         }else {
             try {
-                this.entityCreator = new DelegateModifierHandler<>(cond.value().newInstance());
+                this.entityCreator = new DelegateModifierHandler<>((cond.value().newInstance()));
             } catch (Exception e) {
                 throw forContext(base.entityClass, name, "VariantEntityHandler cannot be initialized by no-arg contructor")
                     .withSiteAndOrdinal(FieldInfo.class, 5);
@@ -624,7 +642,7 @@ class FieldInfo{
         return cs;
     }
     
-    final Charset charsetForDeserializingCHAR(Object self, InputStream in) {
+    final Charset charsetForDeserializingCHAR(Object self, InputStream in) throws IOException {
         Charset cs = this.charset;
         if(cs==null) {
             //avoid the exception declaration
@@ -641,7 +659,7 @@ class FieldInfo{
         return length;
     }
     
-    final int lengthForDeserializingCHAR(Object self, InputStream bis){
+    final int lengthForDeserializingCHAR(Object self, InputStream bis) throws IOException{
         int length = this.annotation(CHAR.class).value();
         if(length<0) {
             length = lengthForDeserializingLength(self,bis);
@@ -657,7 +675,7 @@ class FieldInfo{
         return length;
     }
     
-    final int lengthForDeserializingUserDefinedType(Object self, InputStream bis) {
+    final int lengthForDeserializingUserDefinedType(Object self, InputStream bis) throws IOException {
         int length = this.annotation(UserDefined.class).length();
         if(length<0) {
             length = lengthForDeserializingLength(self,bis);
@@ -673,7 +691,7 @@ class FieldInfo{
         return length;
     }
     
-    final int lengthForDeserializingRAW(Object self, InputStream bis) {
+    final int lengthForDeserializingRAW(Object self, InputStream bis) throws IOException {
         int length = this.annotation(RAW.class).value();
         if(length<0) {
             length = lengthForDeserializingLength(self,bis);
@@ -689,7 +707,7 @@ class FieldInfo{
         return length;
     }
     
-    final int lengthForDeserializingLength(Object self, InputStream in) {
+    final int lengthForDeserializingLength(Object self, InputStream in) throws IOException {
         Integer length = this.length;
         if(length<0 && this.lengthHandler!=null) {
             length = this.lengthHandler.handleDeserialize0(this.name, self, in);
@@ -718,11 +736,11 @@ class FieldInfo{
         return length;
     }
     
-    final DataPacket entityForDeserializing(Object self,InputStream in) {
+    final DataPacket entityForDeserializing(Object self,InputStream in) throws IOException {
         return entityCreator.handleDeserialize0(this.name, self, in);
     }
     
-    final int lengthForDeserializingListLength(Object self, InputStream in){
+    final int lengthForDeserializingListLength(Object self, InputStream in) throws IOException{
         Integer length = this.listLength;
         if(length<0 && this.listLengthHandler!=null) {
             length = this.listLengthHandler.handleDeserialize0(this.name, self, in);
@@ -823,6 +841,12 @@ class FieldInfo{
         case INT7:
             ret += DataTypeOperations.of(type).size() * length;
             break;
+        case FLOAT:
+        	ret += 4 * length;
+        	break;
+        case DOUBLE:
+        	ret += 8 * length;
+        	break;
         case FIXED:
             int[] lengths = this.fixedNumberLengths;
             ret += (lengths[0] + lengths[1]) * length;
@@ -931,18 +955,21 @@ class FieldInfo{
     
     private static final class PlainReflectionEntityHandler extends EntityHandler{
         
-        private Class<?> classToCreate;
+    	private Constructor<?> constructor;
         
-        public PlainReflectionEntityHandler(Class<?> classToCreate) {
-            this.classToCreate = classToCreate;
+        public PlainReflectionEntityHandler(Class<?> classToCreate) throws NoSuchMethodException, SecurityException {
+			constructor = classToCreate.getDeclaredConstructor();
+			constructor.setAccessible(true);
         }
 
         @Override
         public DataPacket handle0(String fieldName, Object entity, InputStream in) throws IOException {
             try {
-                return (DataPacket) classToCreate.newInstance();
-            } catch (InstantiationException | IllegalAccessException e) {
-                throw new RuntimeException(e);
+                return (DataPacket) constructor.newInstance();
+            } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+            	throw new ExtendedConversionException(
+            			entity.getClass(), fieldName, String.format("entity class [%s] cannot be instantiated by no-arg constructor",entity.getClass()), e)
+            		.withSiteAndOrdinal(FieldInfo.class, 34);
             }
         }
     }

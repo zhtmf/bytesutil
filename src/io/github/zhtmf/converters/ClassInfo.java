@@ -1,9 +1,11 @@
-    package io.github.zhtmf.converters;
+package io.github.zhtmf.converters;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -14,10 +16,12 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Injectable;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.ListEndsWith;
 import io.github.zhtmf.annotations.modifiers.ListLength;
@@ -44,11 +48,22 @@ class ClassInfo {
      * Annotations that are present on the class
      */
     private Map<Class<? extends Annotation>, Annotation> globalAnnotations = new HashMap<>();
+    
+    private Map<Field, String> injectableFields = Collections.emptyMap();
+    
+    private Map<Method, String> injectableMethods = Collections.emptyMap();
+    
     /**
      * {@link FieldInfo} objects in the order specified by {@link Order} annotation.
      */
     List<FieldInfo> fieldInfoList = new ArrayList<>();
     List<FieldInfo> fieldInfoListForLength = new ArrayList<FieldInfo>();
+    
+    /**
+     * Fields that are not annotated with @Order and referenced by @Injectable of other classes
+     * Put here simply for convenience and to avoid a global cache shared by all classes.
+     */
+    private Map<String, Field> referencedFields = new ConcurrentHashMap<String, Field>();
     
     public ClassInfo(Class<?> cls) {
         
@@ -70,7 +85,8 @@ class ClassInfo {
          * class.
          */
         Class<?> tmp = cls;
-        while(true){
+        while(tmp != DataPacket.class){
+        	
             List<Field> tmpList = new ArrayList<>(Arrays.asList(tmp.getDeclaredFields()));
             for(int i=0;i<tmpList.size();++i) {
                 Field f = tmpList.get(i);
@@ -79,24 +95,73 @@ class ClassInfo {
                  * and any fields that are static or final
                  */
                 int mod = f.getModifiers();
-                if(f.getAnnotation(Order.class)==null
-                || (mod & Modifier.STATIC)!=0
-                || (mod & Modifier.FINAL)!=0) {
+                if((mod & Modifier.STATIC)!=0 || (mod & Modifier.FINAL)!=0) {
+                	tmpList.remove(i);
+                    --i;
+                    continue;
+                }
+                
+                Order order = f.getAnnotation(Order.class);
+                Injectable injectable = f.getAnnotation(Injectable.class);
+                if(order != null && injectable != null)
+                	throw FieldInfo.forContext(cls, f.getName(), "Field already marked with @Order cannot be marked with @Injectable")
+            			.withSiteAndOrdinal(ClassInfo.class, 15);
+                
+                f.setAccessible(true);
+                
+                if(order == null) {
                     tmpList.remove(i);
                     --i;
                 }
-                f.setAccessible(true);
+                
+                if(injectable != null) {
+            		String value = injectable.value();
+            		if(injectableFields.isEmpty())
+            			injectableFields = new HashMap<>();
+            		injectableFields.put(f, value.isEmpty() ? f.getName() : value);
+            	}
+            }
+            
+            Method[] methods = tmp.getDeclaredMethods();
+            for(int i = 0;i<methods.length;++i) {
+            	Method method = methods[i];
+            	if((method.getModifiers() & Modifier.STATIC) != 0)
+            		continue;
+            	Injectable injectable = method.getAnnotation(Injectable.class);
+            	if(injectable != null) {
+            		if(method.getParameterCount() > 1) {
+            			throw FieldInfo.forContext(
+            					cls, method.getName(), "@Injectable methods should have only one parameter")
+                		.withSiteAndOrdinal(ClassInfo.class, 18);
+            		}
+            		String value = injectable.value();
+            		if(value.isEmpty()) {
+            			String name = method.getName();
+            			//convert setter methods' names to their simple form
+            			//otherwise keep the original name
+            			if(name.length() > 3 && name.startsWith("set") && Character.isUpperCase(name.charAt(3))) {
+            				name = Character.toLowerCase(name.charAt(3)) + name.substring(4);
+            			}
+            			value = name;
+            		}
+            		method.setAccessible(true);
+            		if(injectableMethods.isEmpty())
+            			injectableMethods = new HashMap<>();
+            		injectableMethods.put(method, value);
+            	}
             }
             
             Collections.sort(tmpList, reverseFieldComparator);
             fieldList.addAll(tmpList);
             tmp = tmp.getSuperclass();
-            if(tmp == DataPacket.class) {
-                break;
-            }
         }
         
+        injectableFields = Collections.unmodifiableMap(injectableFields);
+        injectableMethods = Collections.unmodifiableMap(injectableMethods);
+        
         Collections.reverse(fieldList);
+        
+        List<FieldInfo> fieldInfoList = this.fieldInfoList;
         
         for(int i=0;i<fieldList.size();++i) {
             
@@ -272,6 +337,69 @@ class ClassInfo {
         return (Class<?>)types[0];
     }
     
+    void injectAdditionalFields(Object parent, Object dataPacket) {
+    	Map<Field, String> injectableFields = this.injectableFields;
+    	if(!injectableFields.isEmpty())
+    		for(Entry<Field, String> entry : injectableFields.entrySet()) {
+    			Field field = entry.getKey();
+    			String alias = entry.getValue();
+    			Field parentField = ClassInfo.getClassInfo(parent).getCachedField(alias);
+    			try {
+    				field.set(dataPacket, parentField.get(parent));
+    			} catch (IllegalArgumentException | IllegalAccessException e) {
+    				throw FieldInfo.forContext(dataPacket.getClass(), field.getName(), 
+    						"Error in injecting field " + field.getName() +", maybe it is of incompatible type with "
+    								+ "injection source field in the parent object", e)
+    				.withSiteAndOrdinal(ClassInfo.class, 17);
+    			}
+    		}
+    	Map<Method, String> injectableMethods = this.injectableMethods;
+    	if(!injectableMethods.isEmpty())
+    		for(Entry<Method, String> entry : injectableMethods.entrySet()) {
+    			Method method = entry.getKey();
+    			String alias = entry.getValue();
+    			Field parentField = ClassInfo.getClassInfo(parent).getCachedField(alias);
+    			try {
+    				method.invoke(dataPacket, parentField.get(parent));
+    			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+    				throw FieldInfo.forContext(dataPacket.getClass(), method.getName(), 
+    						"Error in injecting value by invoking method " + method, e)
+    				.withSiteAndOrdinal(ClassInfo.class, 19);
+    			}
+    		}
+    }
+    
+    private Field getCachedField(String name) {
+    	Field field = referencedFields.get(name);
+    	if(field == null) {
+    		Class<?> entityClass  = this.entityClass;
+			while(entityClass != DataPacket.class) {
+    			try {
+					field = entityClass.getDeclaredField(name);
+					if((field.getModifiers() & Modifier.STATIC) != 0) {
+						field = null;
+						entityClass = entityClass.getSuperclass();
+						continue;
+					}
+					break;
+				} catch (NoSuchFieldException | SecurityException e) {
+					entityClass = entityClass.getSuperclass();
+				}
+    		}
+			if(field == null) {
+				throw FieldInfo.forContext(this.entityClass, name, 
+						"Injection source field " + name +" does not"
+						+ " exist in class " + this.entityClass 
+						+ " and its super classes or cannot be made accessible")
+                			.withSiteAndOrdinal(ClassInfo.class, 16);
+			}
+			field.setAccessible(true);
+			referencedFields.put(name, field);
+    	}
+    	return field;
+    }
+    
+    
     private static final Comparator<Field> reverseFieldComparator = new Comparator<Field>() {
         @Override
         public int compare(Field o1, Field o2) {
@@ -295,7 +423,7 @@ class ClassInfo {
     private static final ConcurrentHashMap<Class<?>,ClassInfo> 
     classInfoMap = new ConcurrentHashMap<>();
     //lazy initialization
-    private static ClassInfo getClassInfo(Object entity) {
+    static ClassInfo getClassInfo(Object entity) {
         Class<?> self = entity.getClass();
         ClassInfo ci = classInfoMap.get(self);
         if(ci==null) {

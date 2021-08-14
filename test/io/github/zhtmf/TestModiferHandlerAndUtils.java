@@ -81,15 +81,4 @@ public class TestModiferHandlerAndUtils {
             TestUtils.assertExactExceptionInHierarchy(e, ModifierHandler.class, 2);
         }
     }
-    
-    @Test
-    public void test3() throws ConversionException {
-        try {
-            class Entity extends DataPacket{@Order(0)@RAW @Length(handler=Handler3.class) public byte[] ts = new byte[2];}
-            new Entity().deserialize(TestUtils.newZeroLengthInputStream());
-            Assert.fail();
-        } catch (Exception e) {
-            TestUtils.assertExactExceptionInHierarchy(e, ModifierHandler.class, 3);
-        }
-    }
 }

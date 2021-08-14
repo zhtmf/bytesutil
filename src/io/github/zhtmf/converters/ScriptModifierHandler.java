@@ -36,7 +36,8 @@ class ScriptModifierHandler<E> extends ModifierHandler<E>{
     @Override
     public E handleDeserialize0(String fieldName, Object entity, InputStream in) throws IOException {
         if(scriptDeserialize == null)
-            throw new UnsatisfiedIOException(
+            throw new ExtendedConversionException(
+            		entity.getClass(), fieldName,
                     "script is absent, which may means this script should not be called during deserialization")
                         .withSiteAndOrdinal(ScriptModifierHandler.class, 3);
         Bindings bindings = engine.createBindings();

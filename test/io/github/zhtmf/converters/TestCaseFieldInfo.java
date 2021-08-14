@@ -503,4 +503,119 @@ public class TestCaseFieldInfo {
             TestUtils.assertExactException(e, FieldInfo.class, 26);
         }
     }
+    
+    @Unsigned
+    public static class Entity25 extends DataPacket{
+        @BYTE
+        @Order(0)
+        public int len;
+        @Order(1)
+        public Entity25_1 entity;
+    }
+    
+    @Unsigned
+    public static class Entity25_1 extends DataPacket{
+    	@BYTE
+        @Order(0)
+        public int len;
+    	
+    	public Entity25_1(double d) {
+    		
+    	}
+    }
+    
+    @Test
+    public void test25() throws ConversionException {
+        try {
+            new Entity25().serialize(TestUtils.newByteArrayOutputStream());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactException(e, FieldInfo.class, 33);
+        }
+    }
+    
+    @Unsigned
+    public static class Entity26 extends DataPacket{
+        @BYTE
+        @Order(0)
+        public int len = 10;
+        @Order(1)
+        public Entity26_1 entity = new Entity26_1(1);
+    }
+    
+    @Unsigned
+    public static class Entity26_1 extends DataPacket{
+    	@BYTE
+        @Order(0)
+        public int len = 5;
+    	
+    	public Entity26_1(int i) {
+    		
+    	}
+    	
+    	public Entity26_1() {
+    		throw new RuntimeException();
+    	}
+    }
+    
+    @Test
+    public void test26() throws ConversionException {
+        try {
+        	TestUtils.serializeMultipleTimesAndRestore(new Entity26());
+            fail();
+        } catch (Exception e) {
+            TestUtils.assertExactExceptionInHierarchy(e, FieldInfo.class, 34);
+        }
+    }
+    
+    /*
+     * test constructors with access level other than 'public'
+     */
+    @Unsigned
+    public static class Entity27 extends DataPacket{
+        @BYTE
+        @Order(0)
+        public int len = 10;
+        @Order(1)
+        public Entity27_1 entity = new Entity27_1();
+        @Order(2)
+        public Entity27_2 entity2 = new Entity27_2();
+        @Order(3)
+        public Entity27_3 entity3 = new Entity27_3();
+    }
+    
+    @Unsigned
+    public static class Entity27_1 extends DataPacket{
+    	@BYTE
+        @Order(0)
+        public int len = 5;
+    	
+    	Entity27_1() {
+    	}
+    }
+    
+    @Unsigned
+    public static class Entity27_2 extends DataPacket{
+    	@BYTE
+        @Order(0)
+        public int len = 5;
+    	
+    	private Entity27_2() {
+    	}
+    }
+    
+    @Unsigned
+    public static class Entity27_3 extends DataPacket{
+    	@BYTE
+        @Order(0)
+        public int len = 5;
+    	
+    	protected Entity27_3() {
+    	}
+    }
+    
+    @Test
+    public void test27() throws Exception {
+		TestUtils.serializeMultipleTimesAndRestore(new Entity27());
+    }
 }

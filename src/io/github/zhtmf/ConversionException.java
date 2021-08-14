@@ -1,5 +1,7 @@
 package io.github.zhtmf;
 
+import java.io.IOException;
+
 /**
  * <p>
  * General exception class for <tt>runtime</tt> error produced by this library.
@@ -8,7 +10,7 @@ package io.github.zhtmf;
  * processing through {@link #getEntityClassName() getEntityClassName} and
  * {@link #getFieldName() getFieldName} for better exception handling.
  */
-public class ConversionException extends Exception {
+public class ConversionException extends IOException {
     private static final long serialVersionUID = 1L;
     private String entityClassName;
     private String fieldName;

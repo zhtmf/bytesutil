@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import io.github.zhtmf.ConversionException;
+import io.github.zhtmf.annotations.types.BCD;
 import io.github.zhtmf.converters.auxiliary.DataType;
 
 class StreamUtils {
@@ -153,7 +154,8 @@ class StreamUtils {
         boolean bigEndian = ctx.bigEndian;
         String error;
         if((error = DataTypeOperations.of(type).checkRange(val, true))!=null) {
-            throw new UnsatisfiedIOException(error)
+        	throw new ExtendedConversionException(
+        			ctx.enclosingEntityClass, ctx.name, error)
                 .withSiteAndOrdinal(StreamUtils.class, 1);
         }
         switch(type) {
@@ -372,14 +374,15 @@ class StreamUtils {
         }
         return sb.toString();
     }
-    public static final long readIntegerBCD(InputStream in, int len) throws IOException {
-        byte[] arr = readBytes(in, len);
+    public static final long readIntegerBCD(InputStream in, FieldInfo ctx) throws IOException {
+        byte[] arr = readBytes(in, ctx.localAnnotation(BCD.class).value());
         long ret = 0;
         for(int i=0;i<arr.length;++i) {
             ret = ret * 10 + ((arr[i] >> 4) & 0x0F);
             ret = ret * 10 + (arr[i] & 0x0F);
             if(ret<0) {
-                throw new UnsatisfiedIOException("BCD value overflows Java long dataType range")
+            	throw new ExtendedConversionException(
+            			ctx.enclosingEntityClass, ctx.name, "BCD value overflows Java long dataType range")
                         .withSiteAndOrdinal(StreamUtils.class, 2);
             }
         }
@@ -413,7 +416,8 @@ class StreamUtils {
             String error;
             //array or list length in Java cannot exceed signed 32-bit integer
             if((error = DataTypeOperations.INT.checkRange(_length, false))!=null) {
-                throw new UnsatisfiedIOException(error)
+            	throw new ExtendedConversionException(
+            			ctx.enclosingEntityClass, ctx.name, error)
                     .withSiteAndOrdinal(StreamUtils.class, 3);
             }
             length = (int)_length;

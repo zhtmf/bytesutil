@@ -98,7 +98,7 @@ class LongConverter implements Converter<Long> {
             return deserializeAsCHAR(in, ctx, self, null);
         }
         case BCD:{
-            return readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
+            return readIntegerBCD(in, ctx);
         }
         default:throw new Error("should not reach here");
         }

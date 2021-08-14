@@ -39,6 +39,7 @@ public class TestUtils {
         }
         if(((ExactException)ex).getSite() != site
         || ((ExactException)ex).getOrdinal() != ordinal){
+        	ex.printStackTrace();
             throw new IllegalArgumentException(ex+" "+((ExactException)ex).getSite()+" "+((ExactException)ex).getOrdinal()+" not expected");
         }
         return true;
@@ -47,6 +48,7 @@ public class TestUtils {
         if(!((ex instanceof ExactException)
         && ((ExactException)ex).getSite().getName().equals(fullName)
         && ((ExactException)ex).getOrdinal() == ordinal)){
+        	ex.printStackTrace();
             throw new IllegalArgumentException(ex+" "+((ExactException)ex).getSite()+" "+((ExactException)ex).getOrdinal()+" not expected");
         }
         return true;

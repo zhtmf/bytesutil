@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 
 import io.github.zhtmf.ConversionException;
 
-public class BigDecimalConverter implements Converter<BigDecimal>{
+class BigDecimalConverter implements Converter<BigDecimal>{
 
     @Override
     public void serialize(BigDecimal value, OutputStream dest, FieldInfo ctx, Object self)

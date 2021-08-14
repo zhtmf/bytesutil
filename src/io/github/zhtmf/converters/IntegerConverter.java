@@ -66,7 +66,7 @@ class IntegerConverter implements Converter<Integer> {
             return (int)deserializeAsCHAR(in, ctx, self, DataType.INT);
         }
         case BCD:{
-            long val = StreamUtils.readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
+            long val = StreamUtils.readIntegerBCD(in, ctx);
             checkRangeInContext(DataType.INT, val, ctx);
             return (int) val;
         }

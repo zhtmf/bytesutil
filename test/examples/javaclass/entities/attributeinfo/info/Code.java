@@ -1,8 +1,6 @@
 package examples.javaclass.entities.attributeinfo.info;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,14 +10,13 @@ import examples.javaclass.entities.bytecodes.Instruction;
 import examples.javaclass.entities.cpinfo.CpInfo;
 import io.github.zhtmf.ConversionException;
 import io.github.zhtmf.DataPacket;
+import io.github.zhtmf.annotations.modifiers.Injectable;
 import io.github.zhtmf.annotations.modifiers.Length;
 import io.github.zhtmf.annotations.modifiers.Order;
 import io.github.zhtmf.annotations.modifiers.Unsigned;
-import io.github.zhtmf.annotations.modifiers.Variant;
 import io.github.zhtmf.annotations.types.RAW;
 import io.github.zhtmf.annotations.types.SHORT;
 import io.github.zhtmf.converters.auxiliary.DataType;
-import io.github.zhtmf.converters.auxiliary.EntityHandler;
 
 @Unsigned
 public class Code extends DataPacket{
@@ -39,22 +36,16 @@ public class Code extends DataPacket{
     public List<ExceptionTable> exceptionTable;
     @Order(4)
     @Length(type=DataType.SHORT)
-    @Variant(AttributeInfoHandler2.class)
     public List<AttributeInfo> attributes;
     
+    @SuppressWarnings("unused")
     private List<CpInfo> constantPool;
-    public Code(List<CpInfo> constantPool) {
-        this.constantPool = constantPool;
-    }
     
-    public static class AttributeInfoHandler2 extends EntityHandler{
-        @Override
-        public DataPacket handle0(String fieldName, Object entity, InputStream is) throws IOException {
-            Code info = (Code)entity;
-            return new AttributeInfo(Collections.unmodifiableList(info.constantPool));
-        }
-        
-    }
+    @Injectable
+    public void setConstantPool(List<CpInfo> constantPool) {
+		this.constantPool = Collections.unmodifiableList(constantPool);
+	}
+    
     /*
      * deserialize list of jvm instructions manually,
      * as the length contained in class file is length of raw code bytes,

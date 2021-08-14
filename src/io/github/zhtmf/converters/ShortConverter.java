@@ -51,7 +51,7 @@ class ShortConverter implements Converter<Short> {
             return (short)deserializeAsCHAR(in, ctx, self, DataType.SHORT);
         }
         case BCD:{
-            long val = readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
+            long val = readIntegerBCD(in, ctx);
             checkRangeInContext(DataType.SHORT, val, ctx);
             return (short)val;
         }

@@ -68,7 +68,8 @@ class UserDefinedTypeConverter implements Converter<Object> {
         }
         private void checkBytesToWrite(int n) throws IOException {
             if(written+n>fastLength) {
-                throw new UnsatisfiedIOException("attempting to write more than "+length()+" bytes")
+            	throw new ExtendedConversionException(
+            		fieldInfo.enclosingEntityClass, fieldInfo.name,"attempting to write more than " + length() + " bytes")
                         .withSiteAndOrdinal(Output.class, 1);
             }
             written += n;
@@ -190,7 +191,8 @@ class UserDefinedTypeConverter implements Converter<Object> {
         }
         private void checkBytesToRead(int n) throws IOException {
             if(read+n>fastLength) {
-                throw new UnsatisfiedIOException("attempting to read more than "+length()+" bytes")
+            	throw new ExtendedConversionException(
+            			fieldInfo.enclosingEntityClass, fieldInfo.name, "attempting to read more than "+length()+" bytes")
                         .withSiteAndOrdinal(Input.class, 1);
             }
             read += n;
