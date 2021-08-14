@@ -14,7 +14,7 @@ import io.github.zhtmf.annotations.modifiers.LittleEndian;
  * 32-bit IEEE 754 single-precision floating number which corresponds with
  * <code>float</code> type in Java. It is compatible with:
  * <ul>
- * <li><code>float</code> and its wrapper <code>java.lang.Float class</li>.
+ * <li><code>float</code> and its wrapper <code>java.lang.Float</code> class.</li>
  * </ul>
  * <p>
  * Endianness is specified with {@link BigEndian} / {@link LittleEndian} and

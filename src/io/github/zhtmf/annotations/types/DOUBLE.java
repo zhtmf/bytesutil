@@ -14,8 +14,8 @@ import io.github.zhtmf.annotations.modifiers.LittleEndian;
  * 64-bit IEEE 754 double-precision floating number which corresponds with
  * <code>double</code> type in Java. It is compatible with:
  * <ul>
- * <li><code>float</code> and its wrapper <code>java.lang.Float class</li>
- * <li><code>double</code> and its wrapper <code>java.lang.Double class</li>
+ * <li><code>float</code> and its wrapper <code>java.lang.Float</code> class</li>
+ * <li><code>double</code> and its wrapper <code>java.lang.Double</code> class</li>
  * </ul>
  * <p>
  * However if the user intends to use a <code>float</code> to store a

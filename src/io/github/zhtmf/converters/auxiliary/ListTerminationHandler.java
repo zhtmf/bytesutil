@@ -28,21 +28,22 @@ public abstract class ListTerminationHandler extends ModifierHandler<Boolean>{
     }
     
     /**
-     * Overloaded method to implement custom list termination logic.
-     * <p>
-     * It is invoked before every element is deserialized and added to the list,
-     * which means during the first invocation the list object passed as the last
-     * argument is empty.
-     * 
-     * @param fieldName name of the field currently being processed
-     * @param entity    the half-constructed object, the list object passed as the
-     *                  last argument is not assigned to the corresponding field
-     *                  during this stage.
-     * @param in        input stream object, it is a special one that any reads will
-     *                  be undone after this method returns
-     * @param list      the temporary and half-constructed list object.
-     * @return whether the deserialization process of this field should terminate.
-     * @throws IOException
-     */
+	 * Overloaded method to implement custom list termination logic.
+	 * <p>
+	 * It is invoked before every element is deserialized and added to the list,
+	 * which means during the first invocation the list object passed as the last
+	 * argument is empty.
+	 * 
+	 * @param fieldName name of the field currently being processed
+	 * @param entity    the half-constructed object, the list object passed as the
+	 *                  last argument is not assigned to the corresponding field
+	 *                  during this stage.
+	 * @param in        input stream object, it is a special one that any reads will
+	 *                  be undone after this method returns
+	 * @param list      the temporary and half-constructed list object.
+	 * @return whether the deserialization process of this field should terminate.
+	 * @throws IOException exception raised during processing, such as when reading
+	 *                     stream for some hints.
+	 */
     public abstract boolean handleDeserialize0(String fieldName, Object entity, InputStream in, List<Object> list) throws IOException;
 }
