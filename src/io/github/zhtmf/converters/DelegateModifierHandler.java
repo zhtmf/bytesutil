@@ -20,19 +20,14 @@ class DelegateModifierHandler<T> extends ModifierHandler<T>{
     static final ThreadLocal<Object> context = new ThreadLocal<Object>();
     
     @Override
-    public T handleDeserialize0(String fieldName, Object entity, InputStream in) {
+    public T handleDeserialize0(String fieldName, Object entity, InputStream in) throws IOException{
         in.mark(0);
         T ret = null;
-        try {
-            offset.set(((MarkableInputStream)in).actuallyProcessedBytes());
-            ret = impl.handleDeserialize0(fieldName, entity, in);
-            offset.set(-1);
-            checkReturnValue(ret);
-            in.reset();
-        } catch (IOException e) {
-            throw new UnsatisfiedConstraintException(e)
-                .withSiteAndOrdinal(ModifierHandler.class, 3);
-        }
+        offset.set(((MarkableInputStream)in).actuallyProcessedBytes());
+        ret = impl.handleDeserialize0(fieldName, entity, in);
+        offset.set(-1);
+        checkReturnValue(ret);
+        in.reset();
         return ret;
     }
 

@@ -41,21 +41,22 @@ abstract class AbstractListConverter {
     }
     
     protected int lengthForDeserialize(InputStream in, FieldInfo ctx, Object self) throws ConversionException {
-        int length = ctx.lengthForDeserializingListLength(self, in);
-        if(length<0) {
-            length = ctx.lengthForDeserializingLength(self, in);
-        }
-        if(length<0) {
-            if(ctx.listTerminationHandler != null) {
-                return -1;
-            }
-            try {
-                length = StreamUtils.readIntegerOfType(in, ctx);
-            } catch (IOException e) {
-                throw new ExtendedConversionException(self.getClass(),ctx.name,e)
-                        .withSiteAndOrdinal(AbstractListConverter.class, 12);
-            }
-        }
+    	int length;
+    	try {
+	        length = ctx.lengthForDeserializingListLength(self, in);
+	        if(length<0) {
+	            length = ctx.lengthForDeserializingLength(self, in);
+	        }
+	        if(length<0) {
+	            if(ctx.listTerminationHandler != null) {
+	                return -1;
+	            }
+	                length = StreamUtils.readIntegerOfType(in, ctx);
+	        }
+    	} catch (IOException e) {
+    		throw new ExtendedConversionException(self.getClass(),ctx.name,e)
+    		.withSiteAndOrdinal(AbstractListConverter.class, 12);
+    	}
         return length;
     }
 }

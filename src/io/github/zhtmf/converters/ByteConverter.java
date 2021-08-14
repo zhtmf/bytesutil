@@ -51,7 +51,7 @@ class ByteConverter implements Converter<Byte> {
             return (byte)deserializeAsCHAR(in, ctx, self, DataType.BYTE);
         }
         case BCD:{
-            long val = StreamUtils.readIntegerBCD(in, ctx.localAnnotation(BCD.class).value());
+            long val = StreamUtils.readIntegerBCD(in, ctx);
             checkRangeInContext(DataType.BYTE, val, ctx);
             return (byte)val;
         }

@@ -14,9 +14,6 @@ class UnsatisfiedConstraintException extends IllegalArgumentException implements
         //do not call super(s,null) as initCause can only be called once
         super(s);
     }
-    public UnsatisfiedConstraintException(Throwable cause) {
-        this(null,cause);
-    }
     public UnsatisfiedConstraintException(String message, Throwable cause) {
         super(message, cause);
     }

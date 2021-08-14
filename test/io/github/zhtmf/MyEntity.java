@@ -329,6 +329,10 @@ public class MyEntity extends DataPacket{
         @CHARSET("GBK")
         public String strB;
         
+        public SubEntity() {
+        	
+        }
+        
         public SubEntity(int i, float j) {
             //no-op
         }
